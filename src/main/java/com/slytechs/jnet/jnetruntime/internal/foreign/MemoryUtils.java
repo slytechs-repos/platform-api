@@ -168,6 +168,7 @@ public final class MemoryUtils {
 		 * @return the t
 		 * @see java.util.function.IntFunction#apply(int)
 		 */
+		@SuppressWarnings("unchecked")
 		@Override
 		public T apply(int index) {
 			Object t = array[index];
