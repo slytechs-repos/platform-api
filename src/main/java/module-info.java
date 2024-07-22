@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2023-2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,14 +16,14 @@
  * the License.
  */
 /**
- * 
+ * Net modules runtime utilties and APIs 
  */
 module com.slytechs.jnet.jnetruntime {
 	exports com.slytechs.jnet.jnetruntime;
 	exports com.slytechs.jnet.jnetruntime.time;
 	exports com.slytechs.jnet.jnetruntime.hash;
 	exports com.slytechs.jnet.jnetruntime.util;
-	
+
 	/* Private API */
 	exports com.slytechs.jnet.jnetruntime.internal;
 	exports com.slytechs.jnet.jnetruntime.internal.layout;
@@ -35,7 +35,7 @@ module com.slytechs.jnet.jnetruntime {
 	exports com.slytechs.jnet.jnetruntime.internal.util.function;
 	exports com.slytechs.jnet.jnetruntime.internal.util.collection;
 	exports com.slytechs.jnet.jnetruntime.internal.json;
-	
+
 	requires java.logging;
 
 }
