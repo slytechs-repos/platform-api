@@ -17,34 +17,42 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Interface Mapper.
+ *
+ * @param <T_IN>  the input type
+ * @param <T_OUT> the output type
  */
-public interface Pipeline<T_BASE extends Pipeline<T_BASE>> extends Reconfigurable {
-
-	<D> Optional<DataChannel<D>> findChannel(D dataReceiver, DataType type);
-
-	List<DataChannel<?>> listChannels();
-
-	<D> List<DataChannel<D>> listChannelsOfType(Class<D> dataClass);
-
-	<P extends DataProcessor<P, T>, T> Optional<P> findProcessor(Class<P> processorType);
+public interface DataMapper<T_IN, T_OUT> extends Reconfigurable {
 
 	/**
 	 * Input.
 	 *
-	 * @param <T_IN> the generic type
-	 * @param type   the type
+	 * @return the t1
+	 */
+	T_IN input();
+
+	/**
+	 * Input type.
+	 *
+	 * @return the data type
+	 */
+	DataType inputType();
+
+	/**
+	 * Output type.
+	 *
+	 * @return the data type
+	 */
+	DataType outputType();
+
+	/**
+	 * Output.
+	 *
 	 * @return the t2
 	 */
-	<T_IN> Optional<T_IN> findInputMapping(Class<T_IN> dataClass, DataType type);
-
-	<T_OUT> Optional<T_OUT> findOutputMapping(Class<T_OUT> dataClass, DataType type);
+	T_OUT output();
 
 }

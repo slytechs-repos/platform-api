@@ -20,8 +20,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
-public interface Processor<T_BASE extends Processor<T_BASE>> {
+public interface DataProcessor<T_BASE extends DataProcessor<T_BASE, T>, T> extends DataNode<T> {
 
 }

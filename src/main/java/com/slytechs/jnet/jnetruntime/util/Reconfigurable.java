@@ -17,6 +17,10 @@
  */
 package com.slytechs.jnet.jnetruntime.util;
 
+import java.util.Optional;
+
+import com.slytechs.jnet.jnetruntime.pipeline.DataNode;
+
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
@@ -24,5 +28,6 @@ package com.slytechs.jnet.jnetruntime.util;
  */
 public interface Reconfigurable {
 
-	void reconfigure();
+	<N extends DataNode<T>, T> Optional<N> reconfigure();
+	
 }

@@ -17,34 +17,50 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Interface Node.
+ *
+ * @param <T> the generic type
  */
-public interface Pipeline<T_BASE extends Pipeline<T_BASE>> extends Reconfigurable {
-
-	<D> Optional<DataChannel<D>> findChannel(D dataReceiver, DataType type);
-
-	List<DataChannel<?>> listChannels();
-
-	<D> List<DataChannel<D>> listChannelsOfType(Class<D> dataClass);
-
-	<P extends DataProcessor<P, T>, T> Optional<P> findProcessor(Class<P> processorType);
+public interface DataNode<T> extends Reconfigurable {
 
 	/**
-	 * Input.
+	 * Priority.
 	 *
-	 * @param <T_IN> the generic type
-	 * @param type   the type
-	 * @return the t2
+	 * @return the int
 	 */
-	<T_IN> Optional<T_IN> findInputMapping(Class<T_IN> dataClass, DataType type);
+	int priority();
 
-	<T_OUT> Optional<T_OUT> findOutputMapping(Class<T_OUT> dataClass, DataType type);
+	/**
+	 * Checks if is enabled.
+	 *
+	 * @return true, if is enabled
+	 */
+	boolean isEnabled();
+
+	/**
+	 * Enable.
+	 *
+	 * @param b the b
+	 */
+	void enable(boolean b);
+
+	/**
+	 * Data.
+	 *
+	 * @return the t
+	 */
+	T data();
+	
+	DataType dataType();
+
+	/**
+	 * Next node.
+	 *
+	 * @return the node
+	 */
+	<N extends DataNode<T>> N nextNode();
 
 }

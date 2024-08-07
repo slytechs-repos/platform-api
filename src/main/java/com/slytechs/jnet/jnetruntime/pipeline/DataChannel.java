@@ -27,57 +27,14 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author repos@slytechs.com
  * @param <T> the generic type
  */
-public interface Channel<T> extends Reconfigurable {
-
-	/**
-	 * The Interface Node.
-	 *
-	 * @param <T> the generic type
-	 */
-	public interface Node<T> extends Reconfigurable {
-
-		/**
-		 * Priority.
-		 *
-		 * @return the int
-		 */
-		int priority();
-
-		/**
-		 * Checks if is enabled.
-		 *
-		 * @return true, if is enabled
-		 */
-		boolean isEnabled();
-
-		/**
-		 * Enable.
-		 *
-		 * @param b the b
-		 */
-		void enable(boolean b);
-
-		/**
-		 * Data.
-		 *
-		 * @return the t
-		 */
-		T data();
-
-		/**
-		 * Next node.
-		 *
-		 * @return the node
-		 */
-		Node<T> nextNode();
-
-	}
+public interface DataChannel<T> extends DataNode<T>, Reconfigurable {
 
 	/**
 	 * Priority.
 	 *
 	 * @return the int
 	 */
+	@Override
 	int priority();
 
 	/**
@@ -94,6 +51,10 @@ public interface Channel<T> extends Reconfigurable {
 	 * @param node     the node
 	 * @return the registration
 	 */
-	Registration add(int priority, Node<T> node);
+	Registration addNode(int priority, DataNode<T> node);
+
+	<T_IN> Registration addInputMapper(DataMapper<T_IN, T> inputMapper);
+
+	<T_OUT> Registration addOutputMapper(DataMapper<T, T_OUT> outputMapper);
 
 }
