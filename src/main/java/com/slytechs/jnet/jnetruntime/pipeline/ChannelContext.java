@@ -17,36 +17,13 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
-import com.slytechs.jnet.jnetruntime.util.Registration;
-
 /**
- * The Interface Channel.
- *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- * @param <T> the generic type
+ *
  */
-public interface DataChannel<T> extends ChannelNode<DataChannel<T>>, Reconfigurable {
+public interface ChannelContext {
 
-	/**
-	 * Data type.
-	 *
-	 * @return the data type
-	 */
-	DataType dataType();
-
-	/**
-	 * Adds the.
-	 *
-	 * @param priority the priority
-	 * @param node     the node
-	 * @return the registration
-	 */
-	Registration addProcessor(int priority, DataProcessor<?, T> node);
-
-	<T_IN> Registration addInputMapper(DataMapper<?, T_IN, T> inputMapper);
-
-	<T_OUT> Registration addOutputMapper(DataMapper<?, T, T_OUT> outputMapper);
-
+	PipelineContext pipelineContext();
+	
 }

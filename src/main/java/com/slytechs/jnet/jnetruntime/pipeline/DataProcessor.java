@@ -21,6 +21,16 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
-public interface DataProcessor<T_BASE extends DataProcessor<T_BASE, T>, T> extends DataNode<T> {
+public interface DataProcessor<T_BASE extends DataProcessor<T_BASE, T>, T>
+		extends ChannelNode<T_BASE> {
 
+	@SuppressWarnings("unchecked")
+	default T input() {
+		try {
+			return (T) this;
+		} catch (ClassCastException e) {
+			throw new IllegalStateException("DataProcessor does not implement required <T> type", e);
+		}
+
+	}
 }

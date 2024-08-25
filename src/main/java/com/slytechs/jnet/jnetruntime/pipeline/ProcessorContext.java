@@ -17,50 +17,13 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
-
 /**
- * The Interface Node.
+ * @author Sly Technologies Inc
+ * @author repos@slytechs.com
  *
- * @param <T> the generic type
  */
-public interface DataNode<T> extends Reconfigurable {
-
-	/**
-	 * Priority.
-	 *
-	 * @return the int
-	 */
-	int priority();
-
-	/**
-	 * Checks if is enabled.
-	 *
-	 * @return true, if is enabled
-	 */
-	boolean isEnabled();
-
-	/**
-	 * Enable.
-	 *
-	 * @param b the b
-	 */
-	void enable(boolean b);
-
-	/**
-	 * Data.
-	 *
-	 * @return the t
-	 */
-	T data();
+public interface ProcessorContext {
 	
-	DataType dataType();
-
-	/**
-	 * Next node.
-	 *
-	 * @return the node
-	 */
-	<N extends DataNode<T>> N nextNode();
+	ChannelContext channelContext();
 
 }

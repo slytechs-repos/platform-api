@@ -18,35 +18,49 @@
 package com.slytechs.jnet.jnetruntime.pipeline;
 
 import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
-import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
- * The Interface Channel.
+ * The Interface Node.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- * @param <T> the generic type
+ * @param <T_BASE> the generic type
  */
-public interface DataChannel<T> extends ChannelNode<DataChannel<T>>, Reconfigurable {
+public interface ChannelNode<T_BASE extends ChannelNode<T_BASE>>
+		extends Reconfigurable {
 
 	/**
-	 * Data type.
+	 * Priority.
 	 *
-	 * @return the data type
+	 * @return the int
 	 */
-	DataType dataType();
+	int priority();
 
 	/**
-	 * Adds the.
+	 * Checks if is enabled.
 	 *
-	 * @param priority the priority
-	 * @param node     the node
-	 * @return the registration
+	 * @return true, if is enabled
 	 */
-	Registration addProcessor(int priority, DataProcessor<?, T> node);
+	boolean isEnabled();
 
-	<T_IN> Registration addInputMapper(DataMapper<?, T_IN, T> inputMapper);
+	/**
+	 * Enable.
+	 *
+	 * @param b the b
+	 */
+	T_BASE enable(boolean b);
 
-	<T_OUT> Registration addOutputMapper(DataMapper<?, T, T_OUT> outputMapper);
+	/**
+	 * Next node.
+	 *
+	 * @return the node
+	 */
+	<N_BASE extends ChannelNode<N_BASE>> N_BASE nextNode();
+
+	/**
+	 * Prev node.
+	 *
+	 * @param <N_BASE> the generic type
+	 * @return the n base
+	 */
+	<N_BASE extends ChannelNode<N_BASE>> N_BASE prevNode();
 
 }

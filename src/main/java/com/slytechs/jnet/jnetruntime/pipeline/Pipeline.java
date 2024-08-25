@@ -26,7 +26,8 @@ import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
-public interface Pipeline<T_BASE extends Pipeline<T_BASE>> extends Reconfigurable {
+public interface Pipeline<T_BASE extends Pipeline<T_BASE>>
+		extends Reconfigurable {
 
 	<D> Optional<DataChannel<D>> findChannel(D dataReceiver, DataType type);
 
@@ -37,14 +38,21 @@ public interface Pipeline<T_BASE extends Pipeline<T_BASE>> extends Reconfigurabl
 	<P extends DataProcessor<P, T>, T> Optional<P> findProcessor(Class<P> processorType);
 
 	/**
-	 * Input.
+	 * Find input mapping.
 	 *
 	 * @param <T_IN> the generic type
 	 * @param type   the type
-	 * @return the t2
+	 * @return the optional
 	 */
-	<T_IN> Optional<T_IN> findInputMapping(Class<T_IN> dataClass, DataType type);
+	<T_IN> Optional<T_IN> findInputMapping(DataType type);
 
-	<T_OUT> Optional<T_OUT> findOutputMapping(Class<T_OUT> dataClass, DataType type);
+	/**
+	 * Find output mapping.
+	 *
+	 * @param <T_OUT> the generic type
+	 * @param type    the type
+	 * @return the optional
+	 */
+	<T_OUT> Optional<T_OUT> findOutputMapping(DataType type);
 
 }

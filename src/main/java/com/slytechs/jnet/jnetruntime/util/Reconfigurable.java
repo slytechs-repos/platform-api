@@ -19,7 +19,7 @@ package com.slytechs.jnet.jnetruntime.util;
 
 import java.util.Optional;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataNode;
+import com.slytechs.jnet.jnetruntime.pipeline.ChannelNode;
 
 /**
  * @author Sly Technologies Inc
@@ -28,6 +28,6 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataNode;
  */
 public interface Reconfigurable {
 
-	<N extends DataNode<T>, T> Optional<N> reconfigure();
-	
+	<N extends ChannelNode<N>> Optional<N> reconfigure();
+
 }

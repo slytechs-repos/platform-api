@@ -17,15 +17,14 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
-
 /**
  * The Interface Mapper.
  *
  * @param <T_IN>  the input type
  * @param <T_OUT> the output type
  */
-public interface DataMapper<T_IN, T_OUT> extends Reconfigurable {
+public interface DataMapper<T_BASE extends DataMapper<T_BASE, T_IN, T_OUT>, T_IN, T_OUT>
+		extends ChannelNode<T_BASE> {
 
 	/**
 	 * Input.
