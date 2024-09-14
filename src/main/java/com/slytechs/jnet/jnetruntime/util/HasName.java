@@ -15,17 +15,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline;
+package com.slytechs.jnet.jnetruntime.util;
 
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  *
  */
-public interface ChannelContext extends BaseContext {
+public interface HasName {
 
-	String channelName();
-
-	PipelineContext pipelineContext();
-
+	String name();
+	
 }

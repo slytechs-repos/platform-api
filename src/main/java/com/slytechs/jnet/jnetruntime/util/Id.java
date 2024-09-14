@@ -15,13 +15,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline;
+package com.slytechs.jnet.jnetruntime.util;
 
-/**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- *
- */
-public interface PipelineContext extends BaseContext {
+public interface Id {
+
+	@SuppressWarnings("unchecked")
+	default <T> T id() {
+		if (this instanceof Enum<?> hasEnum)
+			return (T) hasEnum.name();
+
+		else if (this instanceof HasName hasName)
+			return (T) hasName.name();
+
+		return (T) toString();
+	}
 
 }

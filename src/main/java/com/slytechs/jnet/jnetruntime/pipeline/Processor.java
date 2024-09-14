@@ -17,21 +17,26 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.*;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
+ *
  */
-public interface DataProcessor<T extends DataProcessor<T, C>, C> extends ChannelNode {
-	
-	default DataType dataType() {
-		throw new UnsupportedOperationException();
-	}
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface Processor {
 
-	default T nextProcessor() {
-		throw new UnsupportedOperationException();
-	}
+	int priority() default 0;
+
+	Class<?> value();
 	
-	default C context() {
-		throw new UnsupportedOperationException();
-	}
+	boolean enable() default true;
+	
+	String name() default "";
 }

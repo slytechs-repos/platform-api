@@ -28,6 +28,8 @@ import com.slytechs.jnet.jnetruntime.pipeline.ChannelNode;
  */
 public interface Reconfigurable {
 
-	<N extends ChannelNode<N>> Optional<N> reconfigure();
+	default Optional<ChannelNode> reconfigure() {
+		return null;
+	}
 
 }

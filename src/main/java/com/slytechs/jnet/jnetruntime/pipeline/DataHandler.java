@@ -17,13 +17,19 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.*;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  *
  */
-public interface ProcessorContext extends BaseContext {
-	
-	ChannelContext channelContext();
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface DataHandler {
 
 }

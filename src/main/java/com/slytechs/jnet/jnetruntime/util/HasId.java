@@ -15,28 +15,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline;
+package com.slytechs.jnet.jnetruntime.util;
 
 /**
- * The Interface Mapper.
+ * @author Sly Technologies Inc
+ * @author repos@slytechs.com
  *
- * @param <T_IN>  the input type
- * @param <T_OUT> the output type
  */
-public interface DataMapper<T_IN extends DataProcessor<T_IN, C>, T_OUT, C> extends ChannelNode {
-
-	/**
-	 * Output type.
-	 *
-	 * @return the data type
-	 */
-	DataType outputType();
-
-	/**
-	 * Output.
-	 *
-	 * @return the t2
-	 */
-	T_OUT output();
+public interface HasId extends Id {
 
 }
