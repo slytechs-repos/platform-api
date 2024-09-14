@@ -23,22 +23,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * @param <T_IN>  the input type
  * @param <T_OUT> the output type
  */
-public interface DataMapper<T_BASE extends DataMapper<T_BASE, T_IN, T_OUT>, T_IN, T_OUT>
-		extends ChannelNode<T_BASE> {
-
-	/**
-	 * Input.
-	 *
-	 * @return the t1
-	 */
-	T_IN input();
-
-	/**
-	 * Input type.
-	 *
-	 * @return the data type
-	 */
-	DataType inputType();
+public interface DataMapper<T_IN extends DataProcessor<T_IN, C>, T_OUT, C> extends ChannelNode {
 
 	/**
 	 * Output type.

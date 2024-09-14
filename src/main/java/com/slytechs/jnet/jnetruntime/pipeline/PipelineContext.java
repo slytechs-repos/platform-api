@@ -22,6 +22,6 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * @author repos@slytechs.com
  *
  */
-public interface PipelineContext {
+public interface PipelineContext extends BaseContext {
 
 }

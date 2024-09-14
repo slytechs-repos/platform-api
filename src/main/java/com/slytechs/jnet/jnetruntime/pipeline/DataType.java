@@ -21,13 +21,20 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.slytechs.jnet.jnetruntime.util.HasId;
+import com.slytechs.jnet.jnetruntime.util.HasName;
+
 /**
  * The Interface DataType.
  *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
-public interface DataType {
+public interface DataType extends HasId, HasName {
+
+	public interface HasDataType {
+		DataType dataType();
+	}
 
 	/**
 	 * The Class DataSupport.
@@ -66,8 +73,26 @@ public interface DataType {
 			this.dataClass = dataClass;
 			this.arrayWrapper = arrayWrapper;
 			this.opaqueWrapper = opaqueWrapper;
-
 		}
+		
+		/**
+		 * Instantiates a new data support.
+		 *
+		 * @param dataType      the data type
+		 * @param dataClass     the data class
+		 * @param arrayWrapper  the array wrapper
+		 * @param opaqueWrapper the opaque wrapper
+		 */
+		public DataSupport(
+				DataType dataType,
+				Class<T> dataClass) {
+
+			this.dataType = dataType;
+			this.dataClass = dataClass;
+			this.arrayWrapper = null;
+			this.opaqueWrapper = (t, obj) -> t;
+		}
+
 
 		/**
 		 * Data class.
@@ -150,6 +175,7 @@ public interface DataType {
 	 *
 	 * @return the string
 	 */
+	@Override
 	String name();
 
 	public interface IntString extends Consumer<String> {

@@ -24,36 +24,47 @@ import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
  *
  * @param <T_BASE> the generic type
  */
-public interface ChannelNode<T_BASE extends ChannelNode<T_BASE>>
-		extends Reconfigurable {
+public interface ChannelNode extends Reconfigurable {
+	
+	default String name() {
+		throw new UnsupportedOperationException();
+	}
 
 	/**
 	 * Priority.
 	 *
 	 * @return the int
 	 */
-	int priority();
+	default int priority() {
+		return 0;
+	}
 
 	/**
 	 * Checks if is enabled.
 	 *
 	 * @return true, if is enabled
 	 */
-	boolean isEnabled();
+	default boolean isEnabled() {
+		return false;
+	}
 
 	/**
 	 * Enable.
 	 *
 	 * @param b the b
 	 */
-	T_BASE enable(boolean b);
+	default ChannelNode enable(boolean b) {
+		return null;
+	}
 
 	/**
 	 * Next node.
 	 *
 	 * @return the node
 	 */
-	<N_BASE extends ChannelNode<N_BASE>> N_BASE nextNode();
+	default ChannelNode nextNode() {
+		return null;
+	}
 
 	/**
 	 * Prev node.
@@ -61,6 +72,10 @@ public interface ChannelNode<T_BASE extends ChannelNode<T_BASE>>
 	 * @param <N_BASE> the generic type
 	 * @return the n base
 	 */
-	<N_BASE extends ChannelNode<N_BASE>> N_BASE prevNode();
+	default ChannelNode prevNode() {
+		return null;
+	}
+	
+	
 
 }

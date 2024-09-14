@@ -17,42 +17,98 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.slytechs.jnet.jnetruntime.NotFound;
 import com.slytechs.jnet.jnetruntime.util.Reconfigurable;
+import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
-public interface Pipeline<T_BASE extends Pipeline<T_BASE>>
-		extends Reconfigurable {
+public class Pipeline<T_BASE extends Pipeline<T_BASE>> extends AbstractElement implements Reconfigurable {
 
-	<D> Optional<DataChannel<D>> findChannel(D dataReceiver, DataType type);
+	private final String name;
 
-	List<DataChannel<?>> listChannels();
+	private final List<DataChannel<?, ?>> channelList = new ArrayList<>();
 
-	<D> List<DataChannel<D>> listChannelsOfType(Class<D> dataClass);
+	public Pipeline(String name) {
+		this.name = name;
+	}
 
-	<P extends DataProcessor<P, T>, T> Optional<P> findProcessor(Class<P> processorType);
+	public <T extends DataProcessor<T, C>, C> T addProcessor(int priority, T processor) throws NotFound {
+		DataType type = processor.dataType();
+
+		DataChannel<T, C> channel = getChannel(type);
+		Registration registration = channel.addProcessor(priority, processor);
+
+		return processor;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T_CHANNEL extends DataChannel<T, C>, T extends DataProcessor<T, C>, C> Optional<T_CHANNEL> findChannel(
+			DataType type) {
+
+		Optional<DataChannel<?, ?>> channel = channelList.stream()
+				.filter(c -> c.channelType().equals(type))
+				.findFirst();
+
+		if (channel.isEmpty())
+			return Optional.empty();
+
+		return (Optional<T_CHANNEL>) channel;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T_CHANNEL extends DataChannel<T, C>, T extends DataProcessor<T, C>, C> Optional<T_CHANNEL> findChannel(
+			String channelName)
+			throws NotFound {
+
+		Optional<DataChannel<?, ?>> channel = channelList.stream()
+				.filter(c -> c.name().equals(channelName))
+				.findFirst();
+
+		if (channel.isEmpty())
+			return Optional.empty();
+
+		return (Optional<T_CHANNEL>) channel;
+	}
+
+	public <T_CHANNEL extends DataChannel<T, C>, T extends DataProcessor<T, C>, C> T_CHANNEL getChannel(DataType type)
+			throws NotFound {
+
+		Optional<T_CHANNEL> channel = findChannel(type);
+
+		if (channel.isEmpty())
+			throw new NotFound("Channel of type %s not found".formatted(type.name()));
+
+		return channel.get();
+	}
+
+	public <T extends DataProcessor<T, C>, C> Registration registerProcessor(int priority, T processor)
+			throws NotFound {
+		DataType type = processor.dataType();
+
+		DataChannel<T, C> channel = getChannel(type);
+		Registration registration = channel.addProcessor(priority, processor);
+
+		return registration;
+	}
+
+	public Registration registerChannel(DataChannel<?, ?> newChannel) {
+		channelList.add(newChannel);
+
+		return () -> channelList.remove(newChannel);
+	}
 
 	/**
-	 * Find input mapping.
-	 *
-	 * @param <T_IN> the generic type
-	 * @param type   the type
-	 * @return the optional
+	 * @see java.lang.Object#toString()
 	 */
-	<T_IN> Optional<T_IN> findInputMapping(DataType type);
-
-	/**
-	 * Find output mapping.
-	 *
-	 * @param <T_OUT> the generic type
-	 * @param type    the type
-	 * @return the optional
-	 */
-	<T_OUT> Optional<T_OUT> findOutputMapping(DataType type);
-
+	@Override
+	public String toString() {
+		return "Pipeline [name=" + name + "]";
+	}
 }

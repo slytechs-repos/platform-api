@@ -22,8 +22,10 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * @author repos@slytechs.com
  *
  */
-public interface ChannelContext {
+public interface ChannelContext extends BaseContext {
+
+	String channelName();
 
 	PipelineContext pipelineContext();
-	
+
 }

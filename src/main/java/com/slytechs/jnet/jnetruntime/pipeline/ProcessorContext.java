@@ -22,7 +22,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * @author repos@slytechs.com
  *
  */
-public interface ProcessorContext {
+public interface ProcessorContext extends BaseContext {
 	
 	ChannelContext channelContext();
 
