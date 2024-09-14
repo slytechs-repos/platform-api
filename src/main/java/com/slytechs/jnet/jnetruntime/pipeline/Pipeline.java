@@ -15,14 +15,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline2;
+package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataType;
-import com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode.NamedNodeFactory;
-import com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode.NodeFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.PipelineNode.NamedNodeFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.PipelineNode.NodeFactory;
 import com.slytechs.jnet.jnetruntime.util.HasName;
 import com.slytechs.jnet.jnetruntime.util.Id;
 import com.slytechs.jnet.jnetruntime.util.Registration;

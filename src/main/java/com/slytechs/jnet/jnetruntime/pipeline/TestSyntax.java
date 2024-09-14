@@ -15,14 +15,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline2;
+package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.lang.invoke.MethodHandle;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-
-import com.slytechs.jnet.jnetruntime.pipeline.DataType;
-import com.slytechs.jnet.jnetruntime.pipeline.Processor;
 
 /**
  * @author Sly Technologies Inc
@@ -116,7 +113,7 @@ public class TestSyntax {
 		}
 
 		/**
-		 * @see com.slytechs.jnet.jnetruntime.pipeline2.TestSyntax.InputData#handleInput(char[],
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.InputData#handleInput(char[],
 		 *      long)
 		 */
 		@Override
@@ -144,7 +141,7 @@ public class TestSyntax {
 		}
 
 		/**
-		 * @see com.slytechs.jnet.jnetruntime.pipeline2.TestSyntax.PipelineData#handleData(java.lang.String,
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.PipelineData#handleData(java.lang.String,
 		 *      int)
 		 */
 		@Override

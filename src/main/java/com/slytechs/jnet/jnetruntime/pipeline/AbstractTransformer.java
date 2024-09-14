@@ -15,11 +15,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline2;
+package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.Objects;
-
-import com.slytechs.jnet.jnetruntime.pipeline.DataType;
 
 /**
  * @author Sly Technologies Inc
@@ -68,7 +66,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#getOutput()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#getOutput()
 	 */
 	@Override
 	public T_OUT getOutput() {
@@ -88,7 +86,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#getInput()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#getInput()
 	 */
 	@Override
 	public T_IN getInput() {
@@ -96,7 +94,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#enable(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#enable(boolean)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -107,7 +105,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#isEnabled()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#isEnabled()
 	 */
 	@Override
 	public boolean isEnabled() {
@@ -115,7 +113,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#outputType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#outputType()
 	 */
 	@Override
 	public DataType outputType() {
@@ -123,7 +121,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#inputType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#inputType()
 	 */
 	@Override
 	public DataType inputType() {
@@ -131,7 +129,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.Transformer#name()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#name()
 	 */
 	@Override
 	public String name() {

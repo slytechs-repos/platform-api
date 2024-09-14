@@ -17,19 +17,11 @@
  */
 package com.slytechs.jnet.jnetruntime.util;
 
-import java.util.Optional;
-
-import com.slytechs.jnet.jnetruntime.pipeline.ChannelNode;
-
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  *
  */
 public interface Reconfigurable {
-
-	default Optional<ChannelNode> reconfigure() {
-		return null;
-	}
 
 }

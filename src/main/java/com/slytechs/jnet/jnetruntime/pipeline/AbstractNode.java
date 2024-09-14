@@ -15,9 +15,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline2;
+package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataType;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -76,7 +75,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#enable(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#enable(boolean)
 	 */
 	@Override
 	public PipelineNode<T, T_BASE> enable(boolean b) {
@@ -89,7 +88,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#getData()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#getData()
 	 */
 	@Override
 	public T getData() {
@@ -97,7 +96,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#getDataType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#getDataType()
 	 */
 	@Override
 	public DataType getDataType() {
@@ -105,7 +104,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#isEnabled()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#isEnabled()
 	 */
 	@Override
 	public boolean isEnabled() {
@@ -113,7 +112,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#name()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#name()
 	 */
 	@Override
 	public String name() {
@@ -121,7 +120,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#nextNode()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#nextNode()
 	 */
 	@Override
 	public PipelineNode<T, T_BASE> nextNode() {
@@ -133,7 +132,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#priority()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#priority()
 	 */
 	@Override
 	public int priority() {
@@ -141,7 +140,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineNode#priority(int)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#priority(int)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

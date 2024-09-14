@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline2;
+package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -28,10 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
-
-import com.slytechs.jnet.jnetruntime.pipeline.DataHandler;
-import com.slytechs.jnet.jnetruntime.pipeline.DataType;
-import com.slytechs.jnet.jnetruntime.pipeline.Processor;
 
 /**
  * @author Sly Technologies Inc

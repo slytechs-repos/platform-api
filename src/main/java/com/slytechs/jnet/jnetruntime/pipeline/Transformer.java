@@ -15,9 +15,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline2;
+package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataType;
 import com.slytechs.jnet.jnetruntime.util.HasName;
 
 public interface Transformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T_OUT, T_BASE>> extends HasName {
