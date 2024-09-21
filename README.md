@@ -18,12 +18,6 @@
 
 - **Advanced Network Hashing Algorithms**
   - Implement various network hashing algorithms to ensure data integrity and security.
-
-- **Semantic Versioning**
-  - Manage and enforce semantic versioning within your projects using the `Version` class.
-
-- **Hex String Utilities**
-  - Efficiently handle and manipulate hexadecimal strings.
     
 - **Processor Pipeline Support**
   - Data is processed through a sequence of processors in a _Pipeline_ configuration:
