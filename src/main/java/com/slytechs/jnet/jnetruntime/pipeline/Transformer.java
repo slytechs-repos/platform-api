@@ -17,27 +17,28 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.util.HasName;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.*;
 
-public interface Transformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T_OUT, T_BASE>> extends HasName {
-	interface TransformerFactory<T_IN, T_OUT, T_TRANSFORMER extends Transformer<T_IN, T_OUT, T_TRANSFORMER>> {
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-		T_TRANSFORMER newInstance();
-	}
+/**
+ * @author Sly Technologies Inc
+ * @author repos@slytechs.com
+ *
+ */
+@Retention(RUNTIME)
+@Target(METHOD)
+public @interface Transformer {
 
-	interface NamedTransformerFactory<T_IN, T_OUT, T_TRANSFORMER extends Transformer<T_IN, T_OUT, T_TRANSFORMER>> {
-		T_TRANSFORMER newInstance(String name);
-	}
+	int priority() default 0;
 
-	T_BASE enable(boolean b);
+	Class<?> in();
 
-	boolean isEnabled();
+	Class<?> out();
 
-	T_IN getInput();
+	boolean enable() default true;
 
-	T_OUT getOutput();
-
-	DataType outputType();
-
-	DataType inputType();
+	String name() default "";
 }

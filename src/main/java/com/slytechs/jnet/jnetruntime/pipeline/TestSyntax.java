@@ -17,9 +17,12 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.lang.invoke.MethodHandle;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput;
 
 /**
  * @author Sly Technologies Inc
@@ -35,12 +38,12 @@ public class TestSyntax {
 
 		private final DataSupport<?> dataSupport;
 
-		<T, U> DataTypes(Class<T> arrayFactory, Function<T[], T> arrayWrapper) {
-			this.dataSupport = new DataSupport<T>(this, arrayFactory, null, arrayWrapper);
-		}
-
 		<T, U> DataTypes(Class<T> arrayFactory) {
 			this.dataSupport = new DataSupport<T>(this, arrayFactory);
+		}
+
+		<T, U> DataTypes(Class<T> arrayFactory, Function<T[], T> arrayWrapper) {
+			this.dataSupport = new DataSupport<T>(this, arrayFactory, null, arrayWrapper);
 		}
 
 		/**
@@ -53,12 +56,23 @@ public class TestSyntax {
 		}
 	}
 
-	interface PipelineData {
-		void handleData(String name, int id);
+	public interface InputData {
+		void handleInput(char[] name, long id);
 	}
 
-	interface InputData {
-		void handleInput(char[] name, long id);
+	@TypeLookup(DataTypes.class)
+	private static class MyPipeline extends AbstractPipeline<PipelineData, MyPipeline> {
+
+		public MyPipeline() {
+			super("my-pipeline", DataTypes.PIPELINE_DATA);
+		}
+
+		@Processor(PipelineData.class)
+		void process(String name, int id, Map<String, Object> ctx, PipelineData out) {
+			name = name.toUpperCase();
+
+			out.handleData(name, id, ctx);
+		}
 	}
 
 	interface OutputData {
@@ -72,94 +86,37 @@ public class TestSyntax {
 		void handleOutput(StringBuilder nameBuffer, AtomicInteger atomicId);
 	}
 
-	static class Container {
-
-		static PipelineData dataAdaptor(MethodHandle handle, Object instance) {
-			return (name, id) -> {
-				try {
-					if (instance == null)
-						handle.invoke(name, id);
-					else
-						handle.invoke(instance, name, id);
-				} catch (Throwable e) {
-					throw new RuntimeException(e);
-				}
-			};
-		}
-
-		@Processor(PipelineData.class)
-		public void handle1(String name, int id) {
-			System.out.printf("handle1:: %s, %d%n", name, id);
-		}
-
-		@Processor(PipelineData.class)
-		public static void handle2(String name, int id) {
-			System.out.printf("handle2:: %s, %d%n", name, id);
-		}
-
+	interface PipelineData {
+		void handleData(String name, int id, Map<String, Object> context);
 	}
 
-	static class InputTransformer
-			extends AbstractTransformer<InputData, PipelineData, InputTransformer> implements InputData {
+	private static class TestPipelineInput
+			extends AbstractTransformer<InputData, PipelineData, TestPipelineInput>
+			implements PipelineInput<InputData>, InputData {
 
-		/**
-		 * @param name
-		 * @param input
-		 * @param inputType
-		 * @param outputType
-		 */
-		public InputTransformer(String name) {
+		final Map<String, Object> ctx = new HashMap<>();
+
+		public TestPipelineInput() {
+			this("input-data-transformer");
+		}
+
+		public TestPipelineInput(String name) {
 			super(name, DataTypes.INPUT_DATA, DataTypes.PIPELINE_DATA);
 		}
 
-		/**
-		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.InputData#handleInput(char[],
-		 *      long)
-		 */
+		public TestPipelineInput(String name, boolean enable) {
+			super(name, DataTypes.INPUT_DATA, DataTypes.PIPELINE_DATA);
+
+			enable(enable);
+		}
+
 		@Override
 		public void handleInput(char[] name, long id) {
 			String str = new String(name);
-			int newId = (int) id;
+			int i = (int) id;
 
-			getOutput().handleData(str, newId);
+			outputData().handleData(str, i, ctx);
 		}
-
-	}
-
-	static class OutputTransformer
-			extends AbstractTransformer<PipelineData, OutputData, OutputTransformer>
-			implements PipelineData {
-
-		/**
-		 * @param name
-		 * @param inputType
-		 * @param output
-		 * @param outputType
-		 */
-		public OutputTransformer(String name) {
-			super(name, DataTypes.PIPELINE_DATA, DataTypes.OUTPUT_DATA);
-		}
-
-		/**
-		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.PipelineData#handleData(java.lang.String,
-		 *      int)
-		 */
-		@Override
-		public void handleData(String name, int id) {
-			StringBuilder b = new StringBuilder(name);
-			AtomicInteger ai = new AtomicInteger(id);
-
-			getOutput().handleOutput(b, ai);
-		}
-
-	}
-
-	static class MyPipeline extends AbstractPipeline<PipelineData, MyPipeline> {
-
-		public MyPipeline() {
-			super("my-pipeline", DataTypes.PIPELINE_DATA);
-		}
-
 	}
 
 	/**
@@ -167,23 +124,22 @@ public class TestSyntax {
 	 */
 	public static void main(String[] args) {
 
-		var container = new Container();
 		var pipeline = new MyPipeline();
 
-		var list = AnnotatedProcessorNode.list(
-				pipeline,
-				container,
-				DataTypes.PIPELINE_DATA,
-				Container::dataAdaptor);
+		TestPipelineInput b = pipeline.<InputData, TestPipelineInput>newInputBuilder(TestPipelineInput::new);
+		assert b != null;
 
-		list.forEach(System.out::println);
+		InputData d0 = new TestPipelineInput("en0");
 
-		list.stream()
-				.map(PipelineNode::getData)
-				.forEach(d -> d.handleData("name", 1));
+		InputData d1 = pipeline.newInputData("en0", TestPipelineInput::new);
+		assert d1 != null;
 
-		System.out.println(new InputTransformer("input"));
-		System.out.println(new OutputTransformer("output"));
+		InputData d2 = pipeline.newInputData("en1", true, TestPipelineInput::new);
+		assert d2 != null;
+
+		pipeline.enable(true);
+
+		d1.handleInput("Mark".toCharArray(), 10);
 	}
 
 }

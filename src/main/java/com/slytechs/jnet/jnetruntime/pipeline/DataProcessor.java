@@ -20,43 +20,46 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.function.BooleanSupplier;
 
 import com.slytechs.jnet.jnetruntime.util.HasName;
+import com.slytechs.jnet.jnetruntime.util.HasRegistration;
 
-public interface PipelineNode<T, T_BASE extends PipelineNode<T, T_BASE>> extends HasName,
-		Comparable<PipelineNode<?, ?>> {
+public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
+		extends HasName, HasRegistration, PipeComponent<T_BASE>, Comparable<DataProcessor<?, ?>> {
 
-	interface NodeFactory<T, T_NODE extends PipelineNode<T, T_NODE>> {
+	interface DataBypassable<T, T_BASE extends DataBypassable<T, T_BASE>> {
+		default boolean isBypassed() {
+			return bypassData() != null;
+		}
 
-		T_NODE newInstance(Pipeline<T, ?> parent, int priority);
+		T_BASE bypass(boolean b);
+
+		T_BASE bypass(BooleanSupplier b);
+
+		T bypassData();
+
+		T_BASE bypass(T bypassData);
 	}
 
-	interface NamedNodeFactory<T, T_NODE extends PipelineNode<T, T_NODE>> {
+	interface ProcessorFactory<T, T_NODE extends DataProcessor<T, T_NODE>> {
 		T_NODE newInstance(Pipeline<T, ?> parent, int priority, String name);
 	}
-
-	PipelineNode<T, T_BASE> nextNode();
-
-	PipelineNode<T, T_BASE> enable(boolean b);
-
-	default PipelineNode<T, T_BASE> enable(BooleanSupplier b) {
-		return enable(b.getAsBoolean());
-	}
-
-	T getData();
-
-	DataType getDataType();
-
-	int priority();
-
-	T_BASE priority(int newPriority);
-
-	boolean isEnabled();
 
 	/**
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	default int compareTo(PipelineNode<?, ?> o) {
-		return this.priority() - o.priority();
+	default int compareTo(DataProcessor<?, ?> o) {
+		return o.priority() - this.priority();
 	}
+
+	T data();
+
+	DataType dataType();
+
+	@Override
+	boolean isEnabled();
+
+	int priority();
+
+	T_BASE priority(int newPriority);
 
 }

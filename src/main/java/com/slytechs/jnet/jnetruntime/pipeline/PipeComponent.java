@@ -17,26 +17,36 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
+import java.util.function.BooleanSupplier;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import com.slytechs.jnet.jnetruntime.util.HasName;
+import com.slytechs.jnet.jnetruntime.util.HasRegistration;
 
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  *
  */
-@Retention(RUNTIME)
-@Target({METHOD, TYPE})
-public @interface Processor {
+public interface PipeComponent<T_BASE extends PipeComponent<T_BASE>> extends HasName, HasRegistration {
 
-	int priority() default 0;
+	public enum NodeState {
+		INITIALIZED,
+		ACTIVE,
+		BYPASSED
+	}
 
-	Class<?> value();
+	T_BASE enable(boolean b);
 
-	boolean enable() default true;
+	T_BASE bypass(boolean b);
 
-	String name() default "";
+	boolean isEnabled();
+
+	boolean isBypassed();
+
+	T_BASE name(String newName);
+
+	T_BASE enable(BooleanSupplier b);
+
+	T_BASE bypass(BooleanSupplier b);
+
 }

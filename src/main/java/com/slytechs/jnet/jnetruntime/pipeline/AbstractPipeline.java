@@ -19,11 +19,11 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
+import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput;
 import com.slytechs.jnet.jnetruntime.util.Id;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -32,9 +32,15 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author repos@slytechs.com
  *
  */
-public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements Pipeline<T, T_BASE> {
+public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
+		extends AbstractComponent<T_PIPE>
+		implements Pipeline<T, T_PIPE> {
 
-	private static final class HeadNode<T> extends AbstractNode<T, HeadNode<T>> implements Head<T, HeadNode<T>> {
+	private static final class HeadNode<T>
+			extends AbstractProcessor<T, HeadNode<T>>
+			implements Head<T, HeadNode<T>> {
+
+		private final List<AbstractTransformer<?, T, ?>> inputList = new ArrayList<>();
 
 		/**
 		 * @param priority
@@ -43,6 +49,8 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		 */
 		public HeadNode(Pipeline<T, ?> parent, String name, DataType type) {
 			super(parent, Pipeline.SOURCE_NODE_PRIORITY, name, type);
+
+			enable(true);
 		}
 
 		/**
@@ -50,7 +58,7 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		 *      com.slytechs.jnet.jnetruntime.util.Id)
 		 */
 		@Override
-		public <T_IN extends Transformer<T_IN, T, ?>> T_IN addInput(Supplier<T_IN> input, Id id) {
+		public <T_IN extends DataTransformer<T_IN, T, ?>> T_IN addInputGet(Supplier<T_IN> input, Id id) {
 			throw new UnsupportedOperationException("not implemented yet");
 		}
 
@@ -58,8 +66,22 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineMockup.Head#getInput(com.slytechs.jnet.jnetruntime.util.Id)
 		 */
 		@Override
-		public <T_IN extends Transformer<T_IN, T, ?>> T_IN getInput(Id id) {
+		public <T_IN extends DataTransformer<T_IN, T, ?>> T_IN getInput(Id id) {
 			throw new UnsupportedOperationException("not implemented yet");
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#nextProcessor(com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor)
+		 */
+		@Override
+		void nextProcessor(AbstractProcessor<T, ?> next) {
+			super.nextProcessor(next);
+
+			T out = next == null
+					? null
+					: next.data();
+
+			inputList.forEach(t -> t.output(out));
 		}
 
 		/**
@@ -67,13 +89,34 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		 *      com.slytechs.jnet.jnetruntime.util.Id)
 		 */
 		@Override
-		public <T_IN extends Transformer<T_IN, T, ?>> Registration registerInput(Supplier<T_IN> input, Id id) {
+		public <T_IN extends DataTransformer<T_IN, T, ?>> Registration registerInputGet(Supplier<T_IN> input, Id id) {
 			throw new UnsupportedOperationException("not implemented yet");
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Head#addInput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput)
+		 */
+		@SuppressWarnings("unchecked")
+		@Override
+		public Registration addInput(PipelineInput<?> input) {
+			if (!(input instanceof AbstractTransformer transformer))
+				throw new IllegalArgumentException("unsupported input type [%s]"
+						.formatted(input));
+
+			inputList.add(transformer);
+
+			return () -> {
+				transformer.enable(false);
+
+				inputList.remove(input);
+			};
 		}
 
 	}
 
-	private static final class TailNode<T> extends AbstractNode<T, TailNode<T>> implements Tail<T, TailNode<T>> {
+	private static final class TailNode<T>
+			extends AbstractProcessor<T, TailNode<T>>
+			implements Tail<T, TailNode<T>> {
 
 		/**
 		 * @param priority
@@ -82,15 +125,8 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		 */
 		public TailNode(Pipeline<T, ?> parent, String name, DataType type) {
 			super(parent, Pipeline.SINK_NODE_PRIORITY, name, type);
-		}
 
-		/**
-		 * @see com.slytechs.jnet.jnetruntime.pipeline2.PipelineMockup.Tail#addOutput(java.util.function.Supplier,
-		 *      com.slytechs.jnet.jnetruntime.util.Id)
-		 */
-		@Override
-		public <T_OUT extends Transformer<T_OUT, T, ?>> T_OUT addOutput(Supplier<T_OUT> output, Id id) {
-			throw new UnsupportedOperationException("not implemented yet");
+			enable(true);
 		}
 
 		/**
@@ -98,7 +134,8 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		 *      com.slytechs.jnet.jnetruntime.util.Id)
 		 */
 		@Override
-		public <T_OUT extends Transformer<T_OUT, T, ?>> Registration registerOutput(Supplier<T_OUT> output, Id id) {
+		public <T_OUT extends DataTransformer<T_OUT, T, ?>> Registration registerOutputGet(Supplier<T_OUT> output,
+				Id id) {
 			throw new UnsupportedOperationException("not implemented yet");
 		}
 
@@ -107,52 +144,36 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 	private final DataType dataType;
 	private final HeadNode<T> head;
 	private final TailNode<T> tail;
-	private String name;
-	private boolean enabled = true;
-	private final List<PipelineNode<T, ?>> registeredNodeList = new ArrayList<>();
-	private final List<PipelineNode<T, ?>> enabledNodeList = new ArrayList<>();
-	private final List<Transformer<?, T, ?>> inputTransformerList = new ArrayList<>();
-	private final List<Transformer<T, ?, ?>> outputTransformerList = new ArrayList<>();
 
-	private final Map<DataType, Transformer<?, T, ?>> inputTransformerMap = new HashMap<>();
-	private final Map<DataType, Transformer<?, T, ?>> outputTransformerMap = new HashMap<>();
+	private final List<AbstractProcessor<T, ?>> initializedList = new ArrayList<>();
+	private final List<AbstractProcessor<T, ?>> activeList = new ArrayList<>();
 
 	public AbstractPipeline(String name, DataType dataType) {
-		this.name = name;
+		super(name);
+
 		this.dataType = dataType;
 		this.head = new HeadNode<>(this, "%s-head".formatted(name), dataType);
 		this.tail = new TailNode<>(this, "%s-tail".formatted(name), dataType);
 
-		enabledNodeList.add(head);
-		enabledNodeList.add(tail);
-		Collections.sort(registeredNodeList);
+		initializedList.add(head);
+		initializedList.add(tail);
+		Collections.sort(initializedList);
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#enable(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addProcessor(int,
+	 *      java.lang.String,
+	 *      com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public synchronized T_BASE enable(boolean b) {
-		this.enabled = b;
+	public <T_PROC extends DataProcessor<T, T_PROC>> T_PROC addProcessor(int priority, String name,
+			ProcessorFactory<T, T_PROC> factory) {
+		T_PROC processor = factory.newInstance(this, priority, name);
 
-		return (T_BASE) this;
-	}
+		registerProcessor((AbstractProcessor<T, ?>) processor);
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#isEnabled()
-	 */
-	@Override
-	public synchronized boolean isEnabled() {
-		return this.enabled;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#name()
-	 */
-	@Override
-	public String name() {
-		return name;
+		return processor;
 	}
 
 	/**
@@ -164,51 +185,111 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineMockup.Pipeline#addNode(int,
-	 *      com.slytechs.jnet.jnetruntime.pipeline2.PipelineMockup.PipelineNode)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public synchronized T_BASE addNode(int priority, PipelineNode<T, ?> node) {
-
-		var registration = registerNode(priority, node);
-
-		return (T_BASE) this;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineMockup.Pipeline#registerNode(int,
-	 *      com.slytechs.jnet.jnetruntime.pipeline2.PipelineMockup.PipelineNode)
-	 */
-	@Override
-	public synchronized Registration registerNode(int priority, PipelineNode<T, ?> node) {
-		AbstractNode<?, ?> an = (AbstractNode<?, ?>) node;
-		if (an.registration != null)
-			throw new IllegalStateException("node [%s] already registered with pipe [%s]"
-					.formatted(an.name(), this.name()));
-
-		node.priority(priority);
-
-		registeredNodeList.add(node);
-
-		registeredNodeList.sort((a, b) -> a.priority() - b.priority());
-
-		Registration registration = () -> {
-			registeredNodeList.remove(node);
-			an.registration = null;
-		};
-
-		an.registration = registration;
-
-		return registration;
-	}
-
-	/**
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineMockup.Pipeline#head()
 	 */
 	@Override
 	public synchronized Head<T, ?> head() {
 		return head;
+	}
+
+	synchronized void linkProcessor(AbstractProcessor<T, ?> processor) {
+		if (activeList.contains(processor))
+			throw new IllegalStateException("processor [%s] already active in channel [%s]"
+					.formatted(processor.name(), name()));
+
+		activeList.add(processor);
+		Collections.sort(activeList);
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#newInputBuilder(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput.Factory)
+	 */
+	@Override
+	public <T_DATA, T_BUILDER extends PipelineInput<T_DATA>> T_BUILDER newInputBuilder(
+			PipelineInput.Factory<T_DATA, T_BUILDER> factory) {
+		T_BUILDER b = factory.newInputBuilder();
+
+		return b;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#newInputData(java.lang.Object,
+	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput.Factory1Arg)
+	 */
+	@Override
+	public <T_DATA, T_ARG1> T_DATA newInputData(T_ARG1 arg1, PipelineInput.Factory1Arg<T_DATA, T_ARG1> factory) {
+		PipelineInput<T_DATA> b = factory.newInputBuilder(arg1);
+
+		return b.inputData();
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#newInputData(java.lang.Object,
+	 *      java.lang.Object,
+	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput.Factory1Arg)
+	 */
+	@Override
+	public <T_DATA, T_ARG1, T_ARG2> T_DATA newInputData(T_ARG1 arg1, T_ARG2 arg2,
+			PipelineInput.Factory2Args<T_DATA, T_ARG1, T_ARG2> factory) {
+		PipelineInput<T_DATA> b = factory.newInputBuilder(arg1, arg2);
+
+		return b.inputData();
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onEnable(boolean)
+	 */
+	@Override
+	protected void onEnable(boolean newValue) {
+
+		initializedList.stream()
+				.filter(PipeComponent::isEnabled)
+				.forEach(activeList::add);
+
+		relinkActiveNodes();
+	}
+
+	synchronized void onNodeEnable(DataProcessor<T, ?> processor) {
+		if (!(processor instanceof AbstractProcessor<T, ?> aprocessor))
+			throw new IllegalStateException("invalid processor implementation [%s]"
+					.formatted(processor.name()));
+
+		boolean b = aprocessor.isEnabled();
+
+		if (b == activeList.contains(aprocessor))
+			return;
+
+		if (b)
+			linkProcessor(aprocessor);
+		else
+			unlinkProcessor(aprocessor);
+
+		// List modified, need to relink nodes
+		Collections.sort(activeList);
+		relinkActiveNodes();
+	}
+
+	private Registration registerProcessor(AbstractProcessor<T, ?> processor) {
+		if (initializedList.contains(processor))
+			throw new IllegalStateException("processor [%s] already added to pipeline [%s]"
+					.formatted(processor.name(), this.name()));
+
+		initializedList.add(processor);
+
+		Registration r = () -> unregisterProcessor(processor);
+		processor.setRegistration(r);
+
+		return r;
+	}
+
+	synchronized void relinkActiveNodes() {
+		AbstractProcessor<T, ?> prev = new AbstractProcessor.Dummy<>(dataType());
+
+		for (AbstractProcessor<T, ?> activeProcessor : activeList) {
+			prev.nextProcessor(activeProcessor);
+
+			prev = activeProcessor;
+		}
 	}
 
 	/**
@@ -219,34 +300,31 @@ public class AbstractPipeline<T, T_BASE extends Pipeline<T, T_BASE>> implements 
 		return tail;
 	}
 
-	synchronized void onNodeEnable(PipelineNode<T, ?> node) {
-		boolean b = node.isEnabled();
+	synchronized void unlinkProcessor(AbstractProcessor<T, ?> processor) {
+		processor.nextProcessor(null);
+		activeList.remove(processor);
 
-		if (b == enabledNodeList.contains(node))
-			return;
-
-		if (b)
-			enabledNodeList.add(node);
-		else
-			enabledNodeList.remove(node);
-
-		// List modified, need to relink nodes
-
-		Collections.sort(enabledNodeList);
-		relinkAllEnabledNodes();
+		relinkActiveNodes();
 	}
 
-	@SuppressWarnings({
-			"unchecked",
-			"rawtypes" })
-	synchronized void relinkAllEnabledNodes() {
-		AbstractNode<T, ?> prev = new AbstractNode.Dummy<>(dataType());
+	void unregisterProcessor(AbstractProcessor<T, ?> processor) {
+		if (!initializedList.contains(processor) || processor.registration().isEmpty())
+			throw new IllegalStateException("Processor [%s] is not registered"
+					.formatted(name()));
 
-		for (var node : enabledNodeList) {
-			prev.next = (PipelineNode) node;
+		processor.enable(false);
+		initializedList.remove(processor);
 
-			prev = (AbstractNode<T, ?>) node;
-		}
-
+		// Reset processor registration
+		processor.setRegistration(null);
 	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addInput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput)
+	 */
+	@Override
+	public Registration addInput(PipelineInput<?> input) {
+		return head.addInput(input);
+	}
+
 }

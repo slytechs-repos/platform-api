@@ -20,8 +20,8 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-import com.slytechs.jnet.jnetruntime.pipeline.PipelineNode.NamedNodeFactory;
-import com.slytechs.jnet.jnetruntime.pipeline.PipelineNode.NodeFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput;
 import com.slytechs.jnet.jnetruntime.util.HasName;
 import com.slytechs.jnet.jnetruntime.util.Id;
 import com.slytechs.jnet.jnetruntime.util.Registration;
@@ -31,67 +31,64 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author repos@slytechs.com
  *
  */
-public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName {
+public interface Pipeline<T, T_PIPE extends Pipeline<T, T_PIPE>> extends HasName, PipeComponent<T_PIPE> {
 
-	interface Head<T, T_BASE extends Head<T, T_BASE>> extends PipelineNode<T, T_BASE> {
+	interface Head<T, T_HEAD extends Head<T, T_HEAD>> extends DataProcessor<T, T_HEAD> {
 
-		default <T_IN extends Transformer<T_IN, T, ?>> T_IN addInput(T_IN input, Id id) {
-			return addInput(() -> input, id);
+		<T_IN extends DataTransformer<T_IN, T, ?>> T_IN addInputGet(Supplier<T_IN> input, Id id);
+
+		default <T_IN extends DataTransformer<T_IN, T, ?>> T_IN addInput(T_IN input, Id id) {
+			return addInputGet(() -> input, id);
 		}
 
-		<T_IN extends Transformer<T_IN, T, ?>> T_IN addInput(Supplier<T_IN> input, Id id);
+		<T_IN extends DataTransformer<T_IN, T, ?>> T_IN getInput(Id id);
 
-		<T_IN extends Transformer<T_IN, T, ?>> T_IN getInput(Id id);
+		<T_IN extends DataTransformer<T_IN, T, ?>> Registration registerInputGet(Supplier<T_IN> input, Id id);
 
-		default <T_IN extends Transformer<T_IN, T, ?>> Registration registerInput(T_IN input, Id id) {
-			return registerInput(() -> input, id);
+		default <T_IN extends DataTransformer<T_IN, T, ?>> Registration registerInput(T_IN input, Id id) {
+			return registerInputGet(() -> input, id);
 		}
 
-		<T_IN extends Transformer<T_IN, T, ?>> Registration registerInput(Supplier<T_IN> input, Id id);
+		Registration addInput(PipelineInput<?> input);
 	}
 
-	interface Tail<T, T_BASE extends Tail<T, T_BASE>> extends PipelineNode<T, T_BASE> {
-		default <T_OUT extends Transformer<T_OUT, T, ?>> T_OUT addOutput(T_OUT output, Id id) {
-			return addOutput(() -> output, id);
+	interface Tail<T, T_TAIL extends Tail<T, T_TAIL>> extends DataProcessor<T, T_TAIL> {
+		<T_OUT extends DataTransformer<T_OUT, T, ?>> Registration registerOutputGet(Supplier<T_OUT> output, Id id);
+
+		default <T_OUT extends DataTransformer<T_OUT, T, ?>> Registration registerOutput(T_OUT output, Id id) {
+			return registerOutputGet(() -> output, id);
 		}
-
-		<T_OUT extends Transformer<T_OUT, T, ?>> T_OUT addOutput(Supplier<T_OUT> output, Id id);
-
-		default <T_OUT extends Transformer<T_OUT, T, ?>> Registration registerOutput(T_OUT output, Id id) {
-			return registerOutput(() -> output, id);
-		}
-
-		<T_OUT extends Transformer<T_OUT, T, ?>> Registration registerOutput(Supplier<T_OUT> output, Id id);
 	}
 
-	static int SOURCE_NODE_PRIORITY = -1;
-	static int SINK_NODE_PRIORITY = Integer.MAX_VALUE;
+	int SOURCE_NODE_PRIORITY = -1;
+	int SINK_NODE_PRIORITY = Integer.MAX_VALUE;
 
-	Head<T, ?> head();
+	<T_PROC extends DataProcessor<T, T_PROC>> T_PROC addProcessor(int priority, String name,
+			ProcessorFactory<T, T_PROC> factory);
 
-	Tail<T, ?> tail();
+	@Override
+	T_PIPE bypass(boolean b);
 
-	T_BASE enable(boolean b);
-
-	default T_BASE enable(BooleanSupplier b) {
-		return enable(b.getAsBoolean());
+	@Override
+	default T_PIPE bypass(BooleanSupplier b) {
+		return bypass(b.getAsBoolean());
 	}
-
-	boolean isEnabled();
 
 	DataType dataType();
 
-	T_BASE addNode(int priority, PipelineNode<T, ?> node);
+	Head<T, ?> head();
 
-	default <T_NODE extends PipelineNode<T, T_NODE>> T_BASE addNode(int priority,
-			NodeFactory<T, T_NODE> factory) {
-		return addNode(priority, factory.newInstance(this, priority));
-	}
+	@Override
+	boolean isBypassed();
 
-	default <T_NODE extends PipelineNode<T, T_NODE>> T_BASE addNamedNode(int priority, String name,
-			NamedNodeFactory<T, T_NODE> factory) {
-		return addNode(priority, factory.newInstance(this, priority, name));
-	}
+	<T_DATA, T_BUILDER extends PipelineInput<T_DATA>> T_BUILDER newInputBuilder(
+			PipelineInput.Factory<T_DATA, T_BUILDER> factory);
 
-	Registration registerNode(int priority, PipelineNode<T, ?> node);
+	<T_DATA, T_ARG1> T_DATA newInputData(T_ARG1 arg1, PipelineInput.Factory1Arg<T_DATA, T_ARG1> factory);
+
+	<T_DATA, T_ARG1, T_ARG2> T_DATA newInputData(T_ARG1 arg1, T_ARG2 arg2, PipelineInput.Factory2Args<T_DATA, T_ARG1, T_ARG2> factory);
+
+	Registration addInput(PipelineInput<?> input);
+	
+	Tail<T, ?> tail();
 }

@@ -15,28 +15,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.pipeline;
+package com.slytechs.jnet.jnetruntime.util;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import java.util.Optional;
 
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  *
  */
-@Retention(RUNTIME)
-@Target({METHOD, TYPE})
-public @interface Processor {
+public interface HasRegistration {
 
-	int priority() default 0;
-
-	Class<?> value();
-
-	boolean enable() default true;
-
-	String name() default "";
+	Optional<Registration> registration();
 }

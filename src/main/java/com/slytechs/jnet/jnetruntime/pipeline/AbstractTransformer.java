@@ -24,116 +24,66 @@ import java.util.Objects;
  * @author repos@slytechs.com
  *
  */
-public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T_OUT, T_BASE>>
-		implements Transformer<T_IN, T_OUT, T_BASE> {
+public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipeComponent<T_BASE>>
+		extends AbstractComponent<T_BASE>
+		implements DataTransformer<T_IN, T_OUT, T_BASE> {
 
 	private T_OUT output;
 	private T_IN input;
-	private boolean enabled = true;
 	private final DataType inputType;
 	private final DataType outputType;
-	private final String name;
 
 	public AbstractTransformer(String name, T_IN input, DataType inputType, DataType outputType) {
-		this.name = name;
+		super(name);
+
 		this.input = input;
 		this.inputType = inputType;
-		this.outputType = outputType;
-	}
-
-	public AbstractTransformer(String name, T_IN input, DataType inputType, T_OUT output, DataType outputType) {
-		this.name = name;
-		this.input = input;
-		this.output = output;
-		this.inputType = inputType;
-		this.outputType = outputType;
-	}
-
-	public AbstractTransformer(String name, DataType inputType, T_OUT output, DataType outputType) {
-		this.name = name;
-		this.inputType = inputType;
-		this.output = output;
 		this.outputType = outputType;
 	}
 
 	@SuppressWarnings("unchecked")
 	public AbstractTransformer(String name, DataType inputType, DataType outputType) {
-		this.name = name;
+		super(name);
+
 		this.inputType = inputType;
 		this.outputType = outputType;
 		this.input = (T_IN) this;
-
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#getOutput()
-	 */
-	@Override
-	public T_OUT getOutput() {
+	public T_OUT outputData() {
 		return this.output;
 	}
 
-	T_OUT setOutput(T_OUT output) {
+	T_OUT output(T_OUT output) {
 		this.output = output;
 
 		return output;
 	}
 
-	T_IN setInput(T_IN input) {
+	T_IN input(T_IN input) {
 		this.input = input;
 
 		return input;
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#getInput()
-	 */
-	@Override
-	public T_IN getInput() {
+	public T_IN inputData() {
 		return this.input;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#enable(boolean)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public T_BASE enable(boolean b) {
-		this.enabled = b;
-
-		return (T_BASE) this;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#isEnabled()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer#inputType()
 	 */
 	@Override
-	public boolean isEnabled() {
-		return this.enabled;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#outputType()
-	 */
-	@Override
-	public DataType outputType() {
+	public DataType inputType() {
 		return this.outputType;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#inputType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer#outputType()
 	 */
 	@Override
-	public DataType inputType() {
+	public DataType outputType() {
 		return this.inputType;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Transformer#name()
-	 */
-	@Override
-	public String name() {
-		return name;
 	}
 
 	/**
@@ -145,8 +95,14 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends Transformer<T_IN, T
 		var in = input == null ? "" : Objects.toIdentityString(input);
 		var out = output == null ? "" : Objects.toIdentityString(output);
 
-		return "AbstractTransformer [name=" + name + ", inputType=" + inputType + ", outputType=" + outputType
-				+ ", output=" + out + ", input=" + in + "]";
+		return ""
+				+ getClass().getSimpleName()
+				+ " [name=" + name()
+				+ ", inputType=" + inputType
+				+ ", outputType=" + outputType
+				+ ", output=" + out
+				+ ", input=" + in
+				+ "]";
 	}
 
 }

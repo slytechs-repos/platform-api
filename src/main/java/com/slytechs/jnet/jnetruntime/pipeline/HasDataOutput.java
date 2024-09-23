@@ -17,26 +17,9 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
+public interface HasDataOutput<T> {
+	T outputData();
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+	DataType outputType();
 
-/**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- *
- */
-@Retention(RUNTIME)
-@Target({METHOD, TYPE})
-public @interface Processor {
-
-	int priority() default 0;
-
-	Class<?> value();
-
-	boolean enable() default true;
-
-	String name() default "";
 }

@@ -17,15 +17,15 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.util.Registration;
-
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
-public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements PipelineNode<T, T_BASE> {
+public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
+		extends AbstractComponent<T_BASE>
+		implements DataProcessor<T, T_BASE> {
 
-	public static class Dummy<T> extends AbstractNode<T, Dummy<T>> {
+	public static class Dummy<T> extends AbstractProcessor<T, Dummy<T>> {
 
 		Dummy(DataType type) {
 			super(type);
@@ -34,25 +34,33 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	private int priority;
-	private boolean enabled = true;
 
-	PipelineNode<T, T_BASE> next;
 	private final DataType dataType;
 	private final T data;
-	private String name;
 
-	Registration registration;
 	private final AbstractPipeline<T, ?> pipeline;
+	private AbstractProcessor<T, ?> nextProcessor;
 
-	private AbstractNode(DataType dataType) {
+	void nextProcessor(AbstractProcessor<T, ?> next) {
+		this.nextProcessor = next;
+	}
+
+	AbstractProcessor<T, ?> nextProcessor() {
+		return nextProcessor;
+	}
+
+	private AbstractProcessor(DataType dataType) {
+		super("dummy");
+
 		this.pipeline = null;
-		this.name = "dummy";
 		this.dataType = dataType;
 		this.data = null;
 	}
 
 	@SuppressWarnings("unchecked")
-	public AbstractNode(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
+	public AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
+		super(name);
+
 		if (!(pipeline instanceof AbstractPipeline<T, ?> ap))
 			throw new IllegalArgumentException("only AbstractPipeline types are supported");
 
@@ -60,10 +68,11 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 		this.priority = priority;
 		this.data = (T) this;
 		this.dataType = type;
-		this.name = name;
 	}
 
-	AbstractNode(Pipeline<T, ?> pipeline, int priority, String name, T data, DataType type) {
+	AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, T data, DataType type) {
+		super(name);
+
 		if (!(pipeline instanceof AbstractPipeline<T, ?> ac))
 			throw new IllegalArgumentException("only AbstractPipeline types are supported");
 
@@ -71,60 +80,28 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 		this.priority = priority;
 		this.data = data;
 		this.dataType = type;
-		this.name = name;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#enable(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataProcessor#data()
 	 */
 	@Override
-	public PipelineNode<T, T_BASE> enable(boolean b) {
-		this.enabled = b;
-
-		// Notify the parent pipe of node state changes
-		pipeline.onNodeEnable(this);
-
-		return this;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#getData()
-	 */
-	@Override
-	public T getData() {
+	public T data() {
 		return data;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#getDataType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataProcessor#dataType()
 	 */
 	@Override
-	public DataType getDataType() {
+	public DataType dataType() {
 		return dataType;
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#isEnabled()
-	 */
 	@Override
-	public boolean isEnabled() {
-		return this.enabled;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#name()
-	 */
-	@Override
-	public String name() {
-		return name;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#nextNode()
-	 */
-	@Override
-	public PipelineNode<T, T_BASE> nextNode() {
-		return next;
+	protected void onEnable(boolean newValue) {
+		// Notify the parent pipe of node state changes
+		pipeline.onNodeEnable(this);
 	}
 
 	AbstractPipeline<T, ?> parent() {
@@ -132,7 +109,7 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#priority()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataProcessor#priority()
 	 */
 	@Override
 	public int priority() {
@@ -140,14 +117,27 @@ public class AbstractNode<T, T_BASE extends PipelineNode<T, T_BASE>> implements 
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#priority(int)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataProcessor#priority(int)
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public T_BASE priority(int newPriority) {
 		this.priority = newPriority;
 
-		return (T_BASE) this;
+		return us();
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return ""
+				+ getClass().getSimpleName()
+				+ " [priority=" + priority
+				+ ", enabled=" + isEnabled()
+				+ ", dataType=" + dataType
+				+ ", name=" + name()
+				+ "]";
 	}
 
 }

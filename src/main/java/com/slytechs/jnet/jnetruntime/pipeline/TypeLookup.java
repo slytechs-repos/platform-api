@@ -26,17 +26,9 @@ import java.lang.annotation.Target;
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 @Retention(RUNTIME)
 @Target({METHOD, TYPE})
-public @interface Processor {
-
-	int priority() default 0;
-
-	Class<?> value();
-
-	boolean enable() default true;
-
-	String name() default "";
+public @interface TypeLookup {
+	Class<? extends DataType>[] value() default {};
 }
