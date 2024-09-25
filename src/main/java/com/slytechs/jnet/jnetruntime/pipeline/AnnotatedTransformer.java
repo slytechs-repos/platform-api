@@ -31,7 +31,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.PipeMethodHandle.DataHandleAdaptor
  */
 public class AnnotatedTransformer<T_IN, T_OUT>
 		extends AbstractTransformer<T_IN, T_OUT, AnnotatedTransformer<T_IN, T_OUT>>
-		implements HasDataOutput<T_OUT> {
+		implements HasOutputData<T_OUT> {
 
 	public static <T_IN, T_OUT> List<AnnotatedTransformer<?, ?>> list(
 			Object container,

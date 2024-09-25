@@ -17,15 +17,17 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import com.slytechs.jnet.jnetruntime.util.Registration;
+
 /**
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
 public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends AbstractComponent<T_BASE>
-		implements DataProcessor<T, T_BASE> {
+		implements DataProcessor<T, T_BASE>, Comparable<DataProcessor<?, ?>> {
 
-	public static class Dummy<T> extends AbstractProcessor<T, Dummy<T>> {
+	static class Dummy<T> extends AbstractProcessor<T, Dummy<T>> {
 
 		Dummy(DataType type) {
 			super(type);
@@ -36,17 +38,63 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	private int priority;
 
 	private final DataType dataType;
-	private final T data;
+	private final T inputData;
+	private T outputData; // Auto maintained and updated by DataList object
+	private final DataList<T> outputList;
 
 	private final AbstractPipeline<T, ?> pipeline;
-	private AbstractProcessor<T, ?> nextProcessor;
 
-	void nextProcessor(AbstractProcessor<T, ?> next) {
-		this.nextProcessor = next;
+	private AbstractProcessor<T, ?> nextProcessor;
+	private Registration nextProcessorRegistration;
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasOutputData#outputData()
+	 */
+	@Override
+	public T outputData() {
+		assert outputData != null : "[%s].outputData() data is null".formatted(name());
+		return outputData;
 	}
 
-	AbstractProcessor<T, ?> nextProcessor() {
-		return nextProcessor;
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataProcessor#inputData()
+	 */
+	@Override
+	public T inputData() {
+		assert inputData != null : "[%s].inputData() data is null".formatted(name());
+		return inputData;
+	}
+
+	void register() {
+		if (nextProcessorRegistration != null)
+			throw new IllegalStateException("regstration already exists for processor [%s]"
+					.formatted(toString()));
+
+		final T nextData = nextProcessorNotBypassed()
+				.inputData();
+
+		assert nextData != null : "[%s].nextProcessorNotBypassed() returns null".formatted(name());
+
+		// DataList automatically maintains the outputData field integrity
+		outputList.addLast(nextData);
+		assert outputData != null : "[%s].register() output data is null".formatted(name());
+
+		nextProcessorRegistration = () -> {
+			outputList.remove(nextData);
+		};
+	}
+
+	final protected Registration registerLocalOutput(T localOutput) {
+		outputList.addFirst(localOutput);
+
+		return () -> outputList.remove(localOutput);
+	}
+
+	final void unregister() {
+		if (nextProcessorRegistration != null)
+			nextProcessorRegistration.unregister();
+
+		this.nextProcessorRegistration = null;
 	}
 
 	private AbstractProcessor(DataType dataType) {
@@ -54,23 +102,29 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 
 		this.pipeline = null;
 		this.dataType = dataType;
-		this.data = null;
+		this.inputData = null;
+		this.outputList = new DataList<>(dataType, this::updateOutput);
 	}
 
 	@SuppressWarnings("unchecked")
 	public AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
 		super(name);
 
-		if (!(pipeline instanceof AbstractPipeline<T, ?> ap))
+		if (!(pipeline instanceof AbstractPipeline<T, ?> apipeline))
 			throw new IllegalArgumentException("only AbstractPipeline types are supported");
 
-		this.pipeline = ap;
+		if (!type.isCompatibleWith(getClass()))
+			throw new IllegalArgumentException("processor subclass must implement data interface [%s]"
+					.formatted(type.dataClass()));
+
+		this.pipeline = apipeline;
 		this.priority = priority;
-		this.data = (T) this;
+		this.inputData = (T) this;
 		this.dataType = type;
+		this.outputList = new DataList<>(type, this::updateOutput);
 	}
 
-	AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, T data, DataType type) {
+	AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type, T data) {
 		super(name);
 
 		if (!(pipeline instanceof AbstractPipeline<T, ?> ac))
@@ -78,16 +132,32 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 
 		this.pipeline = ac;
 		this.priority = priority;
-		this.data = data;
+		this.inputData = data;
 		this.dataType = type;
+		this.outputList = new DataList<>(type, this::updateOutput);
+	}
+
+	private void updateOutput(T newOutput) {
+		this.outputData = newOutput;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataProcessor#data()
+	 * For sorting, lowest priority value to the highest.
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	public T data() {
-		return data;
+	public int compareTo(DataProcessor<?, ?> o) {
+
+		// To prevent integer precision rollover, use comparison method instead of
+		// subtraction of the 2.
+
+		if (this.priority == o.priority())
+			return 0;
+
+		return (this.priority < o.priority())
+				? -1
+				: 1;
 	}
 
 	/**
@@ -96,6 +166,24 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	@Override
 	public DataType dataType() {
 		return dataType;
+	}
+
+	final AbstractProcessor<T, ?> nextProcessor() {
+		return nextProcessor;
+	}
+
+	void nextProcessor(AbstractProcessor<T, ?> next) {
+		unregister();
+		this.nextProcessor = next;
+	}
+
+	final AbstractProcessor<T, ?> nextProcessorNotBypassed() {
+		AbstractProcessor<T, ?> p = nextProcessor();
+
+		while (p.isBypassed())
+			p = p.nextProcessor();
+
+		return p;
 	}
 
 	@Override
@@ -138,6 +226,22 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 				+ ", dataType=" + dataType
 				+ ", name=" + name()
 				+ "]";
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasOutputData#outputType()
+	 */
+	@Override
+	public DataType outputType() {
+		return this.dataType;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasInputData#inputType()
+	 */
+	@Override
+	public DataType inputType() {
+		return this.dataType;
 	}
 
 }

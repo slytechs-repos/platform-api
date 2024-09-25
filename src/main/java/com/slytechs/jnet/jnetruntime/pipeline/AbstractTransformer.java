@@ -24,19 +24,19 @@ import java.util.Objects;
  * @author repos@slytechs.com
  *
  */
-public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipeComponent<T_BASE>>
+public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipeComponent<T_BASE>>
 		extends AbstractComponent<T_BASE>
 		implements DataTransformer<T_IN, T_OUT, T_BASE> {
 
-	private T_OUT output;
-	private T_IN input;
+	private T_OUT outputData;
+	private T_IN inputData;
 	private final DataType inputType;
 	private final DataType outputType;
 
 	public AbstractTransformer(String name, T_IN input, DataType inputType, DataType outputType) {
 		super(name);
 
-		this.input = input;
+		this.inputData = input;
 		this.inputType = inputType;
 		this.outputType = outputType;
 	}
@@ -47,27 +47,27 @@ public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransf
 
 		this.inputType = inputType;
 		this.outputType = outputType;
-		this.input = (T_IN) this;
+		this.inputData = (T_IN) this;
 	}
 
 	public T_OUT outputData() {
-		return this.output;
+		return this.outputData;
 	}
 
-	T_OUT output(T_OUT output) {
-		this.output = output;
+	T_OUT outputData(T_OUT output) {
+		this.outputData = output;
 
 		return output;
 	}
 
-	T_IN input(T_IN input) {
-		this.input = input;
+	T_IN inputData(T_IN input) {
+		this.inputData = input;
 
 		return input;
 	}
 
 	public T_IN inputData() {
-		return this.input;
+		return this.inputData;
 	}
 
 	/**
@@ -75,7 +75,7 @@ public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransf
 	 */
 	@Override
 	public DataType inputType() {
-		return this.outputType;
+		return this.inputType;
 	}
 
 	/**
@@ -83,7 +83,7 @@ public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransf
 	 */
 	@Override
 	public DataType outputType() {
-		return this.inputType;
+		return this.outputType;
 	}
 
 	/**
@@ -92,8 +92,8 @@ public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransf
 	@Override
 	public String toString() {
 
-		var in = input == null ? "" : Objects.toIdentityString(input);
-		var out = output == null ? "" : Objects.toIdentityString(output);
+		var in = inputData == null ? "" : Objects.toIdentityString(inputData);
+		var out = outputData == null ? "" : Objects.toIdentityString(outputData);
 
 		return ""
 				+ getClass().getSimpleName()

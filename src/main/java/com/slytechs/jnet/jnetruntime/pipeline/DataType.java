@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -31,10 +33,6 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  * @author repos@slytechs.com
  */
 public interface DataType extends HasId, HasName {
-
-	public interface HasDataType {
-		DataType dataType();
-	}
 
 	/**
 	 * The Class DataSupport.
@@ -55,6 +53,28 @@ public interface DataType extends HasId, HasName {
 		/** The opaque wrapper. */
 		private final BiFunction<T, ? super Object, T> opaqueWrapper;
 
+		private final T empty;
+
+		/**
+		 * Instantiates a new data support.
+		 *
+		 * @param dataType      the data type
+		 * @param dataClass     the data class
+		 * @param arrayWrapper  the array wrapper
+		 * @param opaqueWrapper the opaque wrapper
+		 */
+		public DataSupport(
+				DataType dataType,
+				Class<T> dataClass) {
+
+			this.dataType = dataType;
+			this.dataClass = dataClass;
+			this.arrayWrapper = null;
+			this.opaqueWrapper = (t, obj) -> t;
+			this.empty = null;
+
+		}
+
 		/**
 		 * Instantiates a new data support.
 		 *
@@ -73,26 +93,8 @@ public interface DataType extends HasId, HasName {
 			this.dataClass = dataClass;
 			this.arrayWrapper = arrayWrapper;
 			this.opaqueWrapper = opaqueWrapper;
+			this.empty = wrapList(Collections.emptyList());
 		}
-		
-		/**
-		 * Instantiates a new data support.
-		 *
-		 * @param dataType      the data type
-		 * @param dataClass     the data class
-		 * @param arrayWrapper  the array wrapper
-		 * @param opaqueWrapper the opaque wrapper
-		 */
-		public DataSupport(
-				DataType dataType,
-				Class<T> dataClass) {
-
-			this.dataType = dataType;
-			this.dataClass = dataClass;
-			this.arrayWrapper = null;
-			this.opaqueWrapper = (t, obj) -> t;
-		}
-
 
 		/**
 		 * Data class.
@@ -101,6 +103,19 @@ public interface DataType extends HasId, HasName {
 		 */
 		public Class<T> dataClass() {
 			return dataClass;
+		}
+
+		/**
+		 * Data type.
+		 *
+		 * @return the data type
+		 */
+		public DataType dataType() {
+			return dataType;
+		}
+
+		public T empty() {
+			return empty;
 		}
 
 		/**
@@ -113,6 +128,15 @@ public interface DataType extends HasId, HasName {
 			return arrayWrapper.apply(array);
 		}
 
+		public T wrapList(List<T> list) {
+			T[] array = PipelineUtils.newArray(dataClass, list.size());
+
+			for (int i = 0; i < list.size(); i++)
+				array[i] = list.get(i);
+
+			return wrapArray(array);
+		}
+
 		/**
 		 * Wrap opaque.
 		 *
@@ -123,60 +147,11 @@ public interface DataType extends HasId, HasName {
 		public T wrapOpaque(T data, Object opaque) {
 			return opaqueWrapper.apply(data, opaque);
 		}
-
-		/**
-		 * Data type.
-		 *
-		 * @return the data type
-		 */
-		public DataType dataType() {
-			return dataType;
-		}
 	}
 
-	public class OpaqueData<T, U> {
-
-		private U opaque;
-		private final T data;
-
-		public OpaqueData(T data) {
-			this.data = data;
-		}
-
-		public OpaqueData(T data, U opaque) {
-			this.data = data;
-			this.opaque = opaque;
-		}
-
-		public U opaque() {
-			return opaque;
-		}
-
-		public void opaque(U u) {
-			this.opaque = u;
-		}
-
-		public T data() {
-			return data;
-		}
-
+	public interface HasDataType {
+		DataType dataType();
 	}
-
-	/**
-	 * Data support.
-	 *
-	 * @param <T> the generic type
-	 * @return the data support
-	 */
-	<T> DataSupport<T> dataSupport();
-
-	/**
-	 * Name.
-	 *
-	 * @return the string
-	 */
-	@Override
-	String name();
 
 	public interface IntString extends Consumer<String> {
 
@@ -199,16 +174,44 @@ public interface DataType extends HasId, HasName {
 
 		}
 
-		static <U> IntString wrapOpaque(IntString data, U opaque) {
-			return new OpaqueIntString<>(data, opaque);
-		}
-
 		static IntString wrapArray(IntString[] array) {
 			return str -> {
 				for (var i : array)
 					i.accept(str);
 			};
 		}
+
+		static <U> IntString wrapOpaque(IntString data, U opaque) {
+			return new OpaqueIntString<>(data, opaque);
+		}
+	}
+
+	public class OpaqueData<T, U> {
+
+		private U opaque;
+		private final T data;
+
+		public OpaqueData(T data) {
+			this.data = data;
+		}
+
+		public OpaqueData(T data, U opaque) {
+			this.data = data;
+			this.opaque = opaque;
+		}
+
+		public T data() {
+			return data;
+		}
+
+		public U opaque() {
+			return opaque;
+		}
+
+		public void opaque(U u) {
+			this.opaque = u;
+		}
+
 	}
 
 	/**
@@ -251,5 +254,35 @@ public interface DataType extends HasId, HasName {
 			return (DataSupport<T>) this.dataSupport;
 		}
 
+	}
+
+	default boolean isCompatibleWith(Class<?> dataClass) {
+		return dataSupport().dataClass().isAssignableFrom(dataClass);
+	}
+
+	/**
+	 * Data support.
+	 *
+	 * @param <T> the generic type
+	 * @return the data support
+	 */
+	<T> DataSupport<T> dataSupport();
+
+	@SuppressWarnings("unchecked")
+	default <T> Class<T> dataClass() {
+		return (Class<T>) dataSupport().dataClass();
+	}
+
+	/**
+	 * Name.
+	 *
+	 * @return the string
+	 */
+	@Override
+	String name();
+
+	@SuppressWarnings("unchecked")
+	default <T> T empty() {
+		return (T) dataSupport().empty();
 	}
 }

@@ -17,15 +17,18 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.slytechs.jnet.jnetruntime.util.HasName;
 import com.slytechs.jnet.jnetruntime.util.HasRegistration;
+import com.slytechs.jnet.jnetruntime.util.Registration;
 
 public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
-		extends HasName, HasRegistration, PipeComponent<T_BASE>, Comparable<DataProcessor<?, ?>> {
+		extends HasName, HasRegistration, PipeComponent<T_BASE>, HasOutputData<T>, HasInputData<T> {
 
-	interface DataBypassable<T, T_BASE extends DataBypassable<T, T_BASE>> {
+	interface IsBypassable<T, T_BASE extends IsBypassable<T, T_BASE>> {
 		default boolean isBypassed() {
 			return bypassData() != null;
 		}
@@ -39,24 +42,32 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		T_BASE bypass(T bypassData);
 	}
 
-	interface ProcessorFactory<T, T_NODE extends DataProcessor<T, T_NODE>> {
-		T_NODE newInstance(Pipeline<T, ?> parent, int priority, String name);
+	interface ProcessorFactory<T, T_BASE extends DataProcessor<T, T_BASE>> {
+		T_BASE newProcessor(Pipeline<T, ?> parent, int priority, String name);
 	}
 
-	/**
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
+	public class DataChangeSupport<T> {
+		private final List<DataChangeListener<T>> listenerList = new ArrayList<>();
+
+		public Registration addListener(DataChangeListener<T> listener) {
+			listenerList.add(listener);
+
+			return () -> listenerList.remove(listener);
+		}
+
+		public void dispatch(T newData) {
+			listenerList.forEach(l -> l.onDataChange(newData));
+		}
+	}
+
+	interface DataChangeListener<T> {
+		void onDataChange(T newData);
+	}
+
 	@Override
-	default int compareTo(DataProcessor<?, ?> o) {
-		return o.priority() - this.priority();
-	}
-
-	T data();
+	T inputData();
 
 	DataType dataType();
-
-	@Override
-	boolean isEnabled();
 
 	int priority();
 

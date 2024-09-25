@@ -48,7 +48,7 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 			Object container,
 			DataType dataType,
 			Method method,
-			Processor processor,
+			AProcessor processor,
 			MethodHandleAdaptor<T> invoker) {
 
 		try {
@@ -112,7 +112,7 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 			return list;
 
 		for (var m : containerClass.getDeclaredMethods()) {
-			Processor processor = PipelineUtils.lookupAnnotationRecusively(m, Processor.class);
+			AProcessor processor = PipelineUtils.lookupAnnotationRecusively(m, AProcessor.class);
 			TypeLookup lookup = PipelineUtils.lookupAnnotationRecusively(m, TypeLookup.class);
 			if (processor == null || lookup == null)
 				continue;
@@ -156,7 +156,7 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 			PipeMethodHandle handle,
 			Method method,
 			MethodHandleAdaptor<T> adaptor) {
-		super(parent, priority, name, adaptor.createAdaptor(handle), dataType);
+		super(parent, priority, name, dataType, adaptor.createAdaptor(handle));
 
 		Objects.requireNonNull(dataType, "dataType");
 

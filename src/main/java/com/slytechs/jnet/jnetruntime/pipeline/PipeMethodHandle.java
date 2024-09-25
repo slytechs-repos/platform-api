@@ -22,7 +22,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 
-public final class PipeMethodHandle<T> implements HasDataOutput<T> {
+public final class PipeMethodHandle<T> implements HasOutputData<T> {
 
 	public interface DataHandleAdaptor<T_IN, T_OUT> {
 		public interface UniDataHandleAdaptor<T> extends DataHandleAdaptor<T, T> {
@@ -51,7 +51,7 @@ public final class PipeMethodHandle<T> implements HasDataOutput<T> {
 	}
 
 	private final MethodHandle handle;
-	private HasDataOutput<T> output;
+	private HasOutputData<T> output;
 
 	private PipeMethodHandle(MethodHandle handle) {
 		this.handle = handle;
@@ -66,19 +66,19 @@ public final class PipeMethodHandle<T> implements HasDataOutput<T> {
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasDataOutput#outputData()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasOutputData#outputData()
 	 */
 	@Override
 	public T outputData() {
 		return this.output.outputData();
 	}
 
-	void setOutputSupplier(HasDataOutput<T> newOutputSupplier) {
+	void setOutputSupplier(HasOutputData<T> newOutputSupplier) {
 		this.output = newOutputSupplier;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasDataOutput#outputType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasOutputData#outputType()
 	 */
 	@Override
 	public DataType outputType() {

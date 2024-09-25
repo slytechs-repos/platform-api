@@ -27,7 +27,8 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author repos@slytechs.com
  *
  */
-public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>> implements PipeComponent<T_BASE> {
+public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
+		implements PipeComponent<T_BASE> {
 
 	private String name;
 	private Registration registration;

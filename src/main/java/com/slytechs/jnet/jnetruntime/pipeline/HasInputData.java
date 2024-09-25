@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-public interface HasDataInput<T> {
+public interface HasInputData<T> {
 	T inputData();
 
 	DataType inputType();

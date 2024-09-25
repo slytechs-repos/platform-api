@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -38,6 +39,25 @@ class PipelineUtils {
 		/* Do not instantiate */
 	}
 
+	public static <T> T[] newArray(Class<T> componentType, int size) {
+		@SuppressWarnings("unchecked")
+		T[] array = (T[]) Array.newInstance(componentType, size);
+
+		return array;
+	}
+
+	public static String enableFlagLabel(boolean b) {
+		return b
+				? "on"
+				: "off";
+	}
+
+	public static String bypassFlagLabel(boolean b) {
+		return b
+				? "bypassed"
+				: "exec";
+	}
+
 	public static <T extends Annotation> T lookupAnnotationRecusively(Method method, Class<T> atype) {
 		T a = method.getAnnotation(atype);
 		if (a == null)
@@ -49,7 +69,7 @@ class PipelineUtils {
 	public static <T extends Annotation> T lookupAnnotationRecusively(Class<?> clazz, Class<T> atype) {
 		if (clazz == null)
 			return null;
-		
+
 		T a = clazz.getAnnotation(atype);
 		if (a == null)
 			return lookupAnnotationRecusively(clazz.getSuperclass(), atype);
@@ -66,7 +86,7 @@ class PipelineUtils {
 				DataType[] constants = (DataType[]) cl.getEnumConstants();
 
 				for (var edt : constants) {
-					if (edt.dataSupport().dataClass().isAssignableFrom(typeClass))
+					if (edt.dataClass().isAssignableFrom(typeClass))
 						return edt;
 				}
 			}
@@ -80,7 +100,7 @@ class PipelineUtils {
 		if (dataType == null)
 			return false;
 
-		Class<?> dataClass = dataType.dataSupport().dataClass();
+		Class<?> dataClass = dataType.dataClass();
 		assert dataClass != templateDataClass;
 
 		Class<?>[] dataParameters = extractDataParameters(dataClass);
@@ -104,7 +124,7 @@ class PipelineUtils {
 
 		if (methodList.size() > 1)
 			methodList = methodList.stream()
-					.filter(m -> m.isAnnotationPresent(DataHandler.class))
+					.filter(m -> m.isAnnotationPresent(ADataHandler.class))
 					.toList();
 
 		if (methodList.isEmpty())

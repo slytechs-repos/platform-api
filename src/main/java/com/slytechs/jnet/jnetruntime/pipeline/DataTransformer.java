@@ -20,55 +20,43 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.function.BooleanSupplier;
 
 import com.slytechs.jnet.jnetruntime.util.HasName;
+import com.slytechs.jnet.jnetruntime.util.Registration;
 
 public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends HasName, PipeComponent<T_BASE> {
 
-	interface PipelineInput<T_DATA> extends HasDataInput<T_DATA> {
+	interface InputFactory<T, T_BASE extends InputEntryPoint<T>> {
+		T_BASE newInstance();
+	}
 
-		interface Factory<T_DATA, T_BASE extends PipelineInput<T_DATA>> {
-			T_BASE newInputBuilder();
-		}
-
-		interface Factory1Arg<T_DATA, T_ARG1> {
-			PipelineInput<T_DATA> newInputBuilder(T_ARG1 arg1);
-		}
-
-		interface Factory2Args<T_DATA, T_ARG1, T_ARG2> {
-			PipelineInput<T_DATA> newInputBuilder(T_ARG1 arg1, T_ARG2 arg2);
-		}
-
-		@Override
-		DataType inputType();
-
-		@Override
-		T_DATA inputData();
+	interface InputEntryPoint<T> extends HasInputData<T> {
 
 	}
 
-	interface PipelineOutput<T_OUT, T_BASE extends PipelineOutput<T_OUT, T_BASE>>
-			extends HasDataOutput<T_OUT>, PipeComponent<T_BASE> {
+	interface OutputFactory<T, T_BASE extends OutputEndPoint<T>> {
+		T_BASE newInstance();
+	}
 
-		@Override
-		DataType outputType();
+	interface OutputEndPoint<T> extends HasOutputData<T> {
+		T addOutputData(T data);
 
-		@Override
-		T_OUT outputData();
+		Registration registerOutputData(T data);
 	}
 
 	@Override
 	T_BASE enable(boolean b);
 
 	@Override
-	boolean isEnabled();
+	T_BASE enable(BooleanSupplier b);
 
 	DataType inputType();
 
-	DataType outputType();
+	@Override
+	boolean isEnabled();
 
 	@Override
 	T_BASE name(String newName);
 
-	@Override
-	T_BASE enable(BooleanSupplier b);
+	DataType outputType();
+
 }

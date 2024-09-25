@@ -18,12 +18,13 @@
 package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput;
+import com.slytechs.jnet.jnetruntime.NotFound;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputEntryPoint;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputFactory;
 import com.slytechs.jnet.jnetruntime.util.HasName;
-import com.slytechs.jnet.jnetruntime.util.Id;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -31,46 +32,71 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author repos@slytechs.com
  *
  */
-public interface Pipeline<T, T_PIPE extends Pipeline<T, T_PIPE>> extends HasName, PipeComponent<T_PIPE> {
+public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName, PipeComponent<T_BASE> {
 
 	interface Head<T, T_HEAD extends Head<T, T_HEAD>> extends DataProcessor<T, T_HEAD> {
 
-		<T_IN extends DataTransformer<T_IN, T, ?>> T_IN addInputGet(Supplier<T_IN> input, Id id);
+		<T_IN> Registration registerInput(DataType type, InputFactory<T_IN, InputEntryPoint<T_IN>> factory);
 
-		default <T_IN extends DataTransformer<T_IN, T, ?>> T_IN addInput(T_IN input, Id id) {
-			return addInputGet(() -> input, id);
+		<T_IN> Registration registerInput(InputEntryPoint<T_IN> input);
+
+		<T_IN> InputEntryPoint<T_IN> getInput(DataType type) throws NotFound;
+
+		<T_IN> InputEntryPoint<T_IN> getInput(DataType type, String id) throws NotFound;
+
+		@SuppressWarnings("unchecked")
+		default <T_IN> T_IN getInputData(DataType type) throws NotFound {
+			return (T_IN) getInput(type).inputData();
 		}
 
-		<T_IN extends DataTransformer<T_IN, T, ?>> T_IN getInput(Id id);
-
-		<T_IN extends DataTransformer<T_IN, T, ?>> Registration registerInputGet(Supplier<T_IN> input, Id id);
-
-		default <T_IN extends DataTransformer<T_IN, T, ?>> Registration registerInput(T_IN input, Id id) {
-			return registerInputGet(() -> input, id);
+		@SuppressWarnings("unchecked")
+		default <T_IN> T_IN getInputData(DataType type, String id) throws NotFound {
+			return (T_IN) getInput(type, id).inputData();
 		}
 
-		Registration addInput(PipelineInput<?> input);
 	}
 
-	interface Tail<T, T_TAIL extends Tail<T, T_TAIL>> extends DataProcessor<T, T_TAIL> {
-		<T_OUT extends DataTransformer<T_OUT, T, ?>> Registration registerOutputGet(Supplier<T_OUT> output, Id id);
+	interface Tail<T, T_BASE extends Tail<T, T_BASE>> extends DataProcessor<T, T_BASE> {
+		<T_OUT> Registration registerOutput(DataType type, OutputFactory<T_OUT, OutputEndPoint<T_OUT>> factory);
 
-		default <T_OUT extends DataTransformer<T_OUT, T, ?>> Registration registerOutput(T_OUT output, Id id) {
-			return registerOutputGet(() -> output, id);
-		}
+		<T_OUT> Registration registerOutput(OutputEndPoint<T_OUT> output);
+
+		<T_OUT> OutputEndPoint<T_OUT> getOutput(DataType type) throws NotFound;
+
+		<T_OUT> OutputEndPoint<T_OUT> getOutput(DataType type, String id) throws NotFound;
+
 	}
 
-	int SOURCE_NODE_PRIORITY = -1;
-	int SINK_NODE_PRIORITY = Integer.MAX_VALUE;
+	int HEAD_BUILTIN_PRIORITY = -1;
+	int TAIL_BUILTIN_PRIORITY = Integer.MAX_VALUE;
 
-	<T_PROC extends DataProcessor<T, T_PROC>> T_PROC addProcessor(int priority, String name,
-			ProcessorFactory<T, T_PROC> factory);
+	default <T_IN> Registration registerInput(DataType type, InputFactory<T_IN, InputEntryPoint<T_IN>> factory) {
+		return head().registerInput(type, factory);
+	}
+
+	default <T_IN> Registration registerInput(InputEntryPoint<T_IN> input) {
+		return head().registerInput(input);
+	}
+
+	default <T_OUT> Registration registerOutput(DataType type, OutputFactory<T_OUT, OutputEndPoint<T_OUT>> factory) {
+		return tail().registerOutput(type, factory);
+	}
+
+	default <T_OUT> Registration registerOutput(OutputEndPoint<T_OUT> output) {
+		return tail().registerOutput(output);
+	}
+
+	default <T_OUT> OutputEndPoint<T_OUT> getOutput(DataType type) throws NotFound {
+		return tail().getOutput(type);
+	}
+
+	Registration registerProcessor(int priority, DataProcessor<T, ? extends DataProcessor<T, ?>> processor);
 
 	@Override
-	T_PIPE bypass(boolean b);
+	T_BASE bypass(boolean b);
 
 	@Override
-	default T_PIPE bypass(BooleanSupplier b) {
+	default T_BASE bypass(BooleanSupplier b) {
 		return bypass(b.getAsBoolean());
 	}
 
@@ -81,14 +107,5 @@ public interface Pipeline<T, T_PIPE extends Pipeline<T, T_PIPE>> extends HasName
 	@Override
 	boolean isBypassed();
 
-	<T_DATA, T_BUILDER extends PipelineInput<T_DATA>> T_BUILDER newInputBuilder(
-			PipelineInput.Factory<T_DATA, T_BUILDER> factory);
-
-	<T_DATA, T_ARG1> T_DATA newInputData(T_ARG1 arg1, PipelineInput.Factory1Arg<T_DATA, T_ARG1> factory);
-
-	<T_DATA, T_ARG1, T_ARG2> T_DATA newInputData(T_ARG1 arg1, T_ARG2 arg2, PipelineInput.Factory2Args<T_DATA, T_ARG1, T_ARG2> factory);
-
-	Registration addInput(PipelineInput<?> input);
-	
 	Tail<T, ?> tail();
 }

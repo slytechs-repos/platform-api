@@ -22,7 +22,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput;
+import com.slytechs.jnet.jnetruntime.NotFound;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputEntryPoint;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint;
 
 /**
  * @author Sly Technologies Inc
@@ -32,7 +34,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.PipelineInput;
 public class TestSyntax {
 
 	enum DataTypes implements DataType {
-		PIPELINE_DATA(PipelineData.class),
+		PIPELINE_DATA(PipelineData.class, PipelineData::wrapArray),
 		INPUT_DATA(InputData.class),
 		OUTPUT_DATA(OutputData.class, OutputData::wrapArray),;
 
@@ -57,7 +59,7 @@ public class TestSyntax {
 	}
 
 	public interface InputData {
-		void handleInput(char[] name, long id);
+		void handleInputData(char[] name, long id);
 	}
 
 	@TypeLookup(DataTypes.class)
@@ -67,11 +69,11 @@ public class TestSyntax {
 			super("my-pipeline", DataTypes.PIPELINE_DATA);
 		}
 
-		@Processor(PipelineData.class)
+		@AProcessor(PipelineData.class)
 		void process(String name, int id, Map<String, Object> ctx, PipelineData out) {
 			name = name.toUpperCase();
 
-			out.handleData(name, id, ctx);
+			out.handlePipelineData(name, id, ctx);
 		}
 	}
 
@@ -79,20 +81,27 @@ public class TestSyntax {
 		static OutputData wrapArray(OutputData[] array) {
 			return (nb, ai) -> {
 				for (var out : array)
-					out.handleOutput(nb, ai);
+					out.handleOutputData(nb, ai);
 			};
 		}
 
-		void handleOutput(StringBuilder nameBuffer, AtomicInteger atomicId);
+		void handleOutputData(StringBuilder nameBuffer, AtomicInteger atomicId);
 	}
 
 	interface PipelineData {
-		void handleData(String name, int id, Map<String, Object> context);
+		static PipelineData wrapArray(PipelineData[] array) {
+			return (n, i, ctx) -> {
+				for (var out : array)
+					out.handlePipelineData(n, i, ctx);
+			};
+		}
+
+		void handlePipelineData(String name, int id, Map<String, Object> context);
 	}
 
 	private static class TestPipelineInput
-			extends AbstractTransformer<InputData, PipelineData, TestPipelineInput>
-			implements PipelineInput<InputData>, InputData {
+			extends AbstractInput<InputData, PipelineData, TestPipelineInput>
+			implements InputData {
 
 		final Map<String, Object> ctx = new HashMap<>();
 
@@ -111,35 +120,73 @@ public class TestSyntax {
 		}
 
 		@Override
-		public void handleInput(char[] name, long id) {
+		public void handleInputData(char[] name, long id) {
 			String str = new String(name);
 			int i = (int) id;
 
-			outputData().handleData(str, i, ctx);
+			outputData().handlePipelineData(str, i, ctx);
 		}
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	private static class TestPipelineOutput
+			extends AbstractOutput<PipelineData, OutputData, TestPipelineOutput>
+			implements PipelineData {
+
+		public TestPipelineOutput(String name) {
+			super(name, DataTypes.PIPELINE_DATA, DataTypes.OUTPUT_DATA);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.PipelineData#handlePipelineData(java.lang.String,
+		 *      int, java.util.Map)
+		 */
+		@Override
+		public void handlePipelineData(String name, int id, Map<String, Object> context) {
+			StringBuilder sb = new StringBuilder(name);
+			AtomicInteger ai = new AtomicInteger(id);
+
+			outputData().handleOutputData(sb, ai);
+		}
+
+	}
+
+	private static class TestProcessor
+			extends AbstractProcessor<PipelineData, TestProcessor>
+			implements PipelineData {
+
+		public TestProcessor(Pipeline<PipelineData, ?> pipeline, int priority, String name) {
+			super(pipeline, priority, name, DataTypes.PIPELINE_DATA);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.PipelineData#handlePipelineData(java.lang.String,
+		 *      int, java.util.Map)
+		 */
+		@Override
+		public void handlePipelineData(String name, int id, Map<String, Object> context) {
+			name = name.toUpperCase();
+			id++;
+
+			outputData().handlePipelineData(name, id, context);
+		}
+
+	}
+
+	public static void main(String[] args) throws NotFound {
 
 		var pipeline = new MyPipeline();
 
-		TestPipelineInput b = pipeline.<InputData, TestPipelineInput>newInputBuilder(TestPipelineInput::new);
-		assert b != null;
+		InputEntryPoint<InputData> in = new TestPipelineInput("en0");
+		pipeline.registerInput(in);
 
-		InputData d0 = new TestPipelineInput("en0");
-
-		InputData d1 = pipeline.newInputData("en0", TestPipelineInput::new);
-		assert d1 != null;
-
-		InputData d2 = pipeline.newInputData("en1", true, TestPipelineInput::new);
-		assert d2 != null;
+		OutputEndPoint<OutputData> out = new TestPipelineOutput("");
+		out.addOutputData((n, a) -> System.out.printf("name=%s, id=%d", n, a.get()));
+		pipeline.registerOutput(out);
+		pipeline.getOutput(DataTypes.OUTPUT_DATA);
 
 		pipeline.enable(true);
 
-		d1.handleInput("Mark".toCharArray(), 10);
+		in.inputData().handleInputData("George".toCharArray(), 10);
 	}
 
 }
