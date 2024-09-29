@@ -23,33 +23,49 @@ import java.util.Objects;
  * Represents a registration that can be unregistered. This interface provides a
  * stateless way to manage the unregistration of handlers or resources.
  *
+ * <p>
+ * Implementations of this interface define the specific behavior for
+ * unregistration, allowing for flexible and context-specific cleanup
+ * operations.
+ * </p>
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
  */
 public interface Registration {
 
 	/**
-	 * Unregisters this registration. Implementations should define the specific
-	 * behavior for unregistration.
-	 */
-	void unregister();
-
-	/**
 	 * Combines this registration with another, creating a new registration that
-	 * unregisters both when invoked. This method allows for chaining multiple
-	 * registrations together.
+	 * unregisters both when invoked.
+	 *
+	 * <p>
+	 * This method allows for chaining multiple registrations together, enabling the
+	 * creation of composite unregistration operations. When the resulting
+	 * registration is unregistered, it will unregister both this registration and
+	 * the next one in sequence.
+	 * </p>
 	 *
 	 * @param next the next registration to be chained with this one
 	 * @return a new Registration that unregisters both this registration and the
-	 *         next one
+	 *         next one when its {@code unregister()} method is called
 	 * @throws NullPointerException if the next registration is null
 	 */
-	default Registration andThen(Registration next) {
+	default Registration andThen(Registration next) throws NullPointerException {
 		Objects.requireNonNull(next, "next");
-
 		return () -> {
 			unregister();
 			next.unregister();
 		};
 	}
+
+	/**
+	 * Unregisters this registration.
+	 * 
+	 * <p>
+	 * Implementations should define the specific behavior for unregistration, which
+	 * may include releasing resources, removing event listeners, or performing
+	 * other cleanup operations.
+	 * </p>
+	 */
+	void unregister();
 }

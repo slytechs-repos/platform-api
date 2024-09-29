@@ -20,68 +20,72 @@ package com.slytechs.jnet.jnetruntime.util;
 import com.slytechs.jnet.jnetruntime.util.UnitUtils.ConvertableUnit;
 
 /**
- * Unit definition for counting large numbers.
+ * Enumeration of units for counting large numbers. This enum provides a set of
+ * units and methods for converting between them.
  */
 public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 
-	/** The uni. */
+	/** Represents a single count. */
 	COUNT(1L),
 
-	/** The kilo. */
+	/** Represents a thousand (10^3) counts. */
 	KILO(1_000L, "k"),
 
-	/** The mega. */
+	/** Represents a million (10^6) counts. */
 	MEGA(1_000_000L, "m", "meg"),
 
-	/** The giga. */
+	/** Represents a billion (10^9) counts. */
 	GIGA(1_000_000_000L, "g", "gig"),
 
-	/** The tera. */
+	/** Represents a trillion (10^12) counts. */
 	TERA(1_000_000_000_000L, "t"),
 
-	/** The peta. */
-	PETA(1_000_000_000_000_000L, "p"),
+	/** Represents a quadrillion (10^15) counts. */
+	PETA(1_000_000_000_000_000L, "p");
 
-	;
-
-	/** The base. */
 	private final long base;
-
-	/** The basef. */
 	private final double basef;
-
-	/** The symbol. */
 	private final String[] symbols;
 
 	/**
-	 * Instantiates a new count unit.
+	 * Constructs a CountUnit with the specified base value and symbols.
 	 *
-	 * @param baseSpeed the base speed
+	 * @param baseCount The base count for this unit
+	 * @param symbols   The symbols representing this unit
 	 */
-	CountUnit(long baseSpeed, String... symbols) {
-		this.base = baseSpeed;
-		this.basef = baseSpeed;
+	CountUnit(long baseCount, String... symbols) {
+		this.base = baseCount;
+		this.basef = baseCount;
 		this.symbols = symbols;
 	}
 
 	/**
-	 * Convertf.
+	 * Formats a count value according to the specified format string.
 	 *
-	 * @param value      the value
-	 * @param sourceUnit the source unit
-	 * @return the double
+	 * @param fmt     The format string
+	 * @param inCount The count value to format
+	 * @return The formatted string
 	 */
-	@Override
-	public double convertf(double value, CountUnit sourceUnit) {
-		return sourceUnit.toUnif(value) / this.basef;
+	public static String formatCount(String fmt, long inCount) {
+		return UnitUtils.format(fmt, inCount, CountUnit.class, COUNT);
 	}
 
 	/**
-	 * Convert.
+	 * Finds the nearest CountUnit for the given count value.
 	 *
-	 * @param value      the value
-	 * @param sourceUnit the source unit
-	 * @return the long
+	 * @param inCount The count value
+	 * @return The nearest CountUnit
+	 */
+	public static CountUnit nearest(long inCount) {
+		return UnitUtils.nearest(inCount, CountUnit.class, COUNT);
+	}
+
+	/**
+	 * Converts a value from the source unit to this unit.
+	 *
+	 * @param value      The value to convert
+	 * @param sourceUnit The source unit
+	 * @return The converted value in this unit
 	 */
 	@Override
 	public long convert(long value, CountUnit sourceUnit) {
@@ -89,119 +93,43 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 	}
 
 	/**
-	 * To uni.
+	 * Converts a count value to this unit.
 	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	public long toCount(long value) {
-		return value * base;
-	}
-
-	/**
-	 * To int uni.
-	 *
-	 * @param value the value
-	 * @return the int
-	 */
-	public int toCountAsInt(long value) {
-		return (int) toCount(value);
-	}
-
-	/**
-	 * To unif.
-	 *
-	 * @param value the value
-	 * @return the double
-	 */
-	private double toUnif(double value) {
-		return value * basef;
-	}
-
-	/**
-	 * To giga.
-	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	public long toGiga(long value) {
-		return GIGA.convert(value, this);
-	}
-
-	/**
-	 * To kilo.
-	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	public long toKilo(long value) {
-		return KILO.convert(value, this);
-	}
-
-	/**
-	 * To mega.
-	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	public long toMega(long value) {
-		return MEGA.convert(value, this);
-	}
-
-	/**
-	 * To tera.
-	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	public long toTera(long value) {
-		return TERA.convert(value, this);
-	}
-
-	/**
-	 * To peta.
-	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	public long toPeta(long value) {
-		return PETA.convert(value, this);
-	}
-
-	/**
-	 * Convertf.
-	 *
-	 * @param inUni the in uni
-	 * @return the double
+	 * @param inCount The count value to convert
+	 * @return The converted value in this unit
 	 */
 	@Override
-	public double convertf(double inUni) {
-		return convertf(inUni, COUNT);
+	public double convertf(double inCount) {
+		return convertf(inCount, COUNT);
 	}
 
 	/**
-	 * Nearest.
+	 * Converts a value from the source unit to this unit.
 	 *
-	 * @param inUni the in uni
-	 * @return the count unit
+	 * @param value      The value to convert
+	 * @param sourceUnit The source unit
+	 * @return The converted value in this unit as a double
 	 */
-	public static CountUnit nearest(long inUni) {
-		return UnitUtils.nearest(inUni, CountUnit.class, COUNT);
+	@Override
+	public double convertf(double value, CountUnit sourceUnit) {
+		return sourceUnit.toUnif(value) / this.basef;
 	}
 
 	/**
-	 * Format count.
+	 * Gets the symbols associated with this unit.
 	 *
-	 * @param fmt   the fmt
-	 * @param inUni the in uni
-	 * @return the string
+	 * @return An array of symbols for this unit
 	 */
-	public static String formatCount(String fmt, long inUni) {
-		return UnitUtils.format(fmt, inUni, CountUnit.class, COUNT);
+	@Override
+	public String[] getSymbols() {
+		return symbols;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.Unit#toBase(long)
+	 * Converts the given value to the base unit (COUNT).
+	 *
+	 * @param value The value to convert
+	 * @return The value in the base unit
 	 */
 	@Override
 	public long toBase(long value) {
@@ -209,11 +137,82 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.Unit#getSymbols()
+	 * Converts the given value to the count in this unit.
+	 *
+	 * @param value The value to convert
+	 * @return The count in this unit
 	 */
-	@Override
-	public String[] getSymbols() {
-		return symbols;
+	public long toCount(long value) {
+		return value * base;
 	}
 
+	/**
+	 * Converts the given value to the count in this unit as an integer.
+	 *
+	 * @param value The value to convert
+	 * @return The count in this unit as an integer
+	 */
+	public int toCountAsInt(long value) {
+		return (int) toCount(value);
+	}
+
+	/**
+	 * Converts the given value to giga units.
+	 *
+	 * @param value The value to convert
+	 * @return The value in giga units
+	 */
+	public long toGiga(long value) {
+		return GIGA.convert(value, this);
+	}
+
+	/**
+	 * Converts the given value to kilo units.
+	 *
+	 * @param value The value to convert
+	 * @return The value in kilo units
+	 */
+	public long toKilo(long value) {
+		return KILO.convert(value, this);
+	}
+
+	/**
+	 * Converts the given value to mega units.
+	 *
+	 * @param value The value to convert
+	 * @return The value in mega units
+	 */
+	public long toMega(long value) {
+		return MEGA.convert(value, this);
+	}
+
+	/**
+	 * Converts the given value to peta units.
+	 *
+	 * @param value The value to convert
+	 * @return The value in peta units
+	 */
+	public long toPeta(long value) {
+		return PETA.convert(value, this);
+	}
+
+	/**
+	 * Converts the given value to tera units.
+	 *
+	 * @param value The value to convert
+	 * @return The value in tera units
+	 */
+	public long toTera(long value) {
+		return TERA.convert(value, this);
+	}
+
+	/**
+	 * Converts the given value to the base unit as a double.
+	 *
+	 * @param value The value to convert
+	 * @return The value in the base unit as a double
+	 */
+	private double toUnif(double value) {
+		return value * basef;
+	}
 }

@@ -20,11 +20,25 @@ package com.slytechs.jnet.jnetruntime.util;
 import java.util.Optional;
 
 /**
+ * Defines an interface for objects that may have an associated Registration.
+ * 
+ * <p>
+ * This interface provides a method to retrieve an Optional Registration object,
+ * allowing implementations to indicate whether they have a registration and to
+ * provide access to it if it exists.
+ * </p>
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 public interface HasRegistration {
 
+	/**
+	 * Returns an Optional containing the Registration associated with this object,
+	 * if one exists.
+	 *
+	 * @return an Optional<Registration> which is empty if no registration exists,
+	 *         or contains the Registration if one is associated with this object
+	 */
 	Optional<Registration> registration();
 }

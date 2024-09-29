@@ -22,16 +22,19 @@ import java.math.BigInteger;
 import com.slytechs.jnet.jnetruntime.util.UnitUtils.ConvertableUnit;
 
 /**
- * Memory size units. Storage units are always based on 1024 byte multiple.
+ * Enumeration of memory size units. Storage units are always based on 1024 byte
+ * multiples.
  * 
  * <p>
  * Note that a 64-bit long overflows after {@link #TERABYTES} bytes, thus other
- * higher units of PETABYTES, ZETA are not defined. Future extensions will have
- * to convert to {@link BigInteger} as storage, especially for the larger units.
+ * higher units of PETABYTES and EXABYTES may have limited precision. Future
+ * extensions may convert to {@link BigInteger} for storage, especially for the
+ * larger units.
+ * </p>
  */
 public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 
-	/** The bits. */
+	/** Represents bits. */
 	BITS("bit") {
 		@Override
 		public long convert(long size, MemoryUnit sourceUnit) {
@@ -49,58 +52,56 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 		}
 	},
 
-	/** The bytes. */
+	/** Represents bytes. */
 	BYTES("b", "byte"),
 
-	/**
-	 * A Kilo byte of 1024 bytes. Storage units are always based on 1024 byte
-	 * multiple.
-	 */
+	/** Represents kilobytes (1024 bytes). */
 	KILOBYTES("kb", "kbytes", "kilo"),
 
-	/**
-	 * A Mega byte or 1024 * Kilo bytes or 1,048,576 bytes. Storage units are always
-	 * based on 1024 byte multiple.
-	 */
+	/** Represents megabytes (1,048,576 bytes). */
 	MEGABYTES("mb", "mbytes", "mega"),
 
-	/**
-	 * A Giga byte or 1024 * Mega bytes or 1,073,741,824 bytes. Storage units are
-	 * always based on 1024 byte multiple.
-	 */
+	/** Represents gigabytes (1,073,741,824 bytes). */
 	GIGABYTES("gb", "gbytes", "gig", "giga"),
 
-	/**
-	 * A Tera byte or 1024 * Giga bytes or 1,099,511,627,776 bytes. Storage units
-	 * are always based on 1024 byte multiple.
-	 */
+	/** Represents terabytes (1,099,511,627,776 bytes). */
 	TERABYTES("tb", "tbytes", "tera"),
 
-	/**
-	 * A Peta byte or 1024 * Tera bytes or 1,099,511,627,776 bytes. Storage units
-	 * are always based on 1024 byte multiple.
-	 */
+	/** Represents petabytes (1,125,899,906,842,624 bytes). */
 	PETABYTES("pb", "pbytes", "peta"),
 
+	/** Represents exabytes (1,152,921,504,606,846,976 bytes). */
+	EXABYTES("eb", "ebytes", "exa");
+
 	/**
-	 * A Exa byte or 1024 * Peta bytes or 1,099,511,627,776 bytes. Storage units are
-	 * always based on 1024 byte multiple.
+	 * Formats the given number of bytes according to the specified format string.
+	 *
+	 * @param fmt     The format string
+	 * @param inBytes The number of bytes
+	 * @return The formatted string
 	 */
-	EXABYTES("eb", "ebytes", "exa"),
-
-	;
-
-	/** The base. */
+	public static String format(String fmt, long inBytes) {
+		return UnitUtils.format(fmt, inBytes, MemoryUnit.class, BYTES);
+	}
+	/**
+	 * Finds the nearest MemoryUnit for the given number of bytes.
+	 *
+	 * @param inBytes The number of bytes
+	 * @return The nearest MemoryUnit
+	 */
+	public static MemoryUnit nearest(long inBytes) {
+		return UnitUtils.nearest(inBytes, MemoryUnit.class, BYTES);
+	}
 	private final long base;
 
-	/** The basef. */
 	private final double basef;
 
-	/** The symbol. */
 	private final String[] symbols;
 
 	/**
-	 * Instantiates a new memory unit.
+	 * Constructs a MemoryUnit with the given symbols.
+	 *
+	 * @param symbols The symbols representing this unit
 	 */
 	MemoryUnit(String... symbols) {
 		final int ordinal = ordinal() - 1;
@@ -112,41 +113,15 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 
 		this.base = t;
 		this.basef = t;
-		if (symbols == null)
-			this.symbols = new String[] { "" + name().charAt(0) };
-		else
-			this.symbols = symbols;
+		this.symbols = symbols != null ? symbols : new String[] { "" + name().charAt(0) };
 	}
 
 	/**
-	 * Convertf.
+	 * Converts the given value from the source unit to this unit.
 	 *
-	 * @param inBytes the in bytes
-	 * @return the double
-	 */
-	@Override
-	public double convertf(double inBytes) {
-		return convertf(inBytes, MemoryUnit.BYTES);
-	}
-
-	/**
-	 * Convertf.
-	 *
-	 * @param size       the size
-	 * @param sourceUnit the source unit
-	 * @return the double
-	 */
-	@Override
-	public double convertf(double size, MemoryUnit sourceUnit) {
-		return sourceUnit.toBytesAsDouble(size) / this.base;
-	}
-
-	/**
-	 * Convert.
-	 *
-	 * @param size       the size
-	 * @param sourceUnit the source unit
-	 * @return the long
+	 * @param size       The value to convert
+	 * @param sourceUnit The source unit
+	 * @return The converted value in this unit
 	 */
 	@Override
 	public long convert(long size, MemoryUnit sourceUnit) {
@@ -154,20 +129,75 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 	}
 
 	/**
-	 * To bits.
+	 * Converts the given value in bytes to this unit.
 	 *
-	 * @param size the size
-	 * @return the long
+	 * @param inBytes The value in bytes
+	 * @return The converted value in this unit
+	 */
+	@Override
+	public double convertf(double inBytes) {
+		return convertf(inBytes, MemoryUnit.BYTES);
+	}
+
+	/**
+	 * Converts the given value from the source unit to this unit.
+	 *
+	 * @param size       The value to convert
+	 * @param sourceUnit The source unit
+	 * @return The converted value in this unit
+	 */
+	@Override
+	public double convertf(double size, MemoryUnit sourceUnit) {
+		return sourceUnit.toBytesAsDouble(size) / this.base;
+	}
+
+	/**
+	 * Gets the primary symbol for this unit.
+	 *
+	 * @return The primary symbol
+	 */
+	@Override
+	public String getSymbol() {
+		return symbols.length == 0 ? name() : symbols[0];
+	}
+
+	/**
+	 * Gets all symbols for this unit.
+	 *
+	 * @return An array of symbols
+	 */
+	@Override
+	public String[] getSymbols() {
+		return symbols;
+	}
+
+	/**
+	 * Converts the given value to the base unit (bytes).
+	 *
+	 * @param value The value to convert
+	 * @return The value in bytes
+	 */
+	@Override
+	public long toBase(long value) {
+		return toBytes(value);
+	}
+
+	/**
+	 * Converts the given size to bits.
+	 *
+	 * @param size The size to convert
+	 * @return The size in bits
 	 */
 	public long toBits(long size) {
 		return (toBytes(size) * 8);
 	}
 
 	/**
-	 * To int bits.
+	 * Converts the given size to bits as an integer.
 	 *
-	 * @param size the size
-	 * @return the int
+	 * @param size The size to convert
+	 * @return The size in bits as an integer
+	 * @throws IllegalArgumentException if the result would overflow an integer
 	 */
 	public int toBitsAsInt(long size) {
 		long bits = (toBytes(size) * 8);
@@ -179,20 +209,25 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 	}
 
 	/**
-	 * To bytes.
+	 * Converts the given size to bytes.
 	 *
-	 * @param size the size
-	 * @return the long
+	 * @param size The size to convert
+	 * @return The size in bytes
 	 */
 	public long toBytes(long size) {
 		return (size * base);
 	}
 
+	private double toBytesAsDouble(double size) {
+		return size * basef;
+	}
+
 	/**
-	 * To int bytes.
+	 * Converts the given size to bytes as an integer.
 	 *
-	 * @param size the size
-	 * @return the int
+	 * @param size The size to convert
+	 * @return The size in bytes as an integer
+	 * @throws IllegalArgumentException if the result would overflow an integer
 	 */
 	public int toBytesAsInt(long size) {
 		if (size > Integer.MAX_VALUE)
@@ -202,100 +237,42 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 	}
 
 	/**
-	 * To bytesf.
+	 * Converts the given size to gigabytes.
 	 *
-	 * @param size the size
-	 * @return the double
-	 */
-	private double toBytesAsDouble(double size) {
-		return size * basef;
-	}
-
-	/**
-	 * To kilo.
-	 *
-	 * @param size the size
-	 * @return the long
-	 */
-	public long toKilo(long size) {
-		return KILOBYTES.convert(size, this);
-	}
-
-	/**
-	 * To mega.
-	 *
-	 * @param size the size
-	 * @return the long
-	 */
-	public long toMegabytes(long size) {
-		return MEGABYTES.convert(size, this);
-	}
-
-	/**
-	 * To giga.
-	 *
-	 * @param size the size
-	 * @return the long
+	 * @param size The size to convert
+	 * @return The size in gigabytes
 	 */
 	public long toGigabytes(long size) {
 		return GIGABYTES.convert(size, this);
 	}
 
 	/**
-	 * To tera.
+	 * Converts the given size to kilobytes.
 	 *
-	 * @param size the size
-	 * @return the long
+	 * @param size The size to convert
+	 * @return The size in kilobytes
+	 */
+	public long toKilo(long size) {
+		return KILOBYTES.convert(size, this);
+	}
+
+	/**
+	 * Converts the given size to megabytes.
+	 *
+	 * @param size The size to convert
+	 * @return The size in megabytes
+	 */
+	public long toMegabytes(long size) {
+		return MEGABYTES.convert(size, this);
+	}
+
+	/**
+	 * Converts the given size to terabytes.
+	 *
+	 * @param size The size to convert
+	 * @return The size in terabytes
 	 */
 	public long toTerabytes(long size) {
 		return TERABYTES.convert(size, this);
 	}
-
-	/**
-	 * Nearest.
-	 *
-	 * @param inBytes the in bytes
-	 * @return the memory unit
-	 */
-	public static MemoryUnit nearest(long inBytes) {
-		return UnitUtils.nearest(inBytes, MemoryUnit.class, BYTES);
-	}
-
-	/**
-	 * Format.
-	 *
-	 * @param fmt     the fmt
-	 * @param inBytes the in bytes
-	 * @return the string
-	 */
-	public static String format(String fmt, long inBytes) {
-		return UnitUtils.format(fmt, inBytes, MemoryUnit.class, BYTES);
-	}
-
-	/**
-	 * Gets the symbol.
-	 *
-	 * @return the symbol
-	 */
-	@Override
-	public String getSymbol() {
-		return symbols.length == 0 ? name() : symbols[0];
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.Unit#toBase(long)
-	 */
-	@Override
-	public long toBase(long value) {
-		return toBytes(value);
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.Unit#getSymbols()
-	 */
-	@Override
-	public String[] getSymbols() {
-		return symbols;
-	}
-
 }

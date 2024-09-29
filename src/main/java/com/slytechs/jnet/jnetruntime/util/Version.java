@@ -20,8 +20,8 @@ package com.slytechs.jnet.jnetruntime.util;
 import java.util.Objects;
 
 /**
- * Semantic Versioning 2.0.0. Implements the specification for Semantic
- * Versioning 2.0.0 found on at the link: https://semver.org.
+ * Implements Semantic Versioning 2.0.0 as specified at https://semver.org. This
+ * class provides methods for version comparison, parsing, and validation.
  *
  * @author Sly Technologies
  * @author repos@slytechs.com
@@ -29,55 +29,48 @@ import java.util.Objects;
 public class Version implements Comparable<Version> {
 
 	/**
-	 * A getter for classes that provide version information.
-	 *
-	 * @author Sly Technologies
-	 * @author repos@slytechs.com
+	 * Interface for classes that provide version information.
 	 */
 	public interface HasVersion {
-
 		/**
-		 * Gets the version.
+		 * Gets the version of the implementing class.
 		 *
-		 * @return the version
+		 * @return the Version object
 		 */
 		Version getVersion();
-
 	}
 
 	/**
-	 * Check major version.
+	 * Checks if the major versions of two version strings are compatible.
 	 *
-	 * @param v1 the v 1
-	 * @param v2 the v 2
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param v1 the first version string
+	 * @param v2 the second version string
+	 * @throws InvalidVersionException if the versions are incompatible or invalid
 	 */
 	public static void checkMajorVersion(String v1, String v2) throws InvalidVersionException {
 		fromString(v1).checkMajorVersion(fromString(v2));
 	}
 
 	/**
-	 * Check minor version.
+	 * Checks if the minor versions of two version strings are compatible.
 	 *
-	 * @param v1 the v 1
-	 * @param v2 the v 2
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param v1 the first version string
+	 * @param v2 the second version string
+	 * @throws InvalidVersionException if the versions are incompatible or invalid
 	 */
 	public static void checkMinorVersion(String v1, String v2) throws InvalidVersionException {
 		fromString(v1).checkMinorVersion(fromString(v2));
 	}
 
 	/**
-	 * From string.
+	 * Parses a version string into a Version object.
 	 *
-	 * @param v the v
-	 * @return the version
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param v the version string to parse
+	 * @return a new Version object
+	 * @throws InvalidVersionException if the version string is invalid
 	 */
 	public static Version fromString(String v) throws InvalidVersionException {
 		String[] c = Objects.requireNonNull(v, "Version.fromString(v)").split("[.]");
-
-//		System.out.println("Version::fromString c.length=" + c.length);
 
 		try {
 			int major = Integer.parseInt(c[0]);
@@ -89,14 +82,15 @@ public class Version implements Comparable<Version> {
 		} catch (Throwable e) {
 			throw new InvalidVersionException("invalid format [" + v + "]", e);
 		}
-
 	}
 
 	/**
-	 * Of.
+	 * Creates a Version object from a string, throwing a runtime
+	 * IllegalStateException if invalid.
 	 *
-	 * @param v the v
-	 * @return the version
+	 * @param v the version string
+	 * @return a new Version object
+	 * @throws IllegalStateException if the version string is invalid
 	 */
 	public static Version of(String v) {
 		try {
@@ -106,46 +100,39 @@ public class Version implements Comparable<Version> {
 		}
 	}
 
-	/** The major. */
 	private int major;
-
-	/** The minor. */
 	private int minor;
-
-	/** The maintenance. */
 	private int maintenance;
-
-	/** The build. */
 	private String build;
 
 	/**
-	 * Instantiates a new version.
+	 * Constructs a new Version with major and minor components.
 	 *
-	 * @param major the major
-	 * @param minor the minor
+	 * @param major the major version number
+	 * @param minor the minor version number
 	 */
 	public Version(int major, int minor) {
 		this(major, minor, 0, null);
 	}
 
 	/**
-	 * Instantiates a new version.
+	 * Constructs a new Version with major, minor, and maintenance components.
 	 *
-	 * @param major       the major
-	 * @param minor       the minor
-	 * @param maintenance the maintenance
+	 * @param major       the major version number
+	 * @param minor       the minor version number
+	 * @param maintenance the maintenance version number
 	 */
 	public Version(int major, int minor, int maintenance) {
 		this(major, minor, maintenance, null);
 	}
 
 	/**
-	 * Instantiates a new version.
+	 * Constructs a new Version with all components.
 	 *
-	 * @param major       the major
-	 * @param minor       the minor
-	 * @param maintenance the maintenance
-	 * @param build       the build
+	 * @param major       the major version number
+	 * @param minor       the minor version number
+	 * @param maintenance the maintenance version number
+	 * @param build       the build identifier
 	 */
 	public Version(int major, int minor, int maintenance, String build) {
 		this.major = major;
@@ -155,20 +142,22 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Check major version.
+	 * Checks if this version is compatible with the major version of the given
+	 * HasVersion object.
 	 *
-	 * @param runtimeVersion the runtime version
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param runtimeVersion the HasVersion object to check against
+	 * @throws InvalidVersionException if the versions are incompatible
 	 */
 	public void checkMajorVersion(HasVersion runtimeVersion) throws InvalidVersionException {
 		checkMajorVersion(runtimeVersion.getVersion());
 	}
 
 	/**
-	 * Check major version.
+	 * Checks if this version is compatible with the major version of the given
+	 * Version object.
 	 *
-	 * @param runtimeVersion the runtime version
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param runtimeVersion the Version object to check against
+	 * @throws InvalidVersionException if the versions are incompatible
 	 */
 	public void checkMajorVersion(Version runtimeVersion) throws InvalidVersionException {
 		if (runtimeVersion.major < this.major) {
@@ -177,20 +166,22 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Check minor version.
+	 * Checks if this version is compatible with the minor version of the given
+	 * HasVersion object.
 	 *
-	 * @param runtimeVersion the runtime version
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param runtimeVersion the HasVersion object to check against
+	 * @throws InvalidVersionException if the versions are incompatible
 	 */
 	public void checkMinorVersion(HasVersion runtimeVersion) throws InvalidVersionException {
 		checkMinorVersion(runtimeVersion.getVersion());
 	}
 
 	/**
-	 * Check minor version.
+	 * Checks if this version is compatible with the minor version of the given
+	 * Version object.
 	 *
-	 * @param runtimeVersion the runtime version
-	 * @throws InvalidVersionException the invalid version exception
+	 * @param runtimeVersion the Version object to check against
+	 * @throws InvalidVersionException if the versions are incompatible
 	 */
 	public void checkMinorVersion(Version runtimeVersion) throws InvalidVersionException {
 		if (runtimeVersion.major < this.major) {
@@ -203,21 +194,22 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Compare to.
+	 * Compares this Version to a version string.
 	 *
-	 * @param o the o
-	 * @return the int
+	 * @param o the version string to compare to
+	 * @return a negative integer, zero, or a positive integer as this Version is
+	 *         less than, equal to, or greater than the specified version string
 	 */
 	public int compareTo(String o) {
 		return toString().compareTo(o);
 	}
 
 	/**
-	 * Compare to.
+	 * Compares this Version to another Version object.
 	 *
-	 * @param o the o
-	 * @return the int
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 * @param o the Version object to be compared
+	 * @return a negative integer, zero, or a positive integer as this Version is
+	 *         less than, equal to, or greater than the specified Version
 	 */
 	@Override
 	public int compareTo(Version o) {
@@ -225,10 +217,9 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * To string.
+	 * Returns a string representation of this Version.
 	 *
-	 * @return the string
-	 * @see java.lang.Object#toString()
+	 * @return a string representation of this Version
 	 */
 	@Override
 	public String toString() {
@@ -237,5 +228,4 @@ public class Version implements Comparable<Version> {
 				+ "." + maintenance
 				+ (build == null ? "" : "." + build);
 	}
-
 }

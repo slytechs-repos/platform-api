@@ -20,16 +20,18 @@ package com.slytechs.jnet.jnetruntime.util;
 import java.util.Comparator;
 
 /**
- * Used to prioritized a protocol process of some kind based on a numerical
- * priority value.
+ * Defines an interface for objects that have a priority value, typically used
+ * to prioritize protocol processing.
  * 
  * <p>
- * The lower positive numerical value has the highest priority. This make value
- * of {@code 0} the highest priority possible.
+ * The priority system is based on numerical values where lower positive numbers
+ * indicate higher priority. A value of {@code 0} represents the highest
+ * possible priority.
  * </p>
+ * 
  * <p>
- * When 2 or more priority values are the same, it is undefined which one takes
- * precedence.
+ * When two or more objects have the same priority value, their relative
+ * precedence is undefined.
  * </p>
  * 
  * @author Sly Technologies Inc
@@ -37,25 +39,79 @@ import java.util.Comparator;
  */
 public interface HasPriority {
 
-	/** Default comparator as a constant */
-	Comparator<HasPriority> COMPARATOR = HasPriority::compare;
+	/** The default priority value. */
+	int DEFAULT_PRIORITY_VALUE = 0;
+
+	/** The minimum allowed priority value. */
+	int MIN_PRIORITY_VALUE = 0;
+
+	/** The maximum allowed priority value. */
+	int MAX_PRIORITY_VALUE = (Integer.MAX_VALUE - 1);
 
 	/**
-	 * Compares priorities of a and b.
-	 *
-	 * @param a first object to priority compare
-	 * @param b the second object to priority compare
-	 * @return either -1, 0 or 1 as a result of the compare
+	 * Comparator that sorts HasPriority objects from highest to lowest priority.
 	 */
-	static int compare(HasPriority a, HasPriority b) {
+	Comparator<HasPriority> HIGH_LOW_COMPARATOR = HasPriority::compareHighToLow;
+
+	/**
+	 * Comparator that sorts HasPriority objects from lowest to highest priority.
+	 */
+	Comparator<HasPriority> LOW_HIGH_COMPARATOR = HasPriority::compareLowToHigh;
+
+	/**
+	 * Validates the given priority value.
+	 *
+	 * @param value the priority value to check
+	 * @throws IllegalArgumentException if the value is outside the valid range
+	 *                                  [{@code MIN_PRIORITY_VALUE},
+	 *                                  {@code MAX_PRIORITY_VALUE}]
+	 */
+	static void checkPriorityValue(int value) throws IllegalArgumentException {
+		if (value < MIN_PRIORITY_VALUE || value > MAX_PRIORITY_VALUE)
+			throw new IllegalArgumentException("Priority value out of range [%d]".formatted(value));
+	}
+
+	/**
+	 * Compares two HasPriority objects from higher priority (lower values) to lower
+	 * priority (higher values).
+	 *
+	 * @param a the first HasPriority object
+	 * @param b the second HasPriority object
+	 * @return a negative integer, zero, or a positive integer as the first argument
+	 *         has higher, equal to, or lower priority than the second
+	 */
+	static int compareHighToLow(HasPriority a, HasPriority b) {
 		return a.priority() - b.priority();
 	}
 
 	/**
-	 * This object's priority value.
+	 * Compares two HasPriority objects from lower priority (higher values) to
+	 * higher priority (lower values).
 	 *
-	 * @return the priority value between {@code 0} and {@code Integer.MAX_VALUE}.
+	 * @param a the first HasPriority object
+	 * @param b the second HasPriority object
+	 * @return a negative integer, zero, or a positive integer as the first argument
+	 *         has lower, equal to, or higher priority than the second
+	 */
+	static int compareLowToHigh(HasPriority a, HasPriority b) {
+		return b.priority() - a.priority();
+	}
+
+	/**
+	 * Checks if the given value is within the valid priority range.
+	 *
+	 * @param value the priority value to check
+	 * @return true if the value is within the valid range, false otherwise
+	 */
+	static boolean isValidPriority(int value) {
+		return value >= MIN_PRIORITY_VALUE && value <= MAX_PRIORITY_VALUE;
+	}
+
+	/**
+	 * Returns the priority value of this object.
+	 *
+	 * @return the priority value, between {@code MIN_PRIORITY_VALUE} and
+	 *         {@code MAX_PRIORITY_VALUE}, inclusive
 	 */
 	int priority();
-
 }

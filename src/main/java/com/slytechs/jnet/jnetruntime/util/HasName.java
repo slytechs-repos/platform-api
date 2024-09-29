@@ -18,12 +18,23 @@
 package com.slytechs.jnet.jnetruntime.util;
 
 /**
+ * Defines an interface for objects that have a name attribute.
+ * 
+ * <p>
+ * This interface is typically used to provide a common method for retrieving
+ * the name of an object, allowing for consistent naming conventions and
+ * identification across different implementations.
+ * </p>
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 public interface HasName {
 
+	/**
+	 * Returns the name of this object.
+	 *
+	 * @return a String representing the name of the object
+	 */
 	String name();
-	
 }

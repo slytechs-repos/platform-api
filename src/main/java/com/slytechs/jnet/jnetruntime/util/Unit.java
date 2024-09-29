@@ -18,7 +18,8 @@
 package com.slytechs.jnet.jnetruntime.util;
 
 /**
- * The Interface Unit.
+ * The Unit interface represents a unit of measurement and provides methods for
+ * conversion, parsing, and symbol retrieval.
  *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
@@ -26,87 +27,80 @@ package com.slytechs.jnet.jnetruntime.util;
 public interface Unit {
 
 	/**
-	 * Convert to base value for whatever that is for this unit and round off to
-	 * "integer".
+	 * Gets the primary symbol for this unit.
 	 *
-	 * @param value the value to convert to base of the unit
-	 * @return the base unit converted to an 32-bit integer, which will wrap if the
-	 *         base value is
-	 * @throws IllegalArgumentException integer conversion overflow
-	 */
-	default int toBaseAsInt(long value) throws IllegalArgumentException {
-		long longValue = toBase(value);
-		if (longValue > Integer.MAX_VALUE || longValue < Integer.MIN_VALUE)
-			throw new IllegalArgumentException("integer conversion overflow [%d]"
-					.formatted(longValue));
-
-		return (int) longValue;
-	}
-
-	/**
-	 * Parses the units when given both a value with units. For example
-	 * {@code "10MB"} when using {@code MemoryUnit} will ignore that "10" value and
-	 * will convert "MB" into a {@code MemoryUnit.MEGA_BYTES}. Spaces are ignored
-	 * when parsing units such as {@code "10MB"} and {@code "10 MB"} are considered
-	 * the same.
-	 * <p>
-	 * Note, if the unit parser fails for whatever reason, it defaults to the
-	 * current units as a fallback and does not throw an exception.
-	 * </p>
-	 *
-	 * @param <U>           the generic type of the units
-	 * @param valueAndUnits the value and units in the same string
-	 * @param defaultUnits  the default units
-	 * @return the u
-	 */
-	@SuppressWarnings("unchecked")
-	default <U extends Unit> U parseUnits(String valueAndUnits, U defaultUnits) {
-		Unit newUnits = UnitUtils.parseUnits(valueAndUnits, this.getClass());
-		if (newUnits == null)
-			return defaultUnits;
-
-		return (U) newUnits;
-	}
-
-	/**
-	 * Will strip the unit component of the value and return only the value. For
-	 * example {@code 10MB} will strip "MB" units and only return a string of "10".
-	 *
-	 * @param valueAndUnits the value and units
-	 * @return a string containing only the value and not the units
-	 */
-	default String stripUnits(String valueAndUnits) {
-		return UnitUtils.stripUnits(valueAndUnits, this.getClass());
-	}
-
-	/**
-	 * To base.
-	 *
-	 * @param value the value
-	 * @return the long
-	 */
-	long toBase(long value);
-
-	/**
-	 * Gets the symbol.
-	 *
-	 * @return the symbol
+	 * @return the primary symbol or an empty string if no symbols are defined
 	 */
 	default String getSymbol() {
 		return getSymbols().length == 0 ? "" : getSymbols()[0];
 	}
 
 	/**
-	 * The unit name.
+	 * Gets all symbols associated with this unit.
 	 *
-	 * @return the string
+	 * @return an array of strings representing the symbols for this unit
+	 */
+	String[] getSymbols();
+
+	/**
+	 * Gets the name of this unit.
+	 *
+	 * @return the name of the unit
 	 */
 	String name();
 
 	/**
-	 * Gets the symbols.
+	 * Parses the unit from a string containing both value and unit.
+	 * 
+	 * <p>
+	 * For example, "10MB" when using MemoryUnit will ignore the "10" value and
+	 * convert "MB" into MemoryUnit.MEGA_BYTES. Spaces are ignored during parsing.
+	 * </p>
 	 *
-	 * @return the name
+	 * @param <U>           the generic type of the unit
+	 * @param valueAndUnits the string containing both value and unit
+	 * @param defaultUnits  the default unit to return if parsing fails
+	 * @return the parsed unit or the default unit if parsing fails
 	 */
-	String[] getSymbols();
+	@SuppressWarnings("unchecked")
+	default <U extends Unit> U parseUnits(String valueAndUnits, U defaultUnits) {
+		Unit newUnits = UnitUtils.parseUnits(valueAndUnits, this.getClass());
+		if (newUnits == null)
+			return defaultUnits;
+		return (U) newUnits;
+	}
+
+	/**
+	 * Strips the unit component from a string containing both value and unit.
+	 *
+	 * @param valueAndUnits the string containing both value and unit
+	 * @return a string containing only the value without the unit
+	 */
+	default String stripUnits(String valueAndUnits) {
+		return UnitUtils.stripUnits(valueAndUnits, this.getClass());
+	}
+
+	/**
+	 * Converts the given value to the base unit.
+	 *
+	 * @param value the value to convert
+	 * @return the value in the base unit
+	 */
+	long toBase(long value);
+
+	/**
+	 * Converts the given value to the base unit and returns it as an integer.
+	 *
+	 * @param value the value to convert to the base unit
+	 * @return the base unit value as a 32-bit integer
+	 * @throws IllegalArgumentException if the conversion results in an integer
+	 *                                  overflow
+	 */
+	default int toBaseAsInt(long value) throws IllegalArgumentException {
+		long longValue = toBase(value);
+		if (longValue > Integer.MAX_VALUE || longValue < Integer.MIN_VALUE)
+			throw new IllegalArgumentException("integer conversion overflow [%d]"
+					.formatted(longValue));
+		return (int) longValue;
+	}
 }
