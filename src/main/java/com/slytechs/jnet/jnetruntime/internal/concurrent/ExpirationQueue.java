@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,13 +23,18 @@ import java.util.Iterator;
 import com.slytechs.jnet.jnetruntime.util.IsExpirable;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Class ExpirationQueue.
  *
+ * @param <E> the element type
+ * @author Mark Bednarczyk
  */
 public class ExpirationQueue<E extends IsExpirable> extends AbstractQueue<E> {
 
 	/**
+	 * Offer.
+	 *
+	 * @param e the e
+	 * @return true, if successful
 	 * @see java.util.Queue#offer(java.lang.Object)
 	 */
 	@Override
@@ -38,6 +43,9 @@ public class ExpirationQueue<E extends IsExpirable> extends AbstractQueue<E> {
 	}
 
 	/**
+	 * Poll.
+	 *
+	 * @return the e
 	 * @see java.util.Queue#poll()
 	 */
 	@Override
@@ -46,6 +54,9 @@ public class ExpirationQueue<E extends IsExpirable> extends AbstractQueue<E> {
 	}
 
 	/**
+	 * Peek.
+	 *
+	 * @return the e
 	 * @see java.util.Queue#peek()
 	 */
 	@Override
@@ -54,6 +65,9 @@ public class ExpirationQueue<E extends IsExpirable> extends AbstractQueue<E> {
 	}
 
 	/**
+	 * Iterator.
+	 *
+	 * @return the iterator
 	 * @see java.util.AbstractCollection#iterator()
 	 */
 	@Override
@@ -62,6 +76,9 @@ public class ExpirationQueue<E extends IsExpirable> extends AbstractQueue<E> {
 	}
 
 	/**
+	 * Size.
+	 *
+	 * @return the int
 	 * @see java.util.AbstractCollection#size()
 	 */
 	@Override

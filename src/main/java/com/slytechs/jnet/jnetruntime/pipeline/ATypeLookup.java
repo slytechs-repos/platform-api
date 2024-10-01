@@ -53,8 +53,6 @@ import java.lang.annotation.Target;
  * processor.
  * </p>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  */
 @Retention(RUNTIME)
 @Target({ METHOD,

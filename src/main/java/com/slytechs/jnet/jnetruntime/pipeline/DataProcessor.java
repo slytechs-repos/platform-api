@@ -31,6 +31,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *
  * @param <T>      The type of data processed by this processor
  * @param <T_BASE> The specific type of the processor implementation
+ * @author Mark Bednarczyk
  */
 public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends HasName, HasRegistration, PipeComponent<T_BASE>, HasOutputData<T>, HasInputData<T> {
@@ -40,6 +41,7 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 *
 	 * @param <T>      The type of data processed by this component
 	 * @param <T_BASE> The specific type of the bypassable component implementation
+	 * @author Mark Bednarczyk
 	 */
 	interface IsBypassable<T, T_BASE extends IsBypassable<T, T_BASE>> {
 
@@ -97,6 +99,7 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		 *
 		 * @param <T>      The type of data processed by the processor
 		 * @param <T_BASE> The specific type of the processor implementation
+		 * @author Mark Bednarczyk
 		 */
 		interface Named<T, T_BASE extends DataProcessor<T, T_BASE>> {
 			/**
@@ -124,8 +127,11 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * Supports data change notifications for processors.
 	 *
 	 * @param <T> The type of data being processed
+	 * @author Mark Bednarczyk
 	 */
 	public class DataChangeSupport<T> {
+		
+		/** The listener list. */
 		private final List<DataChangeListener<T>> listenerList = new ArrayList<>();
 
 		/**
@@ -153,6 +159,7 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * Listener interface for data change events.
 	 *
 	 * @param <T> The type of data being processed
+	 * @see DataChangeEvent
 	 */
 	interface DataChangeListener<T> {
 		/**

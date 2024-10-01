@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,26 +24,31 @@ import org.junit.jupiter.api.Test;
 import com.slytechs.jnet.jnetruntime.util.CountUnit;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- *
+ * The Class TestUnits.
  */
 class TestUnits {
 
 	/**
-	 * @throws java.lang.Exception
+	 * Sets the up.
+	 *
+	 * @throws Exception the exception
 	 */
 	@BeforeEach
 	void setUp() throws Exception {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * Tear down.
+	 *
+	 * @throws Exception the exception
 	 */
 	@AfterEach
 	void tearDown() throws Exception {
 	}
 
+	/**
+	 * Parses the units.
+	 */
 	@Test
 	void parseUnits() {
 		final var UNIT_CLASS = CountUnit.class;
@@ -57,6 +62,9 @@ class TestUnits {
 //		assertEquals(EXPECTED, UnitUtils.parseUnits("10@k", UNIT_CLASS));
 	}
 
+	/**
+	 * Strip units.
+	 */
 	@Test
 	void stripUnits() {
 		final var UNIT_CLASS = CountUnit.class;

@@ -30,8 +30,7 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  * Represents a type of data in the pipeline system. This interface extends
  * HasId and HasName, providing identification and naming capabilities.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface DataType extends HasId, HasName {
 
@@ -40,13 +39,43 @@ public interface DataType extends HasId, HasName {
 	 * handling data of a specific type.
 	 *
 	 * @param <T> The type of data supported
+	 * @author Mark Bednarczyk
 	 */
 	public class DataSupport<T> {
 
+		/**
+		 * Creates the array wrapper.
+		 *
+		 * @param <T>       the generic type
+		 * @param dataClass the data class
+		 * @return the function
+		 */
+		private static <T> Function<T[], T> createArrayWrapper(Class<T> dataClass) {
+			return new Function<T[], T>() {
+				/**
+				 * @see java.util.function.Function#apply(java.lang.Object)
+				 */
+				@Override
+				public T apply(T[] arr) {
+					try {
+						return DataArrayMethodHandle.wrapArray(arr, dataClass);
+					} catch (IllegalAccessException e) {
+						throw new IllegalStateException(e);
+					}
+				}
+			};
+		}
+
+		/** The data type. */
 		private final DataType dataType;
+		
+		/** The data class. */
 		private final Class<T> dataClass;
+		
+		/** The array wrapper. */
 		private final Function<T[], T> arrayWrapper;
-		private final BiFunction<T, ? super Object, T> opaqueWrapper;
+		
+		/** The empty. */
 		private final T empty;
 
 		/**
@@ -57,36 +86,32 @@ public interface DataType extends HasId, HasName {
 		 * @param dataClass The class of the data type
 		 */
 		public DataSupport(DataType dataType, Class<T> dataClass) {
-			this.dataType = dataType;
-			this.dataClass = dataClass;
-			this.arrayWrapper = null;
-			this.opaqueWrapper = (t, obj) -> t;
-			this.empty = null;
+			this(dataType, dataClass, createArrayWrapper(dataClass));
 		}
 
 		/**
 		 * Constructs a DataSupport instance with array and opaque wrapping
 		 * capabilities.
 		 *
-		 * @param dataType      The DataType instance
-		 * @param dataClass     The class of the data type
-		 * @param opaqueWrapper Function to wrap data with opaque object
-		 * @param arrayWrapper  Function to wrap array of data
+		 * @param <U>          the generic type
+		 * @param dataType     The DataType instance
+		 * @param dataClass    The class of the data type
+		 * @param arrayWrapper Function to wrap array of data
 		 */
-		public DataSupport(
+		public <U> DataSupport(
 				DataType dataType,
 				Class<T> dataClass,
-				BiFunction<T, ? super Object, T> opaqueWrapper,
 				Function<T[], T> arrayWrapper) {
 
 			this.dataType = dataType;
 			this.dataClass = dataClass;
 			this.arrayWrapper = arrayWrapper;
-			this.opaqueWrapper = opaqueWrapper;
 			this.empty = wrapCollection(Collections.emptyList());
 		}
 
 		/**
+		 * Data class.
+		 *
 		 * @return The class of the data type
 		 */
 		public Class<T> dataClass() {
@@ -94,6 +119,8 @@ public interface DataType extends HasId, HasName {
 		}
 
 		/**
+		 * Data type.
+		 *
 		 * @return The DataType instance
 		 */
 		public DataType dataType() {
@@ -101,6 +128,8 @@ public interface DataType extends HasId, HasName {
 		}
 
 		/**
+		 * Empty.
+		 *
 		 * @return An empty instance of the data type
 		 */
 		public T empty() {
@@ -132,17 +161,6 @@ public interface DataType extends HasId, HasName {
 		}
 
 		/**
-		 * Wraps data with an opaque object.
-		 *
-		 * @param data   The data to wrap
-		 * @param opaque The opaque object to wrap with
-		 * @return The wrapped data
-		 */
-		public T wrapOpaque(T data, Object opaque) {
-			return opaqueWrapper.apply(data, opaque);
-		}
-
-		/**
 		 * Creates a new array of the data type.
 		 *
 		 * @param size The size of the array
@@ -155,9 +173,14 @@ public interface DataType extends HasId, HasName {
 
 	/**
 	 * Interface for objects that have a DataType.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface HasDataType {
+		
 		/**
+		 * Data type.
+		 *
 		 * @return The DataType of this object
 		 */
 		DataType dataType();
@@ -165,6 +188,8 @@ public interface DataType extends HasId, HasName {
 
 	/**
 	 * Interface for integer-to-string conversion operations.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface IntString extends Consumer<String> {
 
@@ -172,6 +197,7 @@ public interface DataType extends HasId, HasName {
 		 * Opaque wrapper for IntString.
 		 *
 		 * @param <U> The type of the opaque object
+		 * @author Mark Bednarczyk
 		 */
 		public static class OpaqueIntString<U> extends OpaqueData<IntString, U> implements IntString {
 
@@ -185,6 +211,12 @@ public interface DataType extends HasId, HasName {
 				super(data, opaque);
 			}
 
+			/**
+			 * Accept.
+			 *
+			 * @param t the t
+			 * @see java.util.function.Consumer#accept(java.lang.Object)
+			 */
 			@Override
 			public void accept(String t) {
 				data().accept(t);
@@ -222,10 +254,14 @@ public interface DataType extends HasId, HasName {
 	 *
 	 * @param <T> The type of the data
 	 * @param <U> The type of the opaque object
+	 * @author Mark Bednarczyk
 	 */
 	public class OpaqueData<T, U> {
 
+		/** The opaque. */
 		private U opaque;
+		
+		/** The data. */
 		private final T data;
 
 		/**
@@ -249,6 +285,8 @@ public interface DataType extends HasId, HasName {
 		}
 
 		/**
+		 * Data.
+		 *
 		 * @return The wrapped data
 		 */
 		public T data() {
@@ -256,6 +294,8 @@ public interface DataType extends HasId, HasName {
 		}
 
 		/**
+		 * Opaque.
+		 *
 		 * @return The opaque object
 		 */
 		public U opaque() {
@@ -274,10 +314,15 @@ public interface DataType extends HasId, HasName {
 
 	/**
 	 * Enumeration of primitive data types.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Primitives implements DataType {
+		
+		/** The int string. */
 		INT_STRING(IntString.class, IntString::wrapOpaque, IntString::wrapArray);
 
+		/** The data support. */
 		private final DataSupport<?> dataSupport;
 
 		/**
@@ -293,7 +338,7 @@ public interface DataType extends HasId, HasName {
 				BiFunction<T, ? super Object, T> opaqueWrapper,
 				Function<T[], T> arrayWrapper) {
 
-			dataSupport = new DataSupport<T>(this, dataClass, opaqueWrapper, arrayWrapper);
+			dataSupport = new DataSupport<T>(this, dataClass, arrayWrapper);
 		}
 
 		/**
@@ -317,12 +362,16 @@ public interface DataType extends HasId, HasName {
 	}
 
 	/**
+	 * Data support.
+	 *
 	 * @param <T> The type of data
 	 * @return The DataSupport for this DataType
 	 */
 	<T> DataSupport<T> dataSupport();
 
 	/**
+	 * Data class.
+	 *
 	 * @param <T> The type of data
 	 * @return The class of the data type
 	 */
@@ -338,6 +387,8 @@ public interface DataType extends HasId, HasName {
 	String name();
 
 	/**
+	 * Empty.
+	 *
 	 * @param <T> The type of data
 	 * @return An empty instance of the data type
 	 */

@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,14 +27,14 @@ import java.util.stream.Collectors;
 /**
  * The Class PaddedLayout.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @author Mark Bednarczyk
  */
 public class PaddedLayout implements PaddedField {
 
 	/**
 	 * The Enum Type.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Type {
 		

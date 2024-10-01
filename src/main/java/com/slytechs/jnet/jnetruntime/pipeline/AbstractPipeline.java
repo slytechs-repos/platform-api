@@ -41,7 +41,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer;
  * pipeline components, including initialization, activation, and deactivation
  * of processors.
  * </p>
- *
+ * 
  * <p>
  * The pipeline consists of three main parts:
  * <ul>
@@ -53,19 +53,25 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer;
  *
  * @param <T>      The type of data processed by this pipeline
  * @param <T_PIPE> The specific type of the pipeline implementation
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		extends AbstractComponent<T_PIPE>
 		implements Pipeline<T, T_PIPE> {
 
+	/** The data type. */
 	private final DataType dataType;
+	
+	/** The head. */
 	private final HeadNode<T> head;
+	
+	/** The tail. */
 	private final TailNode<T> tail;
 
+	/** The initialized list. */
 	private final List<AbstractProcessor<T, ?>> initializedList = new ArrayList<>();
+	
+	/** The active list. */
 	private final List<AbstractProcessor<T, ?>> activeList = new ArrayList<>();
 
 	/**

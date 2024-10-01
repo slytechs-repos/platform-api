@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,12 +21,13 @@ package com.slytechs.jnet.jnetruntime.internal.layout;
  * The Class ArrayFieldContext.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 class ArrayFieldContext extends FieldCarrierContext {
 
 	/**
 	 * The Class ArrayFieldBuilder.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	static class ArrayFieldBuilder extends FieldCarrierContext.CarrierBuilder<ArrayFieldContext> {
 

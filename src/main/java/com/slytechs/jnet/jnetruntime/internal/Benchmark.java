@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * A simple benchmark harness.
  * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @author Mark Bednarczyk
  *
  */
@@ -31,6 +29,8 @@ public interface Benchmark {
 
 	/**
 	 * The Interface DurationResult.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface DurationResult {
 		
@@ -44,6 +44,8 @@ public interface Benchmark {
 
 	/**
 	 * Not public API - keep a few utility methods private.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	final class Impl {
 		
@@ -99,6 +101,8 @@ public interface Benchmark {
 
 	/**
 	 * The Interface RateDetailedReport.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface RateDetailedReport {
 		
@@ -116,6 +120,8 @@ public interface Benchmark {
 
 	/**
 	 * The Interface RateSummaryReport.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface RateSummaryReport {
 		
@@ -131,6 +137,8 @@ public interface Benchmark {
 
 	/**
 	 * The Interface TimedResult.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface TimedResult {
 		

@@ -30,14 +30,15 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  * </p>
  *
  * @param <T> The type of input data handled by this entry point
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public abstract class AbstractEntryPoint<T>
 		implements EntryPoint<T>, HasName {
 
+	/** The id. */
 	private final String id;
+
+	/** The input. */
 	private final AbstractInput<T, ?, ?> input;
 
 	/**

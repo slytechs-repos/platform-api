@@ -31,17 +31,22 @@ import java.util.Objects;
  * @param <T_IN>   The input data type
  * @param <T_OUT>  The output data type
  * @param <T_BASE> The specific type of the transformer implementation
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipeComponent<T_BASE>>
 		extends AbstractComponent<T_BASE>
 		implements DataTransformer<T_IN, T_OUT, T_BASE> {
 
+	/** The output data. */
 	private T_OUT outputData;
+	
+	/** The input data. */
 	private T_IN inputData;
+	
+	/** The input type. */
 	private final DataType inputType;
+	
+	/** The output type. */
 	private final DataType outputType;
 
 	/**
@@ -52,8 +57,6 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param input      The initial input data
 	 * @param inputType  The type of the input data
 	 * @param outputType The type of the output data
-	 * @throws AssertionError if the input type is not compatible with the input
-	 *                        data class
 	 */
 	public AbstractTransformer(String name, T_IN input, DataType inputType, DataType outputType) {
 		super(name);
@@ -70,8 +73,6 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param name       The name of the transformer
 	 * @param inputType  The type of the input data
 	 * @param outputType The type of the output data
-	 * @throws AssertionError if the input type is not compatible with the
-	 *                        transformer's class
 	 */
 	@SuppressWarnings("unchecked")
 	public AbstractTransformer(String name, DataType inputType, DataType outputType) {

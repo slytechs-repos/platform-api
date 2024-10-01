@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,7 @@ import java.time.Instant;
 /**
  * The Class RebasedTimestampSource.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class RebasedTimestampSource implements TimestampSource {
 
@@ -73,6 +72,9 @@ public class RebasedTimestampSource implements TimestampSource {
 	}
 
 	/**
+	 * Inits the.
+	 *
+	 * @param initialTimestamp the initial timestamp
 	 * @see com.slytechs.jnet.jnetruntime.time.TimestampSource#init(long)
 	 */
 	@Override
@@ -82,6 +84,10 @@ public class RebasedTimestampSource implements TimestampSource {
 	}
 
 	/**
+	 * Update.
+	 *
+	 * @param newTimestamp the new timestamp
+	 * @throws InterruptedException the interrupted exception
 	 * @see com.slytechs.jnet.jnetruntime.time.TimestampSource#update(long)
 	 */
 	@Override
@@ -96,6 +102,9 @@ public class RebasedTimestampSource implements TimestampSource {
 	}
 
 	/**
+	 * Checks if is realtime.
+	 *
+	 * @return the realtime
 	 * @see com.slytechs.jnet.jnetruntime.time.TimestampSource#isRealtime()
 	 */
 	@Override

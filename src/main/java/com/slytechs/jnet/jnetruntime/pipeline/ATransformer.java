@@ -40,8 +40,6 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  */
 @Retention(RUNTIME)
 @Target(METHOD)

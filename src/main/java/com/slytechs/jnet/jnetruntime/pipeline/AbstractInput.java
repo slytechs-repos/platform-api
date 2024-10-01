@@ -39,9 +39,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer.E
  * @param <T_IN>   The type of input data
  * @param <T_OUT>  The type of output data
  * @param <T_BASE> The specific type of the transformer implementation
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends AbstractTransformer<T_IN, T_OUT, T_BASE>
@@ -51,6 +49,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	 * Default implementation of EntryPoint for AbstractInput.
 	 *
 	 * @param <T> The type of input data
+	 * @author Mark Bednarczyk
 	 */
 	private static class DefaultEntryPoint<T> extends AbstractEntryPoint<T> {
 
@@ -65,7 +64,10 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 		}
 	}
 
+	/** The head node. */
 	private final HeadNode<T_OUT> headNode;
+
+	/** The entry point map. */
 	private final Map<String, EntryPoint<T_IN>> entryPointMap = new HashMap<>();
 
 	/**

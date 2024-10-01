@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,20 +21,38 @@ import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Class DefaultForeignDowncall.
  *
+ * @author Mark Bednarczyk
  */
 public class DefaultForeignDowncall extends ForeignDowncall<IllegalStateException> {
 
+	/**
+	 * Instantiates a new default foreign downcall.
+	 *
+	 * @param symbolName    the symbol name
+	 * @param symbolAddress the symbol address
+	 * @param handle        the handle
+	 */
 	public DefaultForeignDowncall(String symbolName, MemorySegment symbolAddress, MethodHandle handle) {
 		super(symbolName, symbolAddress, handle, IllegalStateException::new);
 	}
 
+	/**
+	 * Instantiates a new default foreign downcall.
+	 *
+	 * @param symbolName the symbol name
+	 * @param cause      the cause
+	 */
 	public DefaultForeignDowncall(String symbolName, Throwable cause) {
 		super(symbolName, cause);
 	}
 
+	/**
+	 * Instantiates a new default foreign downcall.
+	 *
+	 * @param symbolName the symbol name
+	 */
 	public DefaultForeignDowncall(String symbolName) {
 		super(symbolName);
 	}

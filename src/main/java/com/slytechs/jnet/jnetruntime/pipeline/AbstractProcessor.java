@@ -31,9 +31,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *
  * @param <T>      The type of data processed by this processor
  * @param <T_BASE> The specific type of the processor implementation
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends AbstractComponent<T_BASE>
@@ -43,20 +41,42 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * A dummy processor used for internal operations.
 	 *
 	 * @param <T> The type of data processed by this dummy processor
+	 * @author Mark Bednarczyk
 	 */
 	static class Dummy<T> extends AbstractProcessor<T, Dummy<T>> {
+
+		/**
+		 * Instantiates a new dummy.
+		 *
+		 * @param type the type
+		 */
 		Dummy(DataType type) {
 			super(type);
 		}
 	}
 
+	/** The priority. */
 	private int priority;
+
+	/** The data type. */
 	private final DataType dataType;
+
+	/** The input data. */
 	private T inputData;
+
+	/** The output data. */
 	private T outputData; // Auto maintained and updated by DataList object
+
+	/** The output list. */
 	private final DataList<T> outputList;
+
+	/** The pipeline. */
 	private final AbstractPipeline<T, ?> pipeline;
+
+	/** The next processor. */
 	private AbstractProcessor<T, ?> nextProcessor;
+
+	/** The next link registration. */
 	private Registration nextLinkRegistration;
 
 	/**

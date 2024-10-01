@@ -22,12 +22,14 @@ import java.util.function.IntSupplier;
 /**
  * The Interface IsIntBitmask.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface IsIntBitmask extends IntSupplier {
 
 	/**
+	 * Gets the as int.
+	 *
+	 * @return the as int
 	 * @see java.util.function.IntSupplier#getAsInt()
 	 */
 	@Override

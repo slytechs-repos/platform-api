@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,10 +24,8 @@ import com.slytechs.jnet.jnetruntime.internal.util.ByteArraySlice;
 /**
  * The Interface FormatPropertyGetter.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- * @author mark
  * @param <T> the generic type
+ * @author mark
  */
 public interface FormatPropertyGetter<T> {
 

@@ -25,16 +25,24 @@ import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.DataType.DataSupport;
 
+/**
+ * The Class TailNode.
+ *
+ * @param <T> the generic type
+ * @author Mark Bednarczyk
+ */
 public final class TailNode<T>
 		extends BuiltinNode<T, TailNode<T>> {
 
+	/** The output map. */
 	private final Map<Object, AbstractOutput<T, ?, ?>> outputMap = new HashMap<>();
 
 	/**
-	 * @param priority
-	 * @param name     public Registration addInput(InputEntryPoint<?> input) {
-	 * 
-	 * @param type
+	 * Instantiates a new tail node.
+	 *
+	 * @param parent the parent
+	 * @param name   public Registration addInput(InputEntryPoint<?> input) {
+	 * @param type   the type
 	 */
 	public TailNode(Pipeline<T, ?> parent, String name, DataType type) {
 		super(parent, Pipeline.TAIL_BUILTIN_PRIORITY, name, type, type.empty());
@@ -42,6 +50,12 @@ public final class TailNode<T>
 		enable(true);
 	}
 
+	/**
+	 * Adds the output.
+	 *
+	 * @param output the output
+	 * @param id     the id
+	 */
 	public void addOutput(AbstractOutput<T, ?, ?> output, Object id) {
 
 		// Check for valid ID types
@@ -58,6 +72,11 @@ public final class TailNode<T>
 		outputMap.put(id, output);
 	}
 
+	/**
+	 * Outputs to string.
+	 *
+	 * @return the string
+	 */
 	public String outputsToString() {
 		return outputMap.values().stream()
 				.sorted()
@@ -66,6 +85,8 @@ public final class TailNode<T>
 	}
 
 	/**
+	 * Re link data.
+	 *
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
 	 */
 	@Override

@@ -24,9 +24,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  *
  * @param <T>      The type of data processed by this node
  * @param <T_BASE> The specific type of the data processor implementation
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 abstract class BuiltinNode<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends AbstractProcessor<T, T_BASE> {

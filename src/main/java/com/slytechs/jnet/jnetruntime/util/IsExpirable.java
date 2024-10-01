@@ -23,6 +23,8 @@ import com.slytechs.jnet.jnetruntime.time.TimestampSource;
 
 /**
  * The Interface IsExpirable.
+ *
+ * @author Mark Bednarczyk
  */
 public interface IsExpirable {
 

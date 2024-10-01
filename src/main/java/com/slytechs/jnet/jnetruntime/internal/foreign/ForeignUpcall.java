@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,20 +26,32 @@ import java.lang.invoke.MethodHandle;
 /**
  * The Class ForeignUpcall.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- * @author mark
  * @param <T> the generic type
+ * @author mark
  */
 public class ForeignUpcall<T> {
 
+	/** The Constant C_LINKER. */
 	private static final Linker C_LINKER = Linker.nativeLinker();
 
+	/** The message. */
 	private final String message; // Stub error handler
+	
+	/** The cause. */
 	private final Throwable cause; // Stub error handler
+	
+	/** The handle. */
 	private final MethodHandle handle;
+	
+	/** The descriptor. */
 	private final FunctionDescriptor descriptor;
 
+	/**
+	 * Instantiates a new foreign upcall.
+	 *
+	 * @param handle     the handle
+	 * @param descriptor the descriptor
+	 */
 	ForeignUpcall(MethodHandle handle, FunctionDescriptor descriptor) {
 		this.handle = handle;
 		this.descriptor = descriptor;
@@ -47,6 +59,12 @@ public class ForeignUpcall<T> {
 		this.cause = null;
 	}
 
+	/**
+	 * Instantiates a new foreign upcall.
+	 *
+	 * @param message the message
+	 * @param cause   the cause
+	 */
 	ForeignUpcall(String message, Throwable cause) {
 		this.message = message;
 		this.cause = cause;
@@ -54,6 +72,9 @@ public class ForeignUpcall<T> {
 		this.descriptor = null;
 	}
 
+	/**
+	 * Throw if errors.
+	 */
 	private void throwIfErrors() {
 		if (cause != null)
 			throw (cause instanceof RuntimeException e)
@@ -61,10 +82,23 @@ public class ForeignUpcall<T> {
 					: new RuntimeException(message, cause);
 	}
 
+	/**
+	 * Virtual stub pointer.
+	 *
+	 * @param target the target
+	 * @return the memory segment
+	 */
 	public MemorySegment virtualStubPointer(T target) {
 		return virtualStubPointer(target, Arena.ofAuto());
 	}
 
+	/**
+	 * Virtual stub pointer.
+	 *
+	 * @param target the target
+	 * @param scope  the scope
+	 * @return the memory segment
+	 */
 	public MemorySegment virtualStubPointer(T target, Arena scope) {
 		throwIfErrors();
 
@@ -75,10 +109,21 @@ public class ForeignUpcall<T> {
 
 	}
 
+	/**
+	 * Static stub pointer.
+	 *
+	 * @return the memory segment
+	 */
 	public MemorySegment staticStubPointer() {
 		return staticStubPointer(Arena.ofAuto());
 	}
 
+	/**
+	 * Static stub pointer.
+	 *
+	 * @param scope the scope
+	 * @return the memory segment
+	 */
 	public MemorySegment staticStubPointer(Arena scope) {
 		throwIfErrors();
 

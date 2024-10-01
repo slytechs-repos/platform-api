@@ -22,15 +22,14 @@ import java.util.Objects;
 /**
  * Represents a registration that can be unregistered. This interface provides a
  * stateless way to manage the unregistration of handlers or resources.
- *
+ * 
  * <p>
  * Implementations of this interface define the specific behavior for
  * unregistration, allowing for flexible and context-specific cleanup
  * operations.
  * </p>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface Registration {
 

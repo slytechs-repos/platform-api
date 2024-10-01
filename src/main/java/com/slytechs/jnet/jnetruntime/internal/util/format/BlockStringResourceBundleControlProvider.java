@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,8 @@ import java.util.spi.ResourceBundleControlProvider;
  * As per block quote specification, all white space between the triple block
  * quotes is also preserved by escaping each whitespace character in the input
  * stream.
+ *
+ * @author Mark Bednarczyk
  */
 public class BlockStringResourceBundleControlProvider implements ResourceBundleControlProvider {
 	

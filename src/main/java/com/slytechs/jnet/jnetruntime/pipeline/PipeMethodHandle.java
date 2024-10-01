@@ -27,9 +27,7 @@ import java.lang.reflect.Method;
  * invoke methods and manage output data.
  *
  * @param <T> The type of output data produced by this method handle
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public final class PipeMethodHandle<T> implements HasOutputData<T> {
 
@@ -38,13 +36,16 @@ public final class PipeMethodHandle<T> implements HasOutputData<T> {
 	 *
 	 * @param <T_IN>  The input type for the adaptor
 	 * @param <T_OUT> The output type for the adaptor
+	 * @author Mark Bednarczyk
 	 */
 	public interface DataHandleAdaptor<T_IN, T_OUT> {
+		
 		/**
 		 * Specialized interface for unary (same input and output type) data handle
 		 * adaptors.
 		 *
 		 * @param <T> The type of data for both input and output
+		 * @author Mark Bednarczyk
 		 */
 		public interface UniDataHandleAdaptor<T> extends DataHandleAdaptor<T, T> {
 		}
@@ -85,7 +86,10 @@ public final class PipeMethodHandle<T> implements HasOutputData<T> {
 		}
 	}
 
+	/** The handle. */
 	private final MethodHandle handle;
+	
+	/** The output. */
 	private HasOutputData<T> output;
 
 	/**

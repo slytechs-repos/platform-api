@@ -17,8 +17,19 @@
  */
 package com.slytechs.jnet.jnetruntime.util;
 
+/**
+ * The Interface Id.
+ *
+ * @author Mark Bednarczyk
+ */
 public interface Id {
 
+	/**
+	 * Id.
+	 *
+	 * @param <T> the generic type
+	 * @return the t
+	 */
 	@SuppressWarnings("unchecked")
 	default <T> T id() {
 		if (this instanceof Enum<?> hasEnum)

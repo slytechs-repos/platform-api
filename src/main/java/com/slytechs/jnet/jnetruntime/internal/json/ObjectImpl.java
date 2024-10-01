@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,14 +28,14 @@ import java.util.Set;
 /**
  * The Class ObjectImpl.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @author Mark Bednarczyk
  */
 class ObjectImpl implements JsonObject {
 
 	/** The map. */
 	final Map<String, JsonValue> map;
+	
+	/** The list. */
 	final List<String> list;
 
 	/**
@@ -49,7 +49,8 @@ class ObjectImpl implements JsonObject {
 	/**
 	 * Instantiates a new object impl.
 	 *
-	 * @param map the map
+	 * @param map  the map
+	 * @param list the list
 	 */
 	public ObjectImpl(Map<String, JsonValue> map, List<String> list) {
 		this.map = map;

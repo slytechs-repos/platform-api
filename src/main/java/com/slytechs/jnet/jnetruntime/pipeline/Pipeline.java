@@ -86,10 +86,10 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  *     style T fill:#ff9,stroke:#333,stroke-width:2px,color:#000
  * ```
  * </pre>
- * 
+ *
  * @param <T>      The type of data processed by this pipeline
  * @param <T_BASE> The base type of the pipeline implementation
- * 
+ * @author Mark Bednarczyk
  * @see HeadNode
  * @see TailNode
  * @see DataProcessor
@@ -114,10 +114,10 @@ public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName
 		T_BASE newPipeline(String name);
 	}
 
-	/** Priority value for built-in head components */
+	/** Priority value for built-in head components. */
 	int HEAD_BUILTIN_PRIORITY = -1;
 
-	/** Priority value for built-in tail components */
+	/** Priority value for built-in tail components. */
 	int TAIL_BUILTIN_PRIORITY = Integer.MAX_VALUE;
 
 	/**

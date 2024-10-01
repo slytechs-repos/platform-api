@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,15 +20,27 @@ package com.slytechs.jnet.jnetruntime.internal.util;
 import java.util.Optional;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Class Reflections.
  *
+ * @author Mark Bednarczyk
  */
 public final class Reflections {
 
+	/**
+	 * Instantiates a new reflections.
+	 */
 	private Reflections() {
 	}
 
+	/**
+	 * Load class.
+	 *
+	 * @param <T>        the generic type
+	 * @param moduleName the module name
+	 * @param className  the class name
+	 * @return the class
+	 * @throws ClassNotFoundException the class not found exception
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> loadClass(String moduleName, String className) throws ClassNotFoundException {
 
@@ -51,6 +63,12 @@ public final class Reflections {
 		return clazz;
 	}
 
+	/**
+	 * Load module.
+	 *
+	 * @param moduleName the module name
+	 * @return the module
+	 */
 	public static Module loadModule(String moduleName) {
 		Optional<Module> module = Optional.empty();
 		if (moduleName != null)
@@ -60,6 +78,15 @@ public final class Reflections {
 		return module.orElse(null);
 	}
 
+	/**
+	 * Load class.
+	 *
+	 * @param <T>       the generic type
+	 * @param module    the module
+	 * @param className the class name
+	 * @return the class
+	 * @throws ClassNotFoundException the class not found exception
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> loadClass(Module module, String className) throws ClassNotFoundException {
 

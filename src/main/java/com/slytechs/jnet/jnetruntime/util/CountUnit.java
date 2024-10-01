@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,8 @@ import com.slytechs.jnet.jnetruntime.util.UnitUtils.ConvertableUnit;
 /**
  * Enumeration of units for counting large numbers. This enum provides a set of
  * units and methods for converting between them.
+ *
+ * @author Mark Bednarczyk
  */
 public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 
@@ -43,8 +45,13 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 	/** Represents a quadrillion (10^15) counts. */
 	PETA(1_000_000_000_000_000L, "p");
 
+	/** The base. */
 	private final long base;
+	
+	/** The basef. */
 	private final double basef;
+	
+	/** The symbols. */
 	private final String[] symbols;
 
 	/**

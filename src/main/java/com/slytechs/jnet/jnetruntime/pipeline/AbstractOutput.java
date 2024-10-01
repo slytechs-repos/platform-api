@@ -39,9 +39,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @param <T_IN>   The type of input data
  * @param <T_OUT>  The type of output data
  * @param <T_BASE> The specific type of the transformer implementation
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends AbstractTransformer<T_IN, T_OUT, T_BASE>
@@ -49,11 +47,19 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 
 	/**
 	 * Implementation of the EndPoint interface for managing output endpoints.
+	 *
+	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	private class EndPointImpl<T> implements EndPoint<T_OUT>, Comparable<EndPoint<T_OUT>> {
 
+		/** The id. */
 		private final String id;
+
+		/** The priority. */
 		private int priority = HasPriority.DEFAULT_PRIORITY_VALUE;
+
+		/** The data list registration. */
 		private Registration dataListRegistration;
 
 		/**
@@ -140,10 +146,17 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		}
 	}
 
+	/** The tail node. */
 	@SuppressWarnings("unused")
 	private final TailNode<T_IN> tailNode;
+
+	/** The output data list. */
 	private final DataList<T_OUT> outputDataList;
+
+	/** The end point map. */
 	private final Map<String, EndPoint<T_OUT>> endPointMap = new HashMap<>();
+
+	/** The priority. */
 	private int priority = HasPriority.DEFAULT_PRIORITY_VALUE;
 
 	/**

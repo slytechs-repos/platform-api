@@ -32,9 +32,7 @@ import com.slytechs.jnet.jnetruntime.util.HasRegistration;
  * </p>
  *
  * @param <T_BASE> The specific type of the pipeline component implementation
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface PipeComponent<T_BASE extends PipeComponent<T_BASE>> extends HasName, HasRegistration {
 

@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,10 +25,9 @@ import java.util.function.Function;
  * A cache utility class backed by WeakHashMap to garbage collect entries that
  * haven't been used recently.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @param <K> the key type
  * @param <V> the value type
+ * @author Mark Bednarczyk
  */
 public final class WeakNamedCache<K, V> {
 

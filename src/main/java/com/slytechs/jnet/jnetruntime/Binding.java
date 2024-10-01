@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,6 @@ package com.slytechs.jnet.jnetruntime;
  * {@link MemoryBinding} which binds data to protocol specific objects such as
  * packets and headers.
  * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @author Mark Bednarczyk
  *
  */

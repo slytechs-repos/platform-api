@@ -23,15 +23,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * The Class HeadNode.
+ *
+ * @param <T> the generic type
+ * @author Mark Bednarczyk
+ */
 public final class HeadNode<T>
 		extends BuiltinNode<T, HeadNode<T>> {
 
+	/** The input map. */
 	private final Map<Object, AbstractInput<?, T, ?>> inputMap = new HashMap<>();
 
 	/**
-	 * @param priority
-	 * @param name
-	 * @param type
+	 * Instantiates a new head node.
+	 *
+	 * @param parent the parent
+	 * @param name   the name
+	 * @param type   the type
 	 */
 	public HeadNode(Pipeline<T, ?> parent, String name, DataType type) {
 		super(parent, Pipeline.HEAD_BUILTIN_PRIORITY, name, type, null);
@@ -40,6 +49,9 @@ public final class HeadNode<T>
 	}
 
 	/**
+	 * Next processor.
+	 *
+	 * @param next the next
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#nextProcessor(com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor)
 	 */
 	@Override
@@ -53,6 +65,12 @@ public final class HeadNode<T>
 		inputMap.values().forEach(t -> t.outputData(out));
 	}
 
+	/**
+	 * Adds the input.
+	 *
+	 * @param input the input
+	 * @param id    the id
+	 */
 	public void addInput(AbstractInput<?, T, ?> input, Object id) {
 		if (inputMap.containsKey(id))
 			throw new IllegalArgumentException("input [%s] with this id [%s] already exists in pipeline [%s]"
@@ -61,6 +79,11 @@ public final class HeadNode<T>
 		inputMap.put(id, input);
 	}
 
+	/**
+	 * Inputs to string.
+	 *
+	 * @return the string
+	 */
 	public String inputsToString() {
 		return inputMap.values().stream()
 				.map(in -> (in.isEnabled() ? "%s%s" : "!%s%s").formatted(in.name(), in.inputsToString()))
@@ -68,6 +91,8 @@ public final class HeadNode<T>
 	}
 
 	/**
+	 * Re link data.
+	 *
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
 	 */
 	@Override
@@ -84,6 +109,12 @@ public final class HeadNode<T>
 				.forEach(t -> t.outputData(headOutput));
 	}
 
+	/**
+	 * On input enable.
+	 *
+	 * @param b     the b
+	 * @param input the input
+	 */
 	public void onInputEnable(boolean b, AbstractInput<?, T, ?> input) {
 //		reLinkData();
 	}

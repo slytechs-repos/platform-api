@@ -20,8 +20,7 @@ package com.slytechs.jnet.jnetruntime.util;
 /**
  * The Interface IsIntFlag.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface IsIntFlag extends IsIntBitmask {
 

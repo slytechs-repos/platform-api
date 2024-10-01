@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,6 @@ import java.util.stream.Stream;
  * The Interface HasBinaryFields.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 public interface HasBinaryFields {
 

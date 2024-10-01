@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,22 +27,26 @@ import org.junit.jupiter.api.TestInfo;
 /**
  * Utility jUnit test methods.
  * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  */
 public final class Tests {
 
+	/** The Constant VERBOSE. */
 	public static final boolean VERBOSE = false;
+	
+	/** The Constant out. */
 	public static final PrintStream out = VERBOSE
 			? System.out
 			: new PrintStream(PrintStream.nullOutputStream());
 
+	/** The Constant err. */
 	public static final PrintStream err = VERBOSE
 			? System.err
 			: new PrintStream(PrintStream.nullOutputStream());
 
 	/**
 	 * Enable console logging at specified level.
+	 *
+	 * @param level the level
 	 */
 	public static void enableConsoleLogging(Level level) {
 		ConsoleHandler consolehandler = new ConsoleHandler();
@@ -57,12 +61,17 @@ public final class Tests {
 		anonymouslogger.setLevel(level);
 	}
 
+	/**
+	 * Display test name.
+	 *
+	 * @param info the info
+	 */
 	public static void displayTestName(TestInfo info) {
 		Tests.out.printf("---- %s ----%n", info.getDisplayName());
 	}
 
 	/**
-	 * 
+	 * Instantiates a new tests.
 	 */
 	private Tests() {
 	}

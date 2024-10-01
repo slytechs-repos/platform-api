@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,8 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The Class RebasedTimetSource.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class RebasedTimetSource implements TimeSource.Updatable {
 
@@ -51,6 +50,9 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	}
 
 	/**
+	 * Initialize.
+	 *
+	 * @param initTimestamp the init timestamp
 	 * @see com.slytechs.jnet.jnetruntime.time.TimeSource.Updatable#initialize(long)
 	 */
 	@Override
@@ -60,6 +62,9 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	}
 
 	/**
+	 * Update.
+	 *
+	 * @param newTimestamp the new timestamp
 	 * @see com.slytechs.jnet.jnetruntime.time.TimeSource.Updatable#update(long)
 	 */
 	@Override
@@ -95,6 +100,9 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	}
 
 	/**
+	 * Time unit.
+	 *
+	 * @return the time unit
 	 * @see com.slytechs.jnet.jnetruntime.time.TimeSource#timeUnit()
 	 */
 	@Override

@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,9 +21,8 @@ package com.slytechs.jnet.jnetruntime.util;
  * Interface which describes a segment or collection of elements (ie. bytes in a
  * buffer, a set of elements, etc) and provides various segment related
  * operations such as union, intersection, etc.
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ *
+ * @author Mark Bednarczyk
  */
 public interface IntSegment {
 
@@ -31,6 +30,7 @@ public interface IntSegment {
 	 * The Interface IntDisjointOp.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	public interface IntDisjointOp<T extends IntSegment> {
 
@@ -48,6 +48,7 @@ public interface IntSegment {
 	 * The Interface IntOp.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	public interface IntOp<T extends IntSegment> {
 

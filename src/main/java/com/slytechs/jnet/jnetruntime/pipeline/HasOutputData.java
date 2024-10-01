@@ -34,9 +34,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * </p>
  *
  * @param <T> The type of output data produced by the implementing component
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface HasOutputData<T> {
 

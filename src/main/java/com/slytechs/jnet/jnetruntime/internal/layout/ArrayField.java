@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,12 +26,13 @@ import com.slytechs.jnet.jnetruntime.internal.util.ByteArray;
  * The Interface ArrayField.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 public interface ArrayField extends BinaryField {
 
 	/**
 	 * The Interface Proxy.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface Proxy extends ArrayField {
 
@@ -819,6 +820,8 @@ public interface ArrayField extends BinaryField {
 
 	/**
 	 * The Interface ArrayFieldFormatter.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface ArrayFieldFormatter {
 
@@ -846,6 +849,8 @@ public interface ArrayField extends BinaryField {
 
 	/**
 	 * The Class FormattedArrayField.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	class FormattedArrayField implements ArrayField.Proxy {
 

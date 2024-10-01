@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,12 +35,13 @@ import com.slytechs.jnet.jnetruntime.internal.layout.ValueLayout.OfShort;
  * The Class PredefinedLayout.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntN16.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int16 implements BinaryLayout.Proxy {
 
@@ -127,6 +128,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntB16.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int16be implements BinaryLayout.Proxy {
 
@@ -213,6 +216,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntL16.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int16le implements BinaryLayout.Proxy {
 
@@ -299,6 +304,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntN32.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int32 implements BinaryLayout.Proxy {
 
@@ -433,6 +440,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntB32.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int32be implements BinaryLayout.Proxy {
 
@@ -567,6 +576,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntL32.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int32le implements BinaryLayout.Proxy {
 
@@ -701,6 +712,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntN64.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int64 implements BinaryLayout.Proxy {
 
@@ -931,6 +944,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntB64.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int64be implements BinaryLayout.Proxy {
 
@@ -1161,6 +1176,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum IntL64.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int64le implements BinaryLayout.Proxy {
 
@@ -1391,6 +1408,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum Int8.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int8 implements BinaryLayout.Proxy {
 
@@ -1451,6 +1470,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum Int8.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int8be implements BinaryLayout.Proxy {
 
@@ -1511,6 +1532,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum Int8.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Int8le implements BinaryLayout.Proxy {
 
@@ -1571,6 +1594,8 @@ public final class PredefinedLayout {
 
 	/**
 	 * The Enum Padding.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public enum Padding implements BinaryLayout.Proxy {
 

@@ -26,8 +26,7 @@ package com.slytechs.jnet.jnetruntime.util;
  * identification across different implementations.
  * </p>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface HasName {
 

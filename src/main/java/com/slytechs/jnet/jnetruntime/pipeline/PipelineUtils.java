@@ -31,12 +31,14 @@ import java.util.stream.IntStream;
  * Utility methods for looking up and computing pipeline elements. This class
  * provides various static methods to support the pipeline framework's
  * reflection and annotation-based operations.
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ *
+ * @author Mark Bednarczyk
  */
 class PipelineUtils {
 
+	/**
+	 * Instantiates a new pipeline utils.
+	 */
 	private PipelineUtils() {
 		/* Do not instantiate */
 	}

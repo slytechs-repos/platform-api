@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,12 +24,13 @@ import java.util.Objects;
  * class provides methods for version comparison, parsing, and validation.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 public class Version implements Comparable<Version> {
 
 	/**
 	 * Interface for classes that provide version information.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface HasVersion {
 		/**
@@ -100,9 +101,16 @@ public class Version implements Comparable<Version> {
 		}
 	}
 
+	/** The major. */
 	private int major;
+	
+	/** The minor. */
 	private int minor;
+	
+	/** The maintenance. */
 	private int maintenance;
+	
+	/** The build. */
 	private String build;
 
 	/**

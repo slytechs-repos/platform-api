@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,32 +29,44 @@ import com.slytechs.jnet.jnetruntime.util.MemoryUnit;
 import com.slytechs.jnet.jnetruntime.util.SystemProperties;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- *
+ * The Class TestSystemProperties.
  */
 class TestSystemProperties {
 
+	/** The random. */
 	static Random RANDOM = new Random();
 
+	/**
+	 * Make randomized property name.
+	 *
+	 * @param baseName the base name
+	 * @return the string
+	 */
 	static String makeRandomizedPropertyName(String baseName) {
 		return "%s_%016X".formatted(baseName, RANDOM.nextLong(0, Long.MAX_VALUE));
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * Sets the up.
+	 *
+	 * @throws Exception the exception
 	 */
 	@BeforeEach
 	void setUp() throws Exception {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * Tear down.
+	 *
+	 * @throws Exception the exception
 	 */
 	@AfterEach
 	void tearDown() throws Exception {
 	}
 
+	/**
+	 * Int value no units.
+	 */
 	@Test
 	void intValue_NoUnits() {
 		int EXPECTED = 10;
@@ -63,6 +75,9 @@ class TestSystemProperties {
 		assertEquals(EXPECTED, value);
 	}
 
+	/**
+	 * Int value with units.
+	 */
 	@Test
 	void intValue_WithUnits() {
 		int EXPECTED = 10 * 1024;
@@ -71,6 +86,9 @@ class TestSystemProperties {
 		assertEquals(EXPECTED, value);
 	}
 
+	/**
+	 * Int value with units from environment.
+	 */
 	@Test
 	void intValue_WithUnits_FromEnvironment() {
 		final String PROPERTY = makeRandomizedPropertyName("intValue");

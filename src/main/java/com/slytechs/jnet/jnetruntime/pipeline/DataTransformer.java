@@ -31,6 +31,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @param <T_IN>   The type of input data
  * @param <T_OUT>  The type of output data
  * @param <T_BASE> The specific type of the transformer implementation
+ * @author Mark Bednarczyk
  */
 public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends HasName, PipeComponent<T_BASE> {
@@ -49,6 +50,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * @param <T_OUT>  The type of output data
 		 * @param <T_BASE> The specific type of the input transformer
 		 * @param <T_ARG1> The type of the argument
+		 * @author Mark Bednarczyk
 		 */
 		interface Arg1<T_OUT, T_BASE extends InputTransformer<?>, T_ARG1> {
 			/**
@@ -68,6 +70,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * @param <T_BASE> The specific type of the input transformer
 		 * @param <T_ARG1> The type of the first argument
 		 * @param <T_ARG2> The type of the second argument
+		 * @author Mark Bednarczyk
 		 */
 		interface Arg2<T_OUT, T_BASE extends InputTransformer<?>, T_ARG1, T_ARG2> {
 			/**
@@ -94,6 +97,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * Represents an input transformer in the pipeline.
 	 *
 	 * @param <T> The type of input data
+	 * @author Mark Bednarczyk
 	 */
 	interface InputTransformer<T> extends HasInputData<T> {
 
@@ -101,6 +105,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * Represents an entry point for input data in the pipeline.
 		 *
 		 * @param <T> The type of input data
+		 * @author Mark Bednarczyk
 		 */
 		interface EntryPoint<T> extends Registration, HasName {
 
@@ -118,6 +123,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 				 * @param <T>      The type of input data
 				 * @param <T_BASE> The specific type of the entry point
 				 * @param <T1>     The type of the argument
+				 * @author Mark Bednarczyk
 				 */
 				interface Arg1<T, T_BASE extends EntryPoint<T>, T1> {
 					/**
@@ -138,6 +144,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 				 * @param <T_BASE> The specific type of the entry point
 				 * @param <T1>     The type of the first argument
 				 * @param <T2>     The type of the second argument
+				 * @author Mark Bednarczyk
 				 */
 				interface Arg2<T, T_BASE extends EntryPoint<T>, T1, T2> {
 					/**
@@ -258,6 +265,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * Represents an output transformer in the pipeline.
 	 *
 	 * @param <T> The type of output data
+	 * @author Mark Bednarczyk
 	 */
 	interface OutputTransformer<T> extends HasOutputData<T>, HasPriority {
 
@@ -265,6 +273,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * Represents an end point for output data in the pipeline.
 		 *
 		 * @param <T> The type of output data
+		 * @author Mark Bednarczyk
 		 */
 		interface EndPoint<T> extends Registration, HasPriority, HasName {
 			/**

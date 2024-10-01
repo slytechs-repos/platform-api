@@ -18,9 +18,9 @@
 package com.slytechs.jnet.jnetruntime.util;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Interface Reconfigurable.
  *
+ * @author Mark Bednarczyk
  */
 public interface Reconfigurable {
 

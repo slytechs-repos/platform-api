@@ -33,13 +33,14 @@ import com.slytechs.jnet.jnetruntime.internal.util.ByteArraySlice;
 /**
  * Utilities for various byte array to hex string conversions and parsing.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public class HexStrings {
 
 	/**
 	 * The Interface Spacer.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface Spacer {
 

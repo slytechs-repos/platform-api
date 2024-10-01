@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,16 +21,14 @@ package com.slytechs.jnet.jnetruntime.util;
  * The Class UnitUtils.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 class UnitUtils {
 
 	/**
 	 * The Interface ConvertableUnit.
 	 *
-	 * @author Sly Technologies
-	 * @author repos@slytechs.com
 	 * @param <T> the generic type
+	 * @author Sly Technologies
 	 */
 	interface ConvertableUnit<T extends Enum<T>> extends Unit {
 
@@ -109,6 +107,13 @@ class UnitUtils {
 		return String.format(fmt, unit.convertf(value), unit.getSymbol());
 	}
 
+	/**
+	 * Values.
+	 *
+	 * @param <U> the generic type
+	 * @param cl  the cl
+	 * @return the u[]
+	 */
 	static <U extends Unit> U[] values(Class<U> cl) {
 		if (!(Enum.class.isAssignableFrom(cl)))
 			throw new IllegalArgumentException("only enum based units are supported [%s]"
@@ -119,6 +124,14 @@ class UnitUtils {
 		return values;
 	}
 
+	/**
+	 * Parses the units.
+	 *
+	 * @param <U>           the generic type
+	 * @param valueAndUnits the value and units
+	 * @param cl            the cl
+	 * @return the u
+	 */
 	static <U extends Unit> U parseUnits(String valueAndUnits, Class<U> cl) {
 		U[] values = values(cl);
 		String str = valueAndUnits.toLowerCase().strip();
@@ -135,6 +148,13 @@ class UnitUtils {
 		return null;
 	}
 
+	/**
+	 * Strip units.
+	 *
+	 * @param valueAndUnits the value and units
+	 * @param cl            the cl
+	 * @return the string
+	 */
 	static String stripUnits(String valueAndUnits, Class<? extends Unit> cl) {
 		Unit[] values = values(cl);
 		String str = valueAndUnits.toLowerCase();

@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,12 +32,13 @@ import com.slytechs.jnet.jnetruntime.util.Bits;
  * .
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 public abstract class ValueLayout extends AbstractLayout implements HasDataCarrier {
 
 	/**
 	 * The Class OfAddress.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfAddress extends ValueLayout {
 		
@@ -113,6 +114,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfArray.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfArray extends ValueLayout {
 		
@@ -181,6 +184,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfByte.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfByte extends ValueLayout {
 		
@@ -253,6 +258,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfChar.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfChar extends ValueLayout {
 		
@@ -328,6 +335,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfDouble.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfDouble extends ValueLayout {
 		
@@ -403,6 +412,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfFloat.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfFloat extends ValueLayout {
 		
@@ -478,6 +489,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfInt.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfInt extends ValueLayout {
 		
@@ -554,6 +567,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfLong.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfLong extends ValueLayout {
 		
@@ -629,6 +644,8 @@ public abstract class ValueLayout extends AbstractLayout implements HasDataCarri
 
 	/**
 	 * The Class OfShort.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class OfShort extends ValueLayout {
 		

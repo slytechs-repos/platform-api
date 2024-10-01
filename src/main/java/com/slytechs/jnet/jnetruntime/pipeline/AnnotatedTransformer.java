@@ -31,9 +31,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.PipeMethodHandle.DataHandleAdaptor
  *
  * @param <T_IN>  The input type for the transformer
  * @param <T_OUT> The output type for the transformer
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 class AnnotatedTransformer<T_IN, T_OUT>
 		extends AbstractTransformer<T_IN, T_OUT, AnnotatedTransformer<T_IN, T_OUT>>

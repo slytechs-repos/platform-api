@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -54,9 +54,8 @@ import java.util.stream.IntStream;
  * the multiple hash tables and can be complex to implement.
  * </p>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @param <T> the generic type
+ * @author Mark Bednarczyk
  */
 public final class CuckooHashTable<T> extends HashTable<T> {
 
@@ -65,6 +64,8 @@ public final class CuckooHashTable<T> extends HashTable<T> {
 
 	/**
 	 * The Class Bucket.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	private static class Bucket {
 
@@ -103,6 +104,8 @@ public final class CuckooHashTable<T> extends HashTable<T> {
 
 	/**
 	 * The Class BucketEntry.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	private static class BucketEntry {
 

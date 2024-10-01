@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,9 +23,8 @@ import java.util.Collection;
 
 /**
  * Throws a runtime exception with multiple cause exceptions.
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ *
+ * @author Mark Bednarczyk
  */
 public class RuntimeMultipleExceptions extends RuntimeException {
 
@@ -84,6 +83,9 @@ public class RuntimeMultipleExceptions extends RuntimeException {
 	}
 
 	/**
+	 * To string.
+	 *
+	 * @return the string
 	 * @see java.lang.Throwable#toString()
 	 */
 	@Override
@@ -110,6 +112,9 @@ public class RuntimeMultipleExceptions extends RuntimeException {
 	}
 
 	/**
+	 * Prints the stack trace.
+	 *
+	 * @param s the s
 	 * @see java.lang.Throwable#printStackTrace(java.io.PrintStream)
 	 */
 	@Override

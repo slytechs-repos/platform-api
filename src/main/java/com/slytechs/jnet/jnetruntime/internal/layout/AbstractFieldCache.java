@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,6 @@ import com.slytechs.jnet.jnetruntime.util.MemoryUnit;
  * The Class AbstractFieldCache.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 class AbstractFieldCache {
 
@@ -37,6 +36,8 @@ class AbstractFieldCache {
 
 	/**
 	 * The Class Entry.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public static class Entry {
 		

@@ -23,9 +23,8 @@ import java.lang.Thread.UncaughtExceptionHandler;
  * Vetoable uncaught exception handler. Just like the JDK's
  * UncaughtExceptionHandler but allows a boolean value to be returned allowing a
  * veto or interruption of whatever service is running.
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ *
+ * @author Mark Bednarczyk
  */
 public interface VetoableExceptionHandler extends UncaughtExceptionHandler {
 

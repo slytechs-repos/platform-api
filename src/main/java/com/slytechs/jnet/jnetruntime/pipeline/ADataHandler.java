@@ -24,9 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Interface ADataHandler.
  *
+ * @author Mark Bednarczyk
  */
 @Retention(RUNTIME)
 @Target(METHOD)

@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,21 +24,38 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Class JsonObjectCache.
+ *
+ * @author Mark Bednarczyk
  */
 public class JsonObjectCache {
 
+	/** The map. */
 	private final Map<String, JsonObject> map;
 
+	/**
+	 * Instantiates a new json object cache.
+	 */
 	public JsonObjectCache() {
 		this(new HashMap<>());
 	}
 
+	/**
+	 * Instantiates a new json object cache.
+	 *
+	 * @param mapUsedForCaching the map used for caching
+	 */
 	public JsonObjectCache(Map<String, JsonObject> mapUsedForCaching) {
 		this.map = Objects.requireNonNull(mapUsedForCaching);
 	}
 
+	/**
+	 * Compute if absent.
+	 *
+	 * @param name the name
+	 * @param in   the in
+	 * @return the json object
+	 */
 	public synchronized JsonObject computeIfAbsent(String name, Supplier<InputStream> in) {
 		if (map.containsKey(name))
 			return map.get(name);

@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -75,10 +75,8 @@ import com.slytechs.jnet.jnetruntime.internal.util.collection.LinkedListSupport;
  * 	    +---+    +---+    +---+    +---+
  * </pre>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- * @author Mark Bednarczyk
  * @param <T> the generic type
+ * @author Mark Bednarczyk
  */
 public class RingExecutor<T> {
 
@@ -86,6 +84,7 @@ public class RingExecutor<T> {
 	 * The Class Entry.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	static class Entry<T>
 			extends LinkedListSupport.LinkedEntry<T, Entry<T>>
@@ -141,6 +140,7 @@ public class RingExecutor<T> {
 	 * The Interface ResourceStatus.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	public interface ResourceStatus<T> {
 		
@@ -167,6 +167,7 @@ public class RingExecutor<T> {
 	 * The Class Slot.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	public static abstract class Slot<T> {
 

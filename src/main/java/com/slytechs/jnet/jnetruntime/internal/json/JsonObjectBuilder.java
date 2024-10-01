@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,9 +24,17 @@ import java.util.Map;
 
 /**
  * The Class JsonObjectBuilder.
+ *
+ * @author Mark Bednarczyk
  */
 public final class JsonObjectBuilder {
 
+	/**
+	 * Wrap or else new instance.
+	 *
+	 * @param source the source
+	 * @return the json object builder
+	 */
 	public static JsonObjectBuilder wrapOrElseNewInstance(JsonObject source) {
 		if (source == null)
 			return new JsonObjectBuilder();
@@ -41,13 +49,24 @@ public final class JsonObjectBuilder {
 
 	/** The map. */
 	private final Map<String, JsonValue> map;
+	
+	/** The list. */
 	private final List<String> list;
 
+	/**
+	 * Instantiates a new json object builder.
+	 */
 	public JsonObjectBuilder() {
 		this.map = new HashMap<>();
 		this.list = new ArrayList<>();
 	}
 
+	/**
+	 * Instantiates a new json object builder.
+	 *
+	 * @param map  the map.
+	 * @param list the list
+	 */
 	private JsonObjectBuilder(Map<String, JsonValue> map, List<String> list) {
 		this.map = map;
 		this.list = list;

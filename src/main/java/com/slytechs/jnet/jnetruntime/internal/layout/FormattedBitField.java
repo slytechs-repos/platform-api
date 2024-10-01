@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,8 @@ import java.util.function.LongUnaryOperator;
 
 /**
  * The Class FormattedBitField.
+ *
+ * @author Mark Bednarczyk
  */
 public class FormattedBitField implements BitField.Proxy {
 
@@ -29,11 +31,14 @@ public class FormattedBitField implements BitField.Proxy {
 	 * The Interface ValueFormatter.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	public interface ValueFormatter<T> {
 
 		/**
 		 * The Interface OfLong.
+		 *
+		 * @author Mark Bednarczyk
 		 */
 		public interface OfLong extends ValueFormatter<Long> {
 			
@@ -82,6 +87,8 @@ public class FormattedBitField implements BitField.Proxy {
 
 	/**
 	 * The Interface FieldFormatter.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface FieldFormatter {
 		
@@ -110,6 +117,8 @@ public class FormattedBitField implements BitField.Proxy {
 
 	/**
 	 * The Interface BitFieldFormatter.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface BitFieldFormatter {
 

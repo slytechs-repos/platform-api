@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,8 @@ import com.slytechs.jnet.jnetruntime.util.UnitUtils.ConvertableUnit;
  * extensions may convert to {@link BigInteger} for storage, especially for the
  * larger units.
  * </p>
+ *
+ * @author Mark Bednarczyk
  */
 public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 
@@ -92,10 +94,14 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 	public static MemoryUnit nearest(long inBytes) {
 		return UnitUtils.nearest(inBytes, MemoryUnit.class, BYTES);
 	}
+	
+	/** The base. */
 	private final long base;
 
+	/** The basef. */
 	private final double basef;
 
+	/** The symbols. */
 	private final String[] symbols;
 
 	/**
@@ -218,6 +224,12 @@ public enum MemoryUnit implements ConvertableUnit<MemoryUnit>, Unit {
 		return (size * base);
 	}
 
+	/**
+	 * To bytes as double.
+	 *
+	 * @param size the size
+	 * @return the double
+	 */
 	private double toBytesAsDouble(double size) {
 		return size * basef;
 	}

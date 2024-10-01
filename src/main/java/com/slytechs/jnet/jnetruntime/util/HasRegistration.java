@@ -28,8 +28,7 @@ import java.util.Optional;
  * provide access to it if it exists.
  * </p>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface HasRegistration {
 

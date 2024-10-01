@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,8 +27,6 @@ import com.slytechs.jnet.jnetruntime.internal.ArrayUtils;
  * Utility class and a collection of different kinds of checksum generation
  * methods.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @author Mark Bednarczyk
  */
 public class Checksums {
@@ -37,8 +35,6 @@ public class Checksums {
 	 * Implements the IP Checksum 16 algorithm, for calculating the complement of 16
 	 * bit checksum.
 	 *
-	 * @author Sly Technologies Inc
-	 * @author repos@slytechs.com
 	 * @author Mark Bednarczyk
 	 */
 	public static class CRC16 implements Checksum {

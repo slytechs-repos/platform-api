@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,15 +63,16 @@ import java.util.stream.Stream;
  * as well as supporting firewall rules and caching of frequently accessed data.
  * </p>
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @param <T> the generic type
+ * @author Mark Bednarczyk
  */
 public class HashTable<T> implements KeyedTable<T> {
 
 	/**
 	 * An algorithm which calculates a hash code from buffer data. The data in the
 	 * buffer is used between the buffer's position and limit properties.
+	 * 
+	 * @author Mark Bednarczyk
 	 */
 	@FunctionalInterface
 	public interface HashAlgorithm {
@@ -89,6 +90,7 @@ public class HashTable<T> implements KeyedTable<T> {
 	 * The Class HashEntry.
 	 *
 	 * @param <T> the generic type
+	 * @author Mark Bednarczyk
 	 */
 	public static class HashEntry<T> implements Entry<T> {
 

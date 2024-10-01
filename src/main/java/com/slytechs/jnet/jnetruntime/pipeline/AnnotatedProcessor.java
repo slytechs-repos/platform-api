@@ -30,9 +30,7 @@ import java.util.Objects;
  * manage processors based on annotated methods.
  *
  * @param <T> The type of data processed by this processor
- * 
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcessor<T>> {
 
@@ -40,6 +38,7 @@ final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcesso
 	 * Interface for adapting method handles to the processor's data type.
 	 *
 	 * @param <T> The type of data processed by the processor
+	 * @author Mark Bednarczyk
 	 */
 	public interface MethodHandleAdaptor<T> {
 		/**
@@ -58,10 +57,12 @@ final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcesso
 	 * @param <T_OUT> The output type for the invoker
 	 */
 	public interface MethodInvokerFactory<T_IN, T_OUT> {
+		
 		/**
 		 * Specialized interface for unary (same input and output type) method invokers.
 		 *
 		 * @param <T> The type of data for both input and output
+		 * @author Mark Bednarczyk
 		 */
 		interface Uni<T> extends MethodInvokerFactory<T, T> {
 		}
@@ -221,11 +222,16 @@ final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcesso
 		return listAnnotatedProcessorMethods(channel, containerInstance, containerClass.getSuperclass(), list, adaptor);
 	}
 
+	/** The instance. */
 	private final Object instance;
+	
+	/** The handle. */
 	@SuppressWarnings({
 			"rawtypes",
 			"unused" })
 	private final PipeMethodHandle handle;
+	
+	/** The method. */
 	private final Method method;
 
 	/**

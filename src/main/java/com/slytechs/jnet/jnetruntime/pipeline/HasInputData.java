@@ -28,9 +28,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
  * </p>
  *
  * @param <T> The type of input data consumed by the implementing component
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public interface HasInputData<T> {
 

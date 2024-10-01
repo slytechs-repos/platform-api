@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,8 +24,6 @@ import java.util.List;
 /**
  * The Class ArrayImpl.
  *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
  * @author Mark Bednarczyk
  */
 class JsonArrayImpl implements JsonArray {
@@ -319,6 +317,10 @@ class JsonArrayImpl implements JsonArray {
 	}
 
 	/**
+	 * Gets the value type.
+	 *
+	 * @param index the index
+	 * @return the value type
 	 * @see com.slytechs.jnet.jnetruntime.internal.json.JsonArray#getValueType(int)
 	 */
 	@Override

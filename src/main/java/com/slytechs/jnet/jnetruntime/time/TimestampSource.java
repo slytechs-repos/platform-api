@@ -28,12 +28,13 @@ import java.util.concurrent.TimeoutException;
  * The Interface TimestampSource.
  *
  * @author Sly Technologies
- * @author repos@slytechs.com
  */
 public interface TimestampSource extends InstantSource {
 
 	/**
 	 * The Interface AssignableTimestampSource.
+	 *
+	 * @author Mark Bednarczyk
 	 */
 	public interface AssignableTimestampSource extends TimestampSource {
 

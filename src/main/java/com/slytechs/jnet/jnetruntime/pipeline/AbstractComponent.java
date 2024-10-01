@@ -26,7 +26,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * Abstract base class for pipeline components, implementing common
  * functionality and providing a foundation for specific component
  * implementations.
- *
+ * 
  * <p>
  * This class provides implementations for enabling/disabling components,
  * bypassing components, naming, and registration management. It also defines
@@ -36,16 +36,21 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *
  * @param <T_BASE> The specific type of the pipeline component, used for method
  *                 chaining
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 		implements PipeComponent<T_BASE> {
 
+	/** The name. */
 	private String name;
+
+	/** The registration. */
 	private Registration registration;
+
+	/** The enabled. */
 	private boolean enabled;
+
+	/** The bypass. */
 	private boolean bypass;
 
 	/**
@@ -214,8 +219,6 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 * should only be called by the pipeline management code.
 	 *
 	 * @param orNull The new Registration object, or null to unregister
-	 * @throws IllegalStateException if attempting to unregister an enabled
-	 *                               component
 	 */
 	final void setRegistration(Registration orNull) {
 		if (enabled && (orNull == null) && (registration != null))

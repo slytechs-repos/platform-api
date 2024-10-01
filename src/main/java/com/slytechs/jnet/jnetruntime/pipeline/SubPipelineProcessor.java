@@ -26,21 +26,33 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputFactory;
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * The Class SubPipelineProcessor.
  *
+ * @param <T> the generic type
+ * @author Mark Bednarczyk
  */
 class SubPipelineProcessor<T>
 		extends AbstractProcessor<T, SubPipelineProcessor<T>>
 		implements Pipeline<T, SubPipelineProcessor<T>> {
 
+	/**
+	 * Input from.
+	 *
+	 * @param <T>         the generic type
+	 * @param subPipeline the sub pipeline
+	 * @return the t
+	 */
 	private static <T> T inputFrom(Pipeline<T, ?> subPipeline) {
 		return subPipeline.head().inputData();
 	}
 
+	/** The sub pipeline. */
 	private final AbstractPipeline<T, ?> subPipeline;
 
 	/**
+	 * Output data.
+	 *
+	 * @return the t
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#outputData()
 	 */
 	@Override
@@ -49,6 +61,8 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
+	 * Re link data.
+	 *
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
 	 */
 	@Override
@@ -59,11 +73,12 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param pipeline
-	 * @param priority
-	 * @param name
-	 * @param type
-	 * @param data
+	 * Instantiates a new sub pipeline processor.
+	 *
+	 * @param pipeline    the pipeline
+	 * @param priority    the priority
+	 * @param name        the name
+	 * @param subPipeline the sub pipeline
 	 */
 	public SubPipelineProcessor(Pipeline<T, ?> pipeline, int priority, String name, Pipeline<T, ?> subPipeline) {
 		super(pipeline, priority, name, subPipeline.dataType(), inputFrom(subPipeline));
@@ -71,9 +86,11 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_INPUT>
-	 * @param factory
-	 * @return
+	 * Adds the input.
+	 *
+	 * @param <T_INPUT> the generic type
+	 * @param factory   the factory
+	 * @return the t input
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addInput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory)
 	 */
 	@Override
@@ -82,12 +99,14 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_INPUT>
-	 * @param <T1>
-	 * @param id
-	 * @param factory
-	 * @param arg1
-	 * @return
+	 * Adds the input.
+	 *
+	 * @param <T_INPUT> the generic type
+	 * @param <T1>      the generic type
+	 * @param id        the id
+	 * @param arg1      the arg 1
+	 * @param factory   the factory
+	 * @return the t input
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addInput(java.lang.String,
 	 *      java.lang.Object,
 	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory.Arg1)
@@ -99,10 +118,12 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_INPUT>
-	 * @param id
-	 * @param factory
-	 * @return
+	 * Adds the input.
+	 *
+	 * @param <T_INPUT> the generic type
+	 * @param id        the id
+	 * @param factory   the factory
+	 * @return the t input
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addInput(java.lang.String,
 	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory)
 	 */
@@ -112,14 +133,16 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_INPUT>
-	 * @param <T_ARG1>
-	 * @param <T_ARG2>
-	 * @param id
-	 * @param arg1
-	 * @param arg2
-	 * @param factory
-	 * @return
+	 * Adds the input.
+	 *
+	 * @param <T_INPUT> the generic type
+	 * @param <T_ARG1>  the generic type
+	 * @param <T_ARG2>  the generic type
+	 * @param id        the id
+	 * @param arg1      the arg 1
+	 * @param arg2      the arg 2
+	 * @param factory   the factory
+	 * @return the t input
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addInput(java.lang.String,
 	 *      java.lang.Object, java.lang.Object,
 	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory.Arg2)
@@ -131,9 +154,11 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_OUTPUT>
-	 * @param factory
-	 * @return
+	 * Adds the output.
+	 *
+	 * @param <T_OUTPUT> the generic type
+	 * @param factory    the factory
+	 * @return the t output
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addOutput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputFactory)
 	 */
 	@Override
@@ -142,10 +167,12 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_OUTPUT>
-	 * @param id
-	 * @param factory
-	 * @return
+	 * Adds the output.
+	 *
+	 * @param <T_OUTPUT> the generic type
+	 * @param id         the id
+	 * @param factory    the factory
+	 * @return the t output
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addOutput(java.lang.String,
 	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputFactory)
 	 */
@@ -155,10 +182,12 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_PROC>
-	 * @param priority
-	 * @param processorFactory
-	 * @return
+	 * Adds the processor.
+	 *
+	 * @param <T_PROC>         the generic type
+	 * @param priority         the priority
+	 * @param processorFactory the processor factory
+	 * @return the t proc
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addProcessor(int,
 	 *      com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory)
 	 */
@@ -169,11 +198,13 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @param <T_PROC>
-	 * @param priority
-	 * @param name
-	 * @param processorFactory
-	 * @return
+	 * Adds the processor.
+	 *
+	 * @param <T_PROC>         the generic type
+	 * @param priority         the priority
+	 * @param name             the name
+	 * @param processorFactory the processor factory
+	 * @return the t proc
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#addProcessor(int,
 	 *      java.lang.String,
 	 *      com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory.Named)
@@ -185,7 +216,9 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @return
+	 * Data type.
+	 *
+	 * @return the data type
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#dataType()
 	 */
 	@Override
@@ -194,7 +227,9 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @return
+	 * Head.
+	 *
+	 * @return the head node
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#head()
 	 */
 	@Override
@@ -203,7 +238,9 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * @return
+	 * Tail.
+	 *
+	 * @return the tail node
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline#tail()
 	 */
 	@Override

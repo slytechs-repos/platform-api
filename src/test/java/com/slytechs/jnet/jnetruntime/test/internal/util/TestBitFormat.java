@@ -1,7 +1,7 @@
 /*
  * Sly Technologies Free License
  * 
- * Copyright 2023 Sly Technologies Inc.
+ * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,12 +29,16 @@ import com.slytechs.jnet.jnetruntime.internal.util.format.BitFormat2;
 import com.slytechs.jnet.jnetruntime.test.Tests;
 
 /**
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
- *
+ * The Class TestBitFormat.
  */
 class TestBitFormat {
 
+	/**
+	 * Parses the byte binary.
+	 *
+	 * @param pattern the pattern
+	 * @return the byte
+	 */
 	private static byte parseByteBinary(String pattern) {
 		pattern = pattern
 				.replaceAll("\\s", "")
@@ -42,6 +46,11 @@ class TestBitFormat {
 		return (byte) Integer.parseInt(pattern, 2);
 	}
 
+	/**
+	 * Patt arr 2.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_arr2(TestInfo test) {
 		var PATTERN = "1101 1111"; // 1234567
@@ -60,6 +69,11 @@ class TestBitFormat {
 		assertEquals(EXPECTED, RESULT);
 	}
 
+	/**
+	 * Patt arr 3.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_arr3(TestInfo test) {
 		var PATTERN = "11.1 .1.1"; // 12345678
@@ -78,6 +92,11 @@ class TestBitFormat {
 		assertEquals(EXPECTED, RESULT);
 	}
 	
+	/**
+	 * Patt arr 4.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_arr4(TestInfo test) {
 		var PATTERN = "11.1 .1.1 1111"; // 12345678
@@ -98,6 +117,11 @@ class TestBitFormat {
 		assertEquals(EXPECTED, RESULT);
 	}
 
+	/**
+	 * Patt byte 1.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_byte1(TestInfo test) {
 		var PATTERN = "1111 1111";
@@ -111,6 +135,11 @@ class TestBitFormat {
 		assertEquals(EXPECTED, RESULT);
 	}
 
+	/**
+	 * Patt flags 1.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_flags1(TestInfo test) {
 		var PATTERN = ".ABC DEF.";
@@ -124,6 +153,11 @@ class TestBitFormat {
 		assertEquals(EXPECTED, RESULT);
 	}
 
+	/**
+	 * Patt num 1.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_num1(TestInfo test) {
 		var PATTERN = "1111 1111";
@@ -137,6 +171,11 @@ class TestBitFormat {
 		assertEquals(EXPECTED, RESULT);
 	}
 
+	/**
+	 * Patt num 2.
+	 *
+	 * @param test the test
+	 */
 	@Test
 	void patt_num2(TestInfo test) {
 		var PATTERN = ".110 111.";
@@ -151,14 +190,18 @@ class TestBitFormat {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * Sets the up.
+	 *
+	 * @throws Exception the exception
 	 */
 	@BeforeEach
 	void setUp() throws Exception {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * Tear down.
+	 *
+	 * @throws Exception the exception
 	 */
 	@AfterEach
 	void tearDown() throws Exception {

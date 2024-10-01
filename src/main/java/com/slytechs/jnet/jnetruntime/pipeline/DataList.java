@@ -40,17 +40,26 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * </p>
  *
  * @param <T> The type of data stored in this list
- *
- * @author Sly Technologies Inc
- * @author repos@slytechs.com
+ * @author Mark Bednarczyk
  */
 class DataList<T> {
 
+	/** The type. */
 	private final DataType type;
+	
+	/** The support. */
 	private final DataSupport<T> support;
+	
+	/** The component type. */
 	private final Class<T> componentType;
+	
+	/** The list. */
 	private final List<T> list = new ArrayList<>();
+	
+	/** The change listeners. */
 	private final DataChangeSupport<T> changeListeners = new DataChangeSupport<>();
+	
+	/** The data. */
 	private T data;
 
 	/**
@@ -103,18 +112,36 @@ class DataList<T> {
 		return changeListeners.addListener(listener);
 	}
 
+	/**
+	 * Update.
+	 *
+	 * @param b the b
+	 * @return true, if successful
+	 */
 	private boolean update(boolean b) {
 		data = wrap();
 		changeListeners.dispatch(data);
 		return b;
 	}
 
+	/**
+	 * Validate type.
+	 *
+	 * @param data the data
+	 * @throws IllegalArgumentException the illegal argument exception
+	 */
 	private void validateType(T data) throws IllegalArgumentException {
 		if (!type.isCompatibleWith(data.getClass()))
 			throw new IllegalArgumentException("data parameter [%s] does not match data type [%s] class [%s]"
 					.formatted(data.getClass(), type, type.dataClass()));
 	}
 
+	/**
+	 * Validate type.
+	 *
+	 * @param collection the collection
+	 * @throws IllegalArgumentException the illegal argument exception
+	 */
 	private void validateType(Collection<T> collection) throws IllegalArgumentException {
 		if (collection instanceof List<T> list && !list.isEmpty()) {
 			validateType(list.get(0));
