@@ -20,9 +20,20 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.Objects;
 
 /**
+ * Abstract base class for data transformers in a pipeline.
+ * 
+ * <p>
+ * This class implements the core functionality of a data transformer, including
+ * input and output data management and type handling. It serves as a foundation
+ * for creating specific data transformer implementations.
+ * </p>
+ *
+ * @param <T_IN>   The input data type
+ * @param <T_OUT>  The output data type
+ * @param <T_BASE> The specific type of the transformer implementation
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipeComponent<T_BASE>>
 		extends AbstractComponent<T_BASE>
@@ -33,45 +44,84 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	private final DataType inputType;
 	private final DataType outputType;
 
+	/**
+	 * Constructs a new AbstractTransformer with specified name, input data, input
+	 * type, and output type.
+	 *
+	 * @param name       The name of the transformer
+	 * @param input      The initial input data
+	 * @param inputType  The type of the input data
+	 * @param outputType The type of the output data
+	 * @throws AssertionError if the input type is not compatible with the input
+	 *                        data class
+	 */
 	public AbstractTransformer(String name, T_IN input, DataType inputType, DataType outputType) {
 		super(name);
-
+		assert inputType.isCompatibleWith(input.getClass());
 		this.inputData = input;
 		this.inputType = inputType;
 		this.outputType = outputType;
 	}
 
+	/**
+	 * Constructs a new AbstractTransformer with specified name, input type, and
+	 * output type. The transformer itself is set as the initial input data.
+	 *
+	 * @param name       The name of the transformer
+	 * @param inputType  The type of the input data
+	 * @param outputType The type of the output data
+	 * @throws AssertionError if the input type is not compatible with the
+	 *                        transformer's class
+	 */
 	@SuppressWarnings("unchecked")
 	public AbstractTransformer(String name, DataType inputType, DataType outputType) {
 		super(name);
-
+		assert inputType.isCompatibleWith(this.getClass()) : ""
+				+ "incompatible input type [%s] with subclass [%s]"
+						.formatted(inputType.name(), this.getClass().getSimpleName());
 		this.inputType = inputType;
 		this.outputType = outputType;
 		this.inputData = (T_IN) this;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public T_OUT outputData() {
 		return this.outputData;
 	}
 
+	/**
+	 * Sets the output data for this transformer.
+	 *
+	 * @param output The new output data
+	 * @return The set output data
+	 */
 	T_OUT outputData(T_OUT output) {
 		this.outputData = output;
-
 		return output;
 	}
 
+	/**
+	 * Sets the input data for this transformer.
+	 *
+	 * @param input The new input data
+	 * @return The set input data
+	 */
 	T_IN inputData(T_IN input) {
 		this.inputData = input;
-
 		return input;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public T_IN inputData() {
 		return this.inputData;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer#inputType()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public DataType inputType() {
@@ -79,7 +129,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer#outputType()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public DataType outputType() {
@@ -87,14 +137,12 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	}
 
 	/**
-	 * @see java.lang.Object#toString()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-
 		var in = inputData == null ? "" : Objects.toIdentityString(inputData);
 		var out = outputData == null ? "" : Objects.toIdentityString(outputData);
-
 		return ""
 				+ getClass().getSimpleName()
 				+ " [name=" + name()
@@ -105,4 +153,11 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 				+ "]";
 	}
 
+	/**
+	 * Re-links the data connections in the pipeline. This method is intended to be
+	 * overridden by subclasses if necessary.
+	 */
+	void reLinkData() {
+		// Default implementation does nothing
+	}
 }

@@ -25,52 +25,169 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
 import com.slytechs.jnet.jnetruntime.util.HasRegistration;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
+/**
+ * Represents a data processor in a pipeline, capable of processing input data
+ * and producing output data.
+ *
+ * @param <T>      The type of data processed by this processor
+ * @param <T_BASE> The specific type of the processor implementation
+ */
 public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends HasName, HasRegistration, PipeComponent<T_BASE>, HasOutputData<T>, HasInputData<T> {
 
+	/**
+	 * Represents a bypassable component in the pipeline.
+	 *
+	 * @param <T>      The type of data processed by this component
+	 * @param <T_BASE> The specific type of the bypassable component implementation
+	 */
 	interface IsBypassable<T, T_BASE extends IsBypassable<T, T_BASE>> {
+
+		/**
+		 * Checks if this component is currently bypassed.
+		 *
+		 * @return true if bypassed, false otherwise
+		 */
 		default boolean isBypassed() {
 			return bypassData() != null;
 		}
 
+		/**
+		 * Sets the bypass state of this component.
+		 *
+		 * @param b true to bypass, false otherwise
+		 * @return This component instance
+		 */
 		T_BASE bypass(boolean b);
 
+		/**
+		 * Sets the bypass state of this component using a boolean supplier.
+		 *
+		 * @param b A supplier that determines whether to bypass
+		 * @return This component instance
+		 */
 		T_BASE bypass(BooleanSupplier b);
 
+		/**
+		 * Gets the bypass data for this component.
+		 *
+		 * @return The bypass data
+		 */
 		T bypassData();
 
+		/**
+		 * Sets the bypass data for this component.
+		 *
+		 * @param bypassData The bypass data to set
+		 * @return This component instance
+		 */
 		T_BASE bypass(T bypassData);
 	}
 
+	/**
+	 * Factory for creating data processors.
+	 *
+	 * @param <T>      The type of data processed by the processor
+	 * @param <T_BASE> The specific type of the processor implementation
+	 */
 	interface ProcessorFactory<T, T_BASE extends DataProcessor<T, T_BASE>> {
-		T_BASE newProcessor(Pipeline<T, ?> parent, int priority, String name);
+
+		/**
+		 * Factory for creating named data processors.
+		 *
+		 * @param <T>      The type of data processed by the processor
+		 * @param <T_BASE> The specific type of the processor implementation
+		 */
+		interface Named<T, T_BASE extends DataProcessor<T, T_BASE>> {
+			/**
+			 * Creates a new named processor instance.
+			 *
+			 * @param parent   The parent pipeline
+			 * @param priority The priority of the processor
+			 * @param name     The name of the processor
+			 * @return A new processor instance
+			 */
+			T_BASE newProcessor(Pipeline<T, ?> parent, int priority, String name);
+		}
+
+		/**
+		 * Creates a new processor instance.
+		 *
+		 * @param parent   The parent pipeline
+		 * @param priority The priority of the processor
+		 * @return A new processor instance
+		 */
+		T_BASE newProcessor(Pipeline<T, ?> parent, int priority);
 	}
 
+	/**
+	 * Supports data change notifications for processors.
+	 *
+	 * @param <T> The type of data being processed
+	 */
 	public class DataChangeSupport<T> {
 		private final List<DataChangeListener<T>> listenerList = new ArrayList<>();
 
+		/**
+		 * Adds a data change listener.
+		 *
+		 * @param listener The listener to add
+		 * @return A registration object for the added listener
+		 */
 		public Registration addListener(DataChangeListener<T> listener) {
 			listenerList.add(listener);
-
 			return () -> listenerList.remove(listener);
 		}
 
+		/**
+		 * Dispatches a data change event to all registered listeners.
+		 *
+		 * @param newData The new data to dispatch
+		 */
 		public void dispatch(T newData) {
 			listenerList.forEach(l -> l.onDataChange(newData));
 		}
 	}
 
+	/**
+	 * Listener interface for data change events.
+	 *
+	 * @param <T> The type of data being processed
+	 */
 	interface DataChangeListener<T> {
+		/**
+		 * Called when the data changes.
+		 *
+		 * @param newData The new data
+		 */
 		void onDataChange(T newData);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	T inputData();
 
+	/**
+	 * Gets the data type processed by this processor.
+	 *
+	 * @return The data type
+	 */
 	DataType dataType();
 
+	/**
+	 * Gets the priority of this processor.
+	 *
+	 * @return The priority
+	 */
 	int priority();
 
+	/**
+	 * Sets the priority of this processor.
+	 *
+	 * @param newPriority The new priority to set
+	 * @return This processor instance
+	 */
 	T_BASE priority(int newPriority);
-
 }

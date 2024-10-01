@@ -22,15 +22,53 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 
+/**
+ * Represents a method handle in the pipeline framework, providing a way to
+ * invoke methods and manage output data.
+ *
+ * @param <T> The type of output data produced by this method handle
+ *
+ * @author Sly Technologies Inc
+ * @author repos@slytechs.com
+ */
 public final class PipeMethodHandle<T> implements HasOutputData<T> {
 
+	/**
+	 * Interface for adapting data handles in the pipeline.
+	 *
+	 * @param <T_IN>  The input type for the adaptor
+	 * @param <T_OUT> The output type for the adaptor
+	 */
 	public interface DataHandleAdaptor<T_IN, T_OUT> {
+		/**
+		 * Specialized interface for unary (same input and output type) data handle
+		 * adaptors.
+		 *
+		 * @param <T> The type of data for both input and output
+		 */
 		public interface UniDataHandleAdaptor<T> extends DataHandleAdaptor<T, T> {
 		}
 
+		/**
+		 * Creates an adaptor for the given method handle.
+		 *
+		 * @param handle The method handle to adapt
+		 * @return An adapted object of type T_IN
+		 */
 		T_IN createAdaptor(PipeMethodHandle<T_OUT> handle);
 	}
 
+	/**
+	 * Creates a PipeMethodHandle from a Method object.
+	 *
+	 * @param <T>            The type of output data produced by this method handle
+	 * @param method         The Method object to create a handle from
+	 * @param container      The object instance containing the method (null for
+	 *                       static methods)
+	 * @param containerClass The class containing the method
+	 * @return A new PipeMethodHandle instance
+	 * @throws IllegalStateException if the method handle cannot be created
+	 */
 	public static <T> PipeMethodHandle<T> from(Method method, Object container, Class<?> containerClass) {
 		try {
 			boolean isStatic = (container == null);
@@ -40,23 +78,31 @@ public final class PipeMethodHandle<T> implements HasOutputData<T> {
 					: MethodHandles.lookup()
 							.findVirtual(containerClass, method.getName(), methodType)
 							.bindTo(container);
-
 			return new PipeMethodHandle<>(mh);
 		} catch (Throwable e) {
 			e.printStackTrace();
-
 			throw new IllegalStateException(e);
 		}
-
 	}
 
 	private final MethodHandle handle;
 	private HasOutputData<T> output;
 
+	/**
+	 * Constructs a new PipeMethodHandle with the given MethodHandle.
+	 *
+	 * @param handle The MethodHandle to wrap
+	 */
 	private PipeMethodHandle(MethodHandle handle) {
 		this.handle = handle;
 	}
 
+	/**
+	 * Invokes the wrapped method handle with the given arguments.
+	 *
+	 * @param args The arguments to pass to the method
+	 * @throws RuntimeException if the invocation fails
+	 */
 	void invoke(Object... args) {
 		try {
 			handle.invokeWithArguments(args);
@@ -66,19 +112,24 @@ public final class PipeMethodHandle<T> implements HasOutputData<T> {
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasOutputData#outputData()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public T outputData() {
 		return this.output.outputData();
 	}
 
+	/**
+	 * Sets the output supplier for this method handle.
+	 *
+	 * @param newOutputSupplier The new output supplier
+	 */
 	void setOutputSupplier(HasOutputData<T> newOutputSupplier) {
 		this.output = newOutputSupplier;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.HasOutputData#outputType()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public DataType outputType() {

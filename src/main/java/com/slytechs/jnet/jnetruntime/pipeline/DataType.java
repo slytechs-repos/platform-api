@@ -17,8 +17,8 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,7 +27,8 @@ import com.slytechs.jnet.jnetruntime.util.HasId;
 import com.slytechs.jnet.jnetruntime.util.HasName;
 
 /**
- * The Interface DataType.
+ * Represents a type of data in the pipeline system. This interface extends
+ * HasId and HasName, providing identification and naming capabilities.
  *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
@@ -35,53 +36,42 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
 public interface DataType extends HasId, HasName {
 
 	/**
-	 * The Class DataSupport.
+	 * Support class for DataType implementations. Provides utility methods for
+	 * handling data of a specific type.
 	 *
-	 * @param <T> the generic type
+	 * @param <T> The type of data supported
 	 */
 	public class DataSupport<T> {
 
-		/** The data type. */
 		private final DataType dataType;
-
-		/** The data class. */
 		private final Class<T> dataClass;
-
-		/** The array wrapper. */
 		private final Function<T[], T> arrayWrapper;
-
-		/** The opaque wrapper. */
 		private final BiFunction<T, ? super Object, T> opaqueWrapper;
-
 		private final T empty;
 
 		/**
-		 * Instantiates a new data support.
+		 * Constructs a DataSupport instance without array or opaque wrapping
+		 * capabilities.
 		 *
-		 * @param dataType      the data type
-		 * @param dataClass     the data class
-		 * @param arrayWrapper  the array wrapper
-		 * @param opaqueWrapper the opaque wrapper
+		 * @param dataType  The DataType instance
+		 * @param dataClass The class of the data type
 		 */
-		public DataSupport(
-				DataType dataType,
-				Class<T> dataClass) {
-
+		public DataSupport(DataType dataType, Class<T> dataClass) {
 			this.dataType = dataType;
 			this.dataClass = dataClass;
 			this.arrayWrapper = null;
 			this.opaqueWrapper = (t, obj) -> t;
 			this.empty = null;
-
 		}
 
 		/**
-		 * Instantiates a new data support.
+		 * Constructs a DataSupport instance with array and opaque wrapping
+		 * capabilities.
 		 *
-		 * @param dataType      the data type
-		 * @param dataClass     the data class
-		 * @param arrayWrapper  the array wrapper
-		 * @param opaqueWrapper the opaque wrapper
+		 * @param dataType      The DataType instance
+		 * @param dataClass     The class of the data type
+		 * @param opaqueWrapper Function to wrap data with opaque object
+		 * @param arrayWrapper  Function to wrap array of data
 		 */
 		public DataSupport(
 				DataType dataType,
@@ -93,87 +83,120 @@ public interface DataType extends HasId, HasName {
 			this.dataClass = dataClass;
 			this.arrayWrapper = arrayWrapper;
 			this.opaqueWrapper = opaqueWrapper;
-			this.empty = wrapList(Collections.emptyList());
+			this.empty = wrapCollection(Collections.emptyList());
 		}
 
 		/**
-		 * Data class.
-		 *
-		 * @return the class
+		 * @return The class of the data type
 		 */
 		public Class<T> dataClass() {
 			return dataClass;
 		}
 
 		/**
-		 * Data type.
-		 *
-		 * @return the data type
+		 * @return The DataType instance
 		 */
 		public DataType dataType() {
 			return dataType;
 		}
 
+		/**
+		 * @return An empty instance of the data type
+		 */
 		public T empty() {
 			return empty;
 		}
 
 		/**
-		 * Wrap array.
+		 * Wraps an array of data into a single instance.
 		 *
-		 * @param array the array
-		 * @return the t
+		 * @param array The array to wrap
+		 * @return A single instance representing the array
 		 */
 		public T wrapArray(T[] array) {
+			if (array.length == 1)
+				return array[0];
+
 			return arrayWrapper.apply(array);
 		}
 
-		public T wrapList(List<T> list) {
-			T[] array = PipelineUtils.newArray(dataClass, list.size());
-
-			for (int i = 0; i < list.size(); i++)
-				array[i] = list.get(i);
-
+		/**
+		 * Wraps a collection of data into a single instance.
+		 *
+		 * @param list The collection to wrap
+		 * @return A single instance representing the collection
+		 */
+		public T wrapCollection(Collection<T> list) {
+			T[] array = list.toArray(size -> PipelineUtils.newArray(dataClass, size));
 			return wrapArray(array);
 		}
 
 		/**
-		 * Wrap opaque.
+		 * Wraps data with an opaque object.
 		 *
-		 * @param data   the data
-		 * @param opaque the opaque
-		 * @return the t
+		 * @param data   The data to wrap
+		 * @param opaque The opaque object to wrap with
+		 * @return The wrapped data
 		 */
 		public T wrapOpaque(T data, Object opaque) {
 			return opaqueWrapper.apply(data, opaque);
 		}
+
+		/**
+		 * Creates a new array of the data type.
+		 *
+		 * @param size The size of the array
+		 * @return A new array of the data type
+		 */
+		public T[] newArray(int size) {
+			return PipelineUtils.newArray(dataClass, size);
+		}
 	}
 
+	/**
+	 * Interface for objects that have a DataType.
+	 */
 	public interface HasDataType {
+		/**
+		 * @return The DataType of this object
+		 */
 		DataType dataType();
 	}
 
+	/**
+	 * Interface for integer-to-string conversion operations.
+	 */
 	public interface IntString extends Consumer<String> {
 
+		/**
+		 * Opaque wrapper for IntString.
+		 *
+		 * @param <U> The type of the opaque object
+		 */
 		public static class OpaqueIntString<U> extends OpaqueData<IntString, U> implements IntString {
 
 			/**
-			 * @param opaque
+			 * Constructs an OpaqueIntString.
+			 *
+			 * @param data   The IntString data
+			 * @param opaque The opaque object
 			 */
 			public OpaqueIntString(IntString data, U opaque) {
 				super(data, opaque);
 			}
 
-			/**
-			 * @see java.util.function.Consumer#accept(java.lang.Object)
-			 */
 			@Override
 			public void accept(String t) {
 				data().accept(t);
 			}
-
 		}
 
+		/**
+		 * Wraps an array of IntString into a single IntString.
+		 *
+		 * @param array The array to wrap
+		 * @return A single IntString representing the array
+		 */
 		static IntString wrapArray(IntString[] array) {
 			return str -> {
 				for (var i : array)
@@ -181,57 +204,89 @@ public interface DataType extends HasId, HasName {
 			};
 		}
 
+		/**
+		 * Wraps an IntString with an opaque object.
+		 *
+		 * @param <U>    The type of the opaque object
+		 * @param data   The IntString to wrap
+		 * @param opaque The opaque object
+		 * @return The wrapped IntString
+		 */
 		static <U> IntString wrapOpaque(IntString data, U opaque) {
 			return new OpaqueIntString<>(data, opaque);
 		}
 	}
 
+	/**
+	 * Class for wrapping data with an opaque object.
+	 *
+	 * @param <T> The type of the data
+	 * @param <U> The type of the opaque object
+	 */
 	public class OpaqueData<T, U> {
 
 		private U opaque;
 		private final T data;
 
+		/**
+		 * Constructs an OpaqueData instance with data only.
+		 *
+		 * @param data The data to wrap
+		 */
 		public OpaqueData(T data) {
 			this.data = data;
 		}
 
+		/**
+		 * Constructs an OpaqueData instance with data and opaque object.
+		 *
+		 * @param data   The data to wrap
+		 * @param opaque The opaque object
+		 */
 		public OpaqueData(T data, U opaque) {
 			this.data = data;
 			this.opaque = opaque;
 		}
 
+		/**
+		 * @return The wrapped data
+		 */
 		public T data() {
 			return data;
 		}
 
+		/**
+		 * @return The opaque object
+		 */
 		public U opaque() {
 			return opaque;
 		}
 
+		/**
+		 * Sets the opaque object.
+		 *
+		 * @param u The new opaque object
+		 */
 		public void opaque(U u) {
 			this.opaque = u;
 		}
-
 	}
 
 	/**
-	 * The Enum Primitives.
+	 * Enumeration of primitive data types.
 	 */
 	public enum Primitives implements DataType {
-		INT_STRING(IntString.class, IntString::wrapOpaque, IntString::wrapArray),
+		INT_STRING(IntString.class, IntString::wrapOpaque, IntString::wrapArray);
 
-		;
-
-		/** The data support. */
 		private final DataSupport<?> dataSupport;
 
 		/**
-		 * Instantiates a new primitives.
+		 * Constructs a Primitives enum instance.
 		 *
-		 * @param <T>           the generic type
-		 * @param dataClass     the data class
-		 * @param arrayWrapper  the array wrapper
-		 * @param opaqueWrapper the opaque wrapper
+		 * @param <T>           The type of the data
+		 * @param dataClass     The class of the data type
+		 * @param opaqueWrapper Function to wrap data with opaque object
+		 * @param arrayWrapper  Function to wrap array of data
 		 */
 		<T> Primitives(
 				Class<T> dataClass,
@@ -242,45 +297,50 @@ public interface DataType extends HasId, HasName {
 		}
 
 		/**
-		 * Data support.
-		 *
-		 * @param <T> the generic type
-		 * @return the data support
-		 * @see com.slytechs.jnet.jnetruntime.pipeline.DataType#dataSupport()
+		 * {@inheritDoc}
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
 		public <T> DataSupport<T> dataSupport() {
 			return (DataSupport<T>) this.dataSupport;
 		}
-
 	}
 
+	/**
+	 * Checks if this DataType is compatible with the given class.
+	 *
+	 * @param dataClass The class to check compatibility with
+	 * @return true if compatible, false otherwise
+	 */
 	default boolean isCompatibleWith(Class<?> dataClass) {
 		return dataSupport().dataClass().isAssignableFrom(dataClass);
 	}
 
 	/**
-	 * Data support.
-	 *
-	 * @param <T> the generic type
-	 * @return the data support
+	 * @param <T> The type of data
+	 * @return The DataSupport for this DataType
 	 */
 	<T> DataSupport<T> dataSupport();
 
+	/**
+	 * @param <T> The type of data
+	 * @return The class of the data type
+	 */
 	@SuppressWarnings("unchecked")
 	default <T> Class<T> dataClass() {
 		return (Class<T>) dataSupport().dataClass();
 	}
 
 	/**
-	 * Name.
-	 *
-	 * @return the string
+	 * {@inheritDoc}
 	 */
 	@Override
 	String name();
 
+	/**
+	 * @param <T> The type of data
+	 * @return An empty instance of the data type
+	 */
 	@SuppressWarnings("unchecked")
 	default <T> T empty() {
 		return (T) dataSupport().empty();

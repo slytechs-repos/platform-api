@@ -17,9 +17,46 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+/**
+ * Interface for components in a data processing pipeline that consume input
+ * data.
+ * 
+ * <p>
+ * This interface defines methods for accessing the input data and its type. It
+ * is typically implemented by data processors, transformers, or other
+ * components in a pipeline that receive or process input data.
+ * </p>
+ *
+ * @param <T> The type of input data consumed by the implementing component
+ *
+ * @author Sly Technologies Inc
+ * @author repos@slytechs.com
+ */
 public interface HasInputData<T> {
+
+	/**
+	 * Retrieves the current input data of the component.
+	 * 
+	 * <p>
+	 * This method should return the most recent input data received by the
+	 * component. The exact nature and state of this data depends on the specific
+	 * implementation and the current state of the pipeline processing.
+	 * </p>
+	 *
+	 * @return The current input data
+	 */
 	T inputData();
 
+	/**
+	 * Retrieves the type of the input data consumed by this component.
+	 * 
+	 * <p>
+	 * This method should return a {@link DataType} object that describes the type
+	 * of data this component expects as input. This information can be used for
+	 * type checking, pipeline configuration, or debugging purposes.
+	 * </p>
+	 *
+	 * @return The {@link DataType} representing the type of the input data
+	 */
 	DataType inputType();
-
 }

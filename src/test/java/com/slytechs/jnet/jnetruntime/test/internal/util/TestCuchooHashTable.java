@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.internal.util;
+package com.slytechs.jnet.jnetruntime.test.internal.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import com.slytechs.jnet.jnetruntime.hash.CuckooHashTable;
 import com.slytechs.jnet.jnetruntime.hash.HashTable;
-import com.slytechs.test.Tests;
+import com.slytechs.jnet.jnetruntime.test.Tests;
 
 /**
  * @author Sly Technologies Inc

@@ -17,21 +17,16 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static java.util.function.Predicate.*;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.slytechs.jnet.jnetruntime.NotFound;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputEntryPoint;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory;
-import com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Head;
-import com.slytechs.jnet.jnetruntime.util.Registration;
-
-final class HeadNode<T>
-		extends BuiltinNode<T, HeadNode<T>>
-		implements Head<T, HeadNode<T>> {
+public final class HeadNode<T>
+		extends BuiltinNode<T, HeadNode<T>> {
 
 	private final Map<Object, AbstractInput<?, T, ?>> inputMap = new HashMap<>();
-	private final Map<DataType, InputFactory<?, ? extends InputEntryPoint<?>>> factoryMap = new HashMap<>();
 
 	/**
 	 * @param priority
@@ -42,51 +37,6 @@ final class HeadNode<T>
 		super(parent, Pipeline.HEAD_BUILTIN_PRIORITY, name, type, null);
 
 		enable(true);
-	}
-
-	/**
-	 * @throws NotFound
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Head#getInput(com.slytechs.jnet.jnetruntime.pipeline.DataType)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_IN> InputEntryPoint<T_IN> getInput(DataType type) throws NotFound {
-		if (!inputMap.containsKey(type)) {
-			var t = getInputFactory(type);
-
-			inputMap.put(type, t);
-		}
-
-		return (InputEntryPoint<T_IN>) inputMap.get(type);
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Head#getInput(java.lang.String)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_IN> InputEntryPoint<T_IN> getInput(DataType type, String id) throws NotFound {
-		if (!inputMap.containsKey(id)) {
-			var t = getInputFactory(type);
-
-			inputMap.put(id, t);
-		}
-
-		return (InputEntryPoint<T_IN>) inputMap.get(type);
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T_IN> AbstractInput<T_IN, T, ?> getInputFactory(DataType type) throws NotFound {
-		var factory = factoryMap.get(type);
-		if (factory == null)
-			throw new NotFound("input type [%s] not found"
-					.formatted(type));
-
-		var in = (AbstractInput<T_IN, T, ?>) factory.newInstance();
-
-		in.headNode = this;
-
-		return in;
 	}
 
 	/**
@@ -103,36 +53,38 @@ final class HeadNode<T>
 		inputMap.values().forEach(t -> t.outputData(out));
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Head#registerInput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory)
-	 */
-	@Override
-	public <T_IN> Registration registerInput(DataType type, InputFactory<T_IN, InputEntryPoint<T_IN>> factory) {
+	public void addInput(AbstractInput<?, T, ?> input, Object id) {
+		if (inputMap.containsKey(id))
+			throw new IllegalArgumentException("input [%s] with this id [%s] already exists in pipeline [%s]"
+					.formatted(input.name(), id, name()));
 
-		factoryMap.put(type, factory);
+		inputMap.put(id, input);
+	}
 
-		return () -> {
-			factoryMap.remove(type);
-		};
+	public String inputsToString() {
+		return inputMap.values().stream()
+				.map(in -> (in.isEnabled() ? "%s%s" : "!%s%s").formatted(in.name(), in.inputsToString()))
+				.collect(Collectors.joining(", ", "[", "]"));
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Head#registerInput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputEntryPoint)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
-	public <T_IN> Registration registerInput(InputEntryPoint<T_IN> input) {
-		if (!(input instanceof AbstractInput ainput))
-			throw new IllegalArgumentException("unsupported input entry point implementation");
+	void reLinkData() {
 
-		ainput.headNode = this;
+		super.reLinkData();
 
-		var r = registerInput(input.inputType(), () -> input);
+		T headOutput = outputData();
 
-		return () -> {
-			r.unregister();
-			ainput.headNode = null;
-		};
+		inputMap.values().stream()
+				.filter(AbstractInput::isEnabled)
+				.filter(not(AbstractInput::isBypassed))
+				.peek(AbstractInput::reLinkData)
+				.forEach(t -> t.outputData(headOutput));
 	}
 
+	public void onInputEnable(boolean b, AbstractInput<?, T, ?> input) {
+//		reLinkData();
+	}
 }

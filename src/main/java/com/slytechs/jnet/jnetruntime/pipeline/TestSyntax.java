@@ -23,8 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import com.slytechs.jnet.jnetruntime.NotFound;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputEntryPoint;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer.EntryPoint;
 
 /**
  * @author Sly Technologies Inc
@@ -34,9 +33,11 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint;
 public class TestSyntax {
 
 	enum DataTypes implements DataType {
-		PIPELINE_DATA(PipelineData.class, PipelineData::wrapArray),
+		PIPELINE_DATA(PipelineData.class, DataTypes::wrapPipeline),
 		INPUT_DATA(InputData.class),
-		OUTPUT_DATA(OutputData.class, OutputData::wrapArray),;
+		OUTPUT_DATA(OutputData.class, DataTypes::wrapOutput),
+
+		;
 
 		private final DataSupport<?> dataSupport;
 
@@ -56,13 +57,28 @@ public class TestSyntax {
 		public <T> DataSupport<T> dataSupport() {
 			return (DataSupport<T>) dataSupport;
 		}
+
+		static PipelineData wrapPipeline(PipelineData[] array) {
+			return (n, i, ctx) -> {
+				for (var out : array)
+					out.handlePipelineData(n, i, ctx);
+			};
+		}
+
+		static OutputData wrapOutput(OutputData[] array) {
+			return (nb, ai) -> {
+				for (var out : array)
+					out.handleOutputData(nb, ai);
+			};
+		}
+
 	}
 
 	public interface InputData {
 		void handleInputData(char[] name, long id);
 	}
 
-	@TypeLookup(DataTypes.class)
+	@ATypeLookup(DataTypes.class)
 	private static class MyPipeline extends AbstractPipeline<PipelineData, MyPipeline> {
 
 		public MyPipeline() {
@@ -78,23 +94,10 @@ public class TestSyntax {
 	}
 
 	interface OutputData {
-		static OutputData wrapArray(OutputData[] array) {
-			return (nb, ai) -> {
-				for (var out : array)
-					out.handleOutputData(nb, ai);
-			};
-		}
-
 		void handleOutputData(StringBuilder nameBuffer, AtomicInteger atomicId);
 	}
 
 	interface PipelineData {
-		static PipelineData wrapArray(PipelineData[] array) {
-			return (n, i, ctx) -> {
-				for (var out : array)
-					out.handlePipelineData(n, i, ctx);
-			};
-		}
 
 		void handlePipelineData(String name, int id, Map<String, Object> context);
 	}
@@ -105,18 +108,12 @@ public class TestSyntax {
 
 		final Map<String, Object> ctx = new HashMap<>();
 
-		public TestPipelineInput() {
-			this("input-data-transformer");
+		public TestPipelineInput(HeadNode<PipelineData> head) {
+			this(head, "test-input");
 		}
 
-		public TestPipelineInput(String name) {
-			super(name, DataTypes.INPUT_DATA, DataTypes.PIPELINE_DATA);
-		}
-
-		public TestPipelineInput(String name, boolean enable) {
-			super(name, DataTypes.INPUT_DATA, DataTypes.PIPELINE_DATA);
-
-			enable(enable);
+		public TestPipelineInput(HeadNode<PipelineData> head, String name) {
+			super(head, name, DataTypes.INPUT_DATA, DataTypes.PIPELINE_DATA);
 		}
 
 		@Override
@@ -132,8 +129,12 @@ public class TestSyntax {
 			extends AbstractOutput<PipelineData, OutputData, TestPipelineOutput>
 			implements PipelineData {
 
-		public TestPipelineOutput(String name) {
-			super(name, DataTypes.PIPELINE_DATA, DataTypes.OUTPUT_DATA);
+		public TestPipelineOutput(TailNode<PipelineData> tailNode) {
+			this(tailNode, "test-output");
+		}
+
+		public TestPipelineOutput(TailNode<PipelineData> tailNode, String name) {
+			super(tailNode, name, DataTypes.PIPELINE_DATA, DataTypes.OUTPUT_DATA);
 		}
 
 		/**
@@ -150,12 +151,14 @@ public class TestSyntax {
 
 	}
 
-	private static class TestProcessor
-			extends AbstractProcessor<PipelineData, TestProcessor>
+	private static class ToUppercaseProcessor
+			extends AbstractProcessor<PipelineData, ToUppercaseProcessor>
 			implements PipelineData {
 
-		public TestProcessor(Pipeline<PipelineData, ?> pipeline, int priority, String name) {
-			super(pipeline, priority, name, DataTypes.PIPELINE_DATA);
+		public static final String NAME = "to_upper";
+
+		public ToUppercaseProcessor(Pipeline<PipelineData, ?> pipeline, int priority) {
+			super(pipeline, priority, NAME, DataTypes.PIPELINE_DATA);
 		}
 
 		/**
@@ -170,23 +173,71 @@ public class TestSyntax {
 			outputData().handlePipelineData(name, id, context);
 		}
 
+		public ToUppercaseProcessor peek(PipelineData peekAction) {
+			super.addOutputToNode(peekAction);
+			return this;
+		}
+
+	}
+
+	private static class ToLowercaseProcessor
+			extends AbstractProcessor<PipelineData, ToLowercaseProcessor>
+			implements PipelineData {
+
+		public static final String NAME = "to_lower";
+
+		public ToLowercaseProcessor(Pipeline<PipelineData, ?> pipeline, int priority) {
+			super(pipeline, priority, NAME, DataTypes.PIPELINE_DATA);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.TestSyntax.PipelineData#handlePipelineData(java.lang.String,
+		 *      int, java.util.Map)
+		 */
+		@Override
+		public void handlePipelineData(String name, int id, Map<String, Object> context) {
+			name = name.toLowerCase();
+			id++;
+
+			outputData().handlePipelineData(name, id, context);
+		}
+
+		public ToLowercaseProcessor peek(PipelineData peekAction) {
+			super.addOutputToNode(peekAction);
+			return this;
+		}
+
 	}
 
 	public static void main(String[] args) throws NotFound {
 
 		var pipeline = new MyPipeline();
 
-		InputEntryPoint<InputData> in = new TestPipelineInput("en0");
-		pipeline.registerInput(in);
+		TestPipelineInput input = pipeline.addInput(TestPipelineInput::new);
+		EntryPoint<InputData> entryPoint = input.createEntryPoint("entry#1");
+		input.createEntryPoint("entry#2");
 
-		OutputEndPoint<OutputData> out = new TestPipelineOutput("");
-		out.addOutputData((n, a) -> System.out.printf("name=%s, id=%d", n, a.get()));
-		pipeline.registerOutput(out);
-		pipeline.getOutput(DataTypes.OUTPUT_DATA);
+		pipeline.addOutput(TestPipelineOutput::new)
+				.createEndPoint("end#1")
+				.outputData((n, i) -> System.out.printf("name=%s, id=%d%n", n, i.get()));
+
+		pipeline.addProcessor(2, ToUppercaseProcessor::new)
+				.peek((n, i, c) -> System.out.println(n));
+
+		pipeline.addProcessor(1, ToLowercaseProcessor::new)
+				.peek((n, i, c) -> System.out.println(n));
 
 		pipeline.enable(true);
 
-		in.inputData().handleInputData("George".toCharArray(), 10);
+		System.out.println(pipeline);
+
+		InputData data = entryPoint.inputData();
+		data.handleInputData("George".toCharArray(), 10);
+		System.out.println(pipeline);
+
+		input.enable(false);
+		data.handleInputData("Michael".toCharArray(), 10);
+		System.out.println(pipeline);
 	}
 
 }

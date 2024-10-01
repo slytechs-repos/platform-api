@@ -51,12 +51,12 @@ public interface HasPriority {
 	/**
 	 * Comparator that sorts HasPriority objects from highest to lowest priority.
 	 */
-	Comparator<HasPriority> HIGH_LOW_COMPARATOR = HasPriority::compareHighToLow;
+	Comparator<? extends HasPriority> HIGH_LOW_COMPARATOR = HasPriority::compareHighToLow;
 
 	/**
 	 * Comparator that sorts HasPriority objects from lowest to highest priority.
 	 */
-	Comparator<HasPriority> LOW_HIGH_COMPARATOR = HasPriority::compareLowToHigh;
+	Comparator<? extends HasPriority> LOW_HIGH_COMPARATOR = HasPriority::compareLowToHigh;
 
 	/**
 	 * Validates the given priority value.

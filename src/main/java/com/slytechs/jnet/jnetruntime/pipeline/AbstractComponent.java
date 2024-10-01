@@ -23,9 +23,22 @@ import java.util.function.BooleanSupplier;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
+ * Abstract base class for pipeline components, implementing common
+ * functionality and providing a foundation for specific component
+ * implementations.
+ *
+ * <p>
+ * This class provides implementations for enabling/disabling components,
+ * bypassing components, naming, and registration management. It also defines
+ * hooks for subclasses to implement specific behaviors when the component's
+ * state changes.
+ * </p>
+ *
+ * @param <T_BASE> The specific type of the pipeline component, used for method
+ *                 chaining
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 		implements PipeComponent<T_BASE> {
@@ -35,30 +48,41 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	private boolean enabled;
 	private boolean bypass;
 
+	/**
+	 * Constructs an AbstractComponent with no name.
+	 */
 	public AbstractComponent() {
 	}
 
+	/**
+	 * Constructs an AbstractComponent with the specified name.
+	 *
+	 * @param name The name of the component
+	 */
 	public AbstractComponent(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#bypass(boolean)
+	 * Sets the bypass state of the component.
+	 *
+	 * @param b True to bypass the component, false otherwise
+	 * @return This component instance for method chaining
 	 */
 	@Override
 	public final T_BASE bypass(boolean b) {
 		if (bypass == b)
 			return us();
-
 		this.bypass = b;
-
 		onBypass(b);
-
 		return us();
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#bypass(java.util.function.BooleanSupplier)
+	 * Sets the bypass state of the component using a boolean supplier.
+	 *
+	 * @param b A supplier that determines whether to bypass the component
+	 * @return This component instance for method chaining
 	 */
 	@Override
 	public final T_BASE bypass(BooleanSupplier b) {
@@ -66,22 +90,25 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#enable(boolean)
+	 * Enables or disables the component.
+	 *
+	 * @param b True to enable the component, false to disable
+	 * @return This component instance for method chaining
 	 */
 	@Override
 	public final T_BASE enable(boolean b) {
 		if (enabled == b)
 			return us();
-
 		this.enabled = b;
-
 		onEnable(b);
-
 		return us();
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#enable(java.util.function.BooleanSupplier)
+	 * Enables or disables the component using a boolean supplier.
+	 *
+	 * @param b A supplier that determines whether to enable the component
+	 * @return This component instance for method chaining
 	 */
 	@Override
 	public final T_BASE enable(BooleanSupplier b) {
@@ -89,7 +116,18 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#isBypassed()
+	 * Determines if this component is a built-in component.
+	 *
+	 * @return True if this is a built-in component, false otherwise
+	 */
+	public boolean isBuiltin() {
+		return false;
+	}
+
+	/**
+	 * Checks if the component is currently bypassed.
+	 *
+	 * @return True if the component is bypassed, false otherwise
 	 */
 	@Override
 	public final boolean isBypassed() {
@@ -97,7 +135,9 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#isEnabled()
+	 * Checks if the component is currently enabled.
+	 *
+	 * @return True if the component is enabled, false otherwise
 	 */
 	@Override
 	public final boolean isEnabled() {
@@ -105,7 +145,9 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.HasName#name()
+	 * Gets the name of the component.
+	 *
+	 * @return The name of the component
 	 */
 	@Override
 	public final String name() {
@@ -113,44 +155,72 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipeComponent#name(java.lang.String)
+	 * Sets a new name for the component.
+	 *
+	 * @param newName The new name for the component
+	 * @return This component instance for method chaining
 	 */
 	@Override
 	public final T_BASE name(String newName) {
 		this.name = newName;
-
 		return us();
 	}
 
+	/**
+	 * Hook method called when the bypass state changes. Subclasses can override
+	 * this to implement specific behavior.
+	 *
+	 * @param newValue The new bypass state
+	 */
 	protected void onBypass(boolean newValue) {
-
-	}
-
-	protected void onEnable(boolean newValue) {
-
-	}
-
-	protected void onRegistration() {
-
-	}
-
-	protected void onUnregistered() {
-
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.HasRegistration#registration()
+	 * Hook method called when the enabled state changes. Subclasses can override
+	 * this to implement specific behavior.
+	 *
+	 * @param newValue The new enabled state
+	 */
+	protected void onEnable(boolean newValue) {
+	}
+
+	/**
+	 * Hook method called when the component is registered. Subclasses can override
+	 * this to implement specific behavior.
+	 */
+	protected void onRegistration() {
+	}
+
+	/**
+	 * Hook method called when the component is unregistered. Subclasses can
+	 * override this to implement specific behavior.
+	 */
+	protected void onUnregistered() {
+	}
+
+	/**
+	 * Gets the registration information for this component.
+	 *
+	 * @return An Optional containing the Registration object if registered, or an
+	 *         empty Optional if not
 	 */
 	@Override
 	public final Optional<Registration> registration() {
 		return Optional.ofNullable(registration);
 	}
 
+	/**
+	 * Sets the registration for this component. This method is package-private and
+	 * should only be called by the pipeline management code.
+	 *
+	 * @param orNull The new Registration object, or null to unregister
+	 * @throws IllegalStateException if attempting to unregister an enabled
+	 *                               component
+	 */
 	final void setRegistration(Registration orNull) {
 		if (enabled && (orNull == null) && (registration != null))
 			throw new IllegalStateException("element [%s] must be disabled before registration can be removed"
 					.formatted(name()));
-
 		this.registration = orNull;
 		if (orNull == null)
 			onUnregistered();
@@ -158,6 +228,12 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 			onRegistration();
 	}
 
+	/**
+	 * Helper method to return this instance cast to the appropriate type for method
+	 * chaining.
+	 *
+	 * @return This instance cast to T_BASE
+	 */
 	@SuppressWarnings("unchecked")
 	protected final T_BASE us() {
 		return (T_BASE) this;

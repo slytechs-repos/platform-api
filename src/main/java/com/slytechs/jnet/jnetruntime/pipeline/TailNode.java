@@ -17,21 +17,18 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static java.util.function.Predicate.*;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.slytechs.jnet.jnetruntime.NotFound;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputFactory;
-import com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Tail;
-import com.slytechs.jnet.jnetruntime.util.Registration;
+import com.slytechs.jnet.jnetruntime.pipeline.DataType.DataSupport;
 
-final class TailNode<T>
-		extends BuiltinNode<T, TailNode<T>>
-		implements Tail<T, TailNode<T>> {
+public final class TailNode<T>
+		extends BuiltinNode<T, TailNode<T>> {
 
 	private final Map<Object, AbstractOutput<T, ?, ?>> outputMap = new HashMap<>();
-	private final Map<DataType, OutputFactory<?, ? extends OutputEndPoint<?>>> factoryMap = new HashMap<>();
 
 	/**
 	 * @param priority
@@ -45,100 +42,48 @@ final class TailNode<T>
 		enable(true);
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Tail#getOutput(com.slytechs.jnet.jnetruntime.pipeline.DataType)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_OUT> OutputEndPoint<T_OUT> getOutput(DataType type) throws NotFound {
-		if (!outputMap.containsKey(type)) {
-			AbstractOutput<T, Object, ?> out = getOutputFromFactory(type);
+	public void addOutput(AbstractOutput<T, ?, ?> output, Object id) {
 
-			outputMap.put(type, out);
+		// Check for valid ID types
+		assert false ||
+				id instanceof String ||
+				id instanceof DataType
+				: "output [%s] id [%s] must of type String or DataType"
+						.formatted(output.name(), id);
 
-			Registration r2 = registerLocalOutput(out.inputData());
+		if (outputMap.containsKey(id))
+			throw new IllegalArgumentException("output [%s] with this id [%s] already exists in pipeline [%s]"
+					.formatted(output.name(), id, name()));
 
-			Registration r1 = () -> {
-				r2.unregister();
-				outputMap.remove(out);
-			};
+		outputMap.put(id, output);
+	}
 
-			out.setRegistration(r1);
-
-		}
-
-		return (OutputEndPoint<T_OUT>) outputMap.get(type);
+	public String outputsToString() {
+		return outputMap.values().stream()
+				.sorted()
+				.map(out -> (out.isEnabled() ? "%s%s" : "!%s%s").formatted(out.name(), out.outputsToString()))
+				.collect(Collectors.joining(", ", "[", "]"));
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Tail#getOutput(com.slytechs.jnet.jnetruntime.pipeline.DataType,
-	 *      java.lang.String)
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_OUT> OutputEndPoint<T_OUT> getOutput(DataType type, String id) throws NotFound {
-		if (!outputMap.containsKey(id)) {
-			AbstractOutput<T, Object, ?> out = getOutputFromFactory(type);
-
-			outputMap.put(id, out);
-
-			Registration r2 = registerLocalOutput(out.inputData());
-
-			Registration r1 = () -> {
-				r2.unregister();
-				outputMap.remove(out);
-			};
-
-			out.setRegistration(r1);
-		}
-
-		return (OutputEndPoint<T_OUT>) outputMap.get(type);
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T_OUT> AbstractOutput<T, T_OUT, ?> getOutputFromFactory(DataType type) throws NotFound {
-		var factory = factoryMap.get(type);
-		if (factory == null)
-			throw new NotFound("input type [%s] not found"
-					.formatted(type));
-
-		return (AbstractOutput<T, T_OUT, ?>) factory.newInstance();
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Tail#registerOutput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
 	 */
 	@Override
-	public <T_OUT> Registration registerOutput(DataType type, OutputFactory<T_OUT, OutputEndPoint<T_OUT>> factory) {
+	void reLinkData() {
 
-		factoryMap.put(type, factory);
+		DataSupport<T> support = inputType().dataSupport();
 
-		return () -> {
-			factoryMap.remove(type);
-		};
-	}
+		T[] array = outputMap.values().stream()
+				.filter(AbstractOutput::isEnabled)
+				.filter(not(AbstractOutput::isBypassed))
+				.sorted()
+				.peek(AbstractOutput::reLinkData)
+				.map(out -> out.inputData())
+				.toArray(support::newArray);
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Pipeline.Tail#registerOutput(com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint)
-	 */
-	@Override
-	public <T_OUT> Registration registerOutput(OutputEndPoint<T_OUT> output) {
-		return registerOutput(output.outputType(), () -> output);
-	}
+		T in = support.wrapArray(array);
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#register()
-	 */
-	@Override
-	void register() {
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#inputData()
-	 */
-	@Override
-	public T inputData() {
-		return outputData();
+		inputData(in);
 	}
 
 }

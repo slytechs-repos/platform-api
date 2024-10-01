@@ -25,23 +25,73 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Represents a processor in a pipeline that is configured using annotations.
+ * This class extends AbstractProcessor and provides functionality to create and
+ * manage processors based on annotated methods.
+ *
+ * @param <T> The type of data processed by this processor
+ * 
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
-public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcessor<T>> {
+final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcessor<T>> {
 
+	/**
+	 * Interface for adapting method handles to the processor's data type.
+	 *
+	 * @param <T> The type of data processed by the processor
+	 */
 	public interface MethodHandleAdaptor<T> {
-		T createAdaptor(PipeMethodHandle handle);
+		/**
+		 * Creates an adaptor for the given method handle.
+		 *
+		 * @param handle The method handle to adapt
+		 * @return An adapted object of type T
+		 */
+		T createAdaptor(@SuppressWarnings("rawtypes") PipeMethodHandle handle);
 	}
 
+	/**
+	 * Interface for creating method invokers.
+	 *
+	 * @param <T_IN>  The input type for the invoker
+	 * @param <T_OUT> The output type for the invoker
+	 */
 	public interface MethodInvokerFactory<T_IN, T_OUT> {
+		/**
+		 * Specialized interface for unary (same input and output type) method invokers.
+		 *
+		 * @param <T> The type of data for both input and output
+		 */
 		interface Uni<T> extends MethodInvokerFactory<T, T> {
 		}
 
-		T_IN invoker(PipeMethodHandle handle, Object instance, T_OUT out);
+		/**
+		 * Creates an invoker for the given method handle.
+		 *
+		 * @param handle   The method handle to invoke
+		 * @param instance The instance on which to invoke the method (null for static
+		 *                 methods)
+		 * @param out      The output object
+		 * @return The input object
+		 */
+		T_IN invoker(@SuppressWarnings("rawtypes") PipeMethodHandle handle, Object instance, T_OUT out);
 	}
 
+	/**
+	 * Creates an AnnotatedProcessor instance.
+	 *
+	 * @param <T>            The type of data processed by the processor
+	 * @param channel        The pipeline channel
+	 * @param containerClass The class containing the annotated method
+	 * @param container      The container object (null for static methods)
+	 * @param dataType       The data type processed by this processor
+	 * @param method         The annotated method
+	 * @param processor      The AProcessor annotation
+	 * @param invoker        The method handle adaptor
+	 * @return A new AnnotatedProcessor instance
+	 * @throws IllegalStateException if the processor cannot be created
+	 */
 	private static <T> AnnotatedProcessor<T> createProcessor(
 			Pipeline<T, ?> channel,
 			Class<?> containerClass,
@@ -65,11 +115,19 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 
 		} catch (Throwable e) {
 			e.printStackTrace();
-
 			throw new IllegalStateException(e);
 		}
 	}
 
+	/**
+	 * Creates a list of AnnotatedProcessor instances from a container object.
+	 *
+	 * @param <T>       The type of data processed by the processors
+	 * @param channel   The pipeline channel
+	 * @param container The container object with annotated methods
+	 * @param invoker   The method handle adaptor
+	 * @return A list of AnnotatedProcessor instances
+	 */
 	public static <T> List<AnnotatedProcessor<T>> list(
 			Pipeline<T, ?> channel,
 			Object container,
@@ -77,6 +135,17 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 		return list(channel, container, null, invoker);
 	}
 
+	/**
+	 * Creates a list of AnnotatedProcessor instances from a container object with a
+	 * specified data type.
+	 *
+	 * @param <T>       The type of data processed by the processors
+	 * @param channel   The pipeline channel
+	 * @param container The container object with annotated methods
+	 * @param type      The specific data type to filter processors (can be null)
+	 * @param invoker   The method handle adaptor
+	 * @return A list of AnnotatedProcessor instances
+	 */
 	public static <T> List<AnnotatedProcessor<T>> list(
 			Pipeline<T, ?> channel,
 			Object container,
@@ -101,6 +170,17 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 		return list;
 	}
 
+	/**
+	 * Recursively lists all annotated processor methods in a class hierarchy.
+	 *
+	 * @param <T>               The type of data processed by the processors
+	 * @param channel           The pipeline channel
+	 * @param containerInstance The container object instance
+	 * @param containerClass    The current class being examined
+	 * @param list              The list to populate with processors
+	 * @param adaptor           The method handle adaptor
+	 * @return The populated list of AnnotatedProcessor instances
+	 */
 	private static <T> List<AnnotatedProcessor<T>> listAnnotatedProcessorMethods(
 			Pipeline<T, ?> channel,
 			Object containerInstance,
@@ -113,7 +193,7 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 
 		for (var m : containerClass.getDeclaredMethods()) {
 			AProcessor processor = PipelineUtils.lookupAnnotationRecusively(m, AProcessor.class);
-			TypeLookup lookup = PipelineUtils.lookupAnnotationRecusively(m, TypeLookup.class);
+			ATypeLookup lookup = PipelineUtils.lookupAnnotationRecusively(m, ATypeLookup.class);
 			if (processor == null || lookup == null)
 				continue;
 
@@ -133,27 +213,41 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 
 				if (node != null) {
 					list.add(node);
-
 					node.enable(processor.enable());
 				}
 			}
-
 		}
 
 		return listAnnotatedProcessorMethods(channel, containerInstance, containerClass.getSuperclass(), list, adaptor);
 	}
 
 	private final Object instance;
+	@SuppressWarnings({
+			"rawtypes",
+			"unused" })
 	private final PipeMethodHandle handle;
 	private final Method method;
 
+	/**
+	 * Constructs a new AnnotatedProcessor.
+	 *
+	 * @param parent             The parent pipeline
+	 * @param priority           The priority of this processor
+	 * @param name               The name of this processor
+	 * @param dataType           The data type processed by this processor
+	 * @param processorContainer The container object (null for static methods)
+	 * @param handle             The method handle for this processor
+	 * @param method             The annotated method
+	 * @param adaptor            The method handle adaptor
+	 * @throws NullPointerException if dataType is null
+	 */
 	private AnnotatedProcessor(
 			Pipeline<T, ?> parent,
 			int priority,
 			String name,
 			DataType dataType,
 			Object processorContainer,
-			PipeMethodHandle handle,
+			@SuppressWarnings("rawtypes") PipeMethodHandle handle,
 			Method method,
 			MethodHandleAdaptor<T> adaptor) {
 		super(parent, priority, name, dataType, adaptor.createAdaptor(handle));
@@ -166,7 +260,7 @@ public final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedP
 	}
 
 	/**
-	 * @see java.lang.Object#toString()
+	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {

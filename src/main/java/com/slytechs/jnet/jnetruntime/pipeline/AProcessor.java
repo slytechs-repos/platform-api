@@ -24,19 +24,77 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
+ * Annotation to mark and configure processor methods or classes within a
+ * pipeline.
+ * 
+ * <p>
+ * This annotation is used to designate methods or classes as processors in a
+ * data processing pipeline. It provides configuration options for priority,
+ * data type, enabling status, and naming. The annotation can be used by runtime
+ * processing tools to set up and manage pipeline processors.
+ * </p>
+ *
+ * <p>
+ * Usage example for a method:
+ * </p>
+ * 
+ * <pre>
+ * {@code
+ * @AProcessor(priority = 1, value = String.class, enable = true, name = "stringProcessor")
+ * public void processString(String input) {
+ * 	// Processing logic here
+ * }
+ * }
+ * </pre>
+ *
+ * <p>
+ * Usage example for a class:
+ * </p>
+ * 
+ * <pre>
+ * {@code
+ * @AProcessor(value = Integer.class, priority = 2, name = "integerProcessor")
+ * public class IntegerProcessor {
+ * 	// Processor implementation here
+ * }
+ * }
+ * </pre>
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 @Retention(RUNTIME)
-@Target({METHOD, TYPE})
+@Target({ METHOD,
+		TYPE })
 public @interface AProcessor {
 
+	/**
+	 * Specifies the priority of the processor in the pipeline. Lower values
+	 * indicate higher priority.
+	 *
+	 * @return the priority of the processor
+	 */
 	int priority() default 0;
 
+	/**
+	 * Specifies the data type that this processor handles.
+	 *
+	 * @return the Class object representing the data type
+	 */
 	Class<?> value();
 
+	/**
+	 * Specifies whether the processor should be enabled by default.
+	 *
+	 * @return true if the processor should be enabled, false otherwise
+	 */
 	boolean enable() default true;
 
+	/**
+	 * Specifies a custom name for the processor. If not provided, the method or
+	 * class name will typically be used.
+	 *
+	 * @return the custom name of the processor
+	 */
 	String name() default "";
 }

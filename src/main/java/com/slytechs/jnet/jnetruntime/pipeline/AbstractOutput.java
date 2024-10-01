@@ -17,66 +17,235 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer;
+import com.slytechs.jnet.jnetruntime.util.HasName;
+import com.slytechs.jnet.jnetruntime.util.HasPriority;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
+ * Abstract base class for output transformers in a pipeline.
+ * 
+ * <p>
+ * This class extends AbstractTransformer and implements OutputTransformer,
+ * providing a foundation for creating specific output transformer
+ * implementations. It manages end points for the output and handles the
+ * interaction with the pipeline's tail node.
+ * </p>
+ *
+ * @param <T_IN>   The type of input data
+ * @param <T_OUT>  The type of output data
+ * @param <T_BASE> The specific type of the transformer implementation
+ *
  * @author Sly Technologies Inc
  * @author repos@slytechs.com
- *
  */
 public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends AbstractTransformer<T_IN, T_OUT, T_BASE>
-		implements OutputEndPoint<T_OUT> {
+		implements OutputTransformer<T_OUT>, Comparable<AbstractOutput<?, ?, ?>>, HasPriority {
 
 	/**
-	 * @param name
-	 * @param inputType
-	 * @param outputType
+	 * Implementation of the EndPoint interface for managing output endpoints.
 	 */
-	public AbstractOutput(String name, DataType inputType, DataType outputType) {
-		super(name, inputType, outputType);
+	private class EndPointImpl<T> implements EndPoint<T_OUT>, Comparable<EndPoint<T_OUT>> {
 
-		this.outputDataList = new DataList<>(outputType);
-		this.outputDataList.addChangeListener(super::outputData);
+		private final String id;
+		private int priority = HasPriority.DEFAULT_PRIORITY_VALUE;
+		private Registration dataListRegistration;
 
+		/**
+		 * Constructs a new EndPointImpl with the given ID.
+		 *
+		 * @param id The identifier for this endpoint
+		 */
+		public EndPointImpl(String id) {
+			this.id = id;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public DataType outputData() {
+			return outputType();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String id() {
+			return id;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void outputData(T_OUT data) {
+			if (this.dataListRegistration != null)
+				throw new IllegalStateException("output's [%s] endpoint [%s] is already set"
+						.formatted(name(), id()));
+
+			outputDataList.add(data);
+			this.dataListRegistration = () -> outputDataList.remove(data);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void unregister() {
+			if (dataListRegistration != null)
+				dataListRegistration.unregister();
+
+			endPointMap.remove(id);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public int priority() {
+			return priority;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public EndPoint<T_OUT> priority(int newPriority) {
+			HasPriority.checkPriorityValue(newPriority);
+			this.priority = newPriority;
+			return this;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public int compareTo(EndPoint<T_OUT> o) {
+			return this.priority - o.priority();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String name() {
+			return id;
+		}
 	}
 
-	/**
-	 * @param name
-	 * @param input
-	 * @param inputType
-	 * @param outputType
-	 */
-	public AbstractOutput(String name, T_IN input, DataType inputType, DataType outputType) {
-		super(name, input, inputType, outputType);
-
-		this.outputDataList = new DataList<>(outputType);
-		this.outputDataList.addChangeListener(super::outputData);
-	}
-
-	private AbstractProcessor<T_IN, ?> parentProcessor;
+	@SuppressWarnings("unused")
+	private final TailNode<T_IN> tailNode;
 	private final DataList<T_OUT> outputDataList;
+	private final Map<String, EndPoint<T_OUT>> endPointMap = new HashMap<>();
+	private int priority = HasPriority.DEFAULT_PRIORITY_VALUE;
 
-	/**null
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint#registerOutputData(java.lang.Object)
+	/**
+	 * Constructs a new AbstractOutput with the specified parameters.
+	 *
+	 * @param tailNode   The tail node of the pipeline
+	 * @param name       The name of this output transformer
+	 * @param inputType  The type of input data
+	 * @param outputType The type of output data
+	 */
+	public AbstractOutput(TailNode<T_IN> tailNode, String name, DataType inputType, DataType outputType) {
+		super(name, inputType, outputType);
+		this.tailNode = tailNode;
+		this.outputDataList = new DataList<>(outputType);
+		this.outputDataList.addChangeListener(super::outputData);
+		enable(true);
+	}
+
+	/**
+	 * Constructs a new AbstractOutput with the specified parameters and initial
+	 * input data.
+	 *
+	 * @param tailNode   The tail node of the pipeline
+	 * @param name       The name of this output transformer
+	 * @param input      The initial input data
+	 * @param inputType  The type of input data
+	 * @param outputType The type of output data
+	 */
+	public AbstractOutput(TailNode<T_IN> tailNode, String name, T_IN input, DataType inputType, DataType outputType) {
+		super(name, input, inputType, outputType);
+		this.tailNode = tailNode;
+		this.outputDataList = new DataList<>(outputType);
+		this.outputDataList.addChangeListener(super::outputData);
+		enable(true);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public T_OUT addOutputData(T_OUT data) {
+		registerOutputData(data);
+		return data;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int compareTo(AbstractOutput<?, ?, ?> o) {
+		return this.priority - o.priority;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public EndPoint<T_OUT> createEndPoint(String id) {
+		var endpoint = new EndPointImpl<T_OUT>(id);
+		endPointMap.put(id, endpoint);
+		return endpoint;
+	}
+
+	/**
+	 * Returns a string representation of the outputs.
+	 *
+	 * @return A string representation of the outputs
+	 */
+	public String outputsToString() {
+		return endPointMap.values().stream()
+				.sorted()
+				.map(HasName::name)
+				.collect(Collectors.joining(",", "<", ">"));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int priority() {
+		return priority;
+	}
+
+	/**
+	 * Sets the priority of this output transformer.
+	 *
+	 * @param newPriority The new priority value
+	 * @return This output transformer instance
+	 * @throws IllegalArgumentException if the priority value is invalid
+	 */
+	public T_BASE priority(int newPriority) throws IllegalArgumentException {
+		HasPriority.checkPriorityValue(newPriority);
+		this.priority = newPriority;
+		return us();
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Registration registerOutputData(T_OUT data) {
 		outputDataList.add(data);
-
 		return () -> outputDataList.remove(data);
 	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputEndPoint#addOutputData(java.lang.Object)
-	 */
-	@Override
-	public T_OUT addOutputData(T_OUT data) {
-
-		registerOutputData(data);
-
-		return data;
-	}
-
 }
