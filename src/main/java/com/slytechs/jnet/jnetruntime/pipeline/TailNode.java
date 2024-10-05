@@ -17,13 +17,9 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static java.util.function.Predicate.*;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.slytechs.jnet.jnetruntime.pipeline.DataType.DataSupport;
 
 /**
  * The Class TailNode.
@@ -36,6 +32,7 @@ public final class TailNode<T>
 
 	/** The output map. */
 	private final Map<Object, AbstractOutput<T, ?, ?>> outputMap = new HashMap<>();
+	private final DataList<T> inputList;
 
 	/**
 	 * Instantiates a new tail node.
@@ -47,7 +44,7 @@ public final class TailNode<T>
 	public TailNode(Pipeline<T, ?> parent, String name, DataType type) {
 		super(parent, Pipeline.TAIL_BUILTIN_PRIORITY, name, type, type.empty());
 
-		enable(true);
+		this.inputList = new DataList<>(type, this::inputData);
 	}
 
 	/**
@@ -58,18 +55,33 @@ public final class TailNode<T>
 	 */
 	public void addOutput(AbstractOutput<T, ?, ?> output, Object id) {
 
-		// Check for valid ID types
-		assert false ||
-				id instanceof String ||
-				id instanceof DataType
-				: "output [%s] id [%s] must of type String or DataType"
-						.formatted(output.name(), id);
+		try {
+			writeLock.lock();
 
-		if (outputMap.containsKey(id))
-			throw new IllegalArgumentException("output [%s] with this id [%s] already exists in pipeline [%s]"
-					.formatted(output.name(), id, name()));
+			// Check for valid ID types
+			assert false ||
+					id instanceof String ||
+					id instanceof DataType
+					: "output [%s] id [%s] must of type String or DataType"
+							.formatted(output.name(), id);
 
-		outputMap.put(id, output);
+			if (outputMap.containsKey(id))
+				throw new IllegalArgumentException("output [%s] with this id [%s] already exists in pipeline [%s]"
+						.formatted(output.name(), id, name()));
+
+			outputMap.put(id, output);
+			inputList.add(output.inputData());
+
+			output.setRegistration(() -> {
+				outputMap.remove(id);
+				inputList.remove(output.inputData());
+			});
+
+			super.prevProcessor.calculateOutput();
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -78,33 +90,39 @@ public final class TailNode<T>
 	 * @return the string
 	 */
 	public String outputsToString() {
-		return outputMap.values().stream()
-				.sorted()
-				.map(out -> (out.isEnabled() ? "%s%s" : "!%s%s").formatted(out.name(), out.outputsToString()))
-				.collect(Collectors.joining(", ", "[", "]"));
+		try {
+			readLock.lock();
+
+			return outputMap.values().stream()
+					.sorted()
+					.map(out -> (out.isEnabled() ? "%s=>%s" : "!%s=>%s")
+							.formatted(out.name(), out.outputsToString()))
+					.collect(Collectors.joining(", ", "OX[", "]"));
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
-	 * Re link data.
-	 *
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#nextElement(com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor)
 	 */
 	@Override
-	void reLinkData() {
+	public void nextElement(AbstractProcessor<T, ?> e) {
+		if (e == null)
+			return;
 
-		DataSupport<T> support = inputType().dataSupport();
+		throw new UnsupportedOperationException(
+				"Can not append processor [%s] before the tail node, use addOutput() method to add data sinks "
+						.formatted(e.name()));
+	}
 
-		T[] array = outputMap.values().stream()
-				.filter(AbstractOutput::isEnabled)
-				.filter(not(AbstractOutput::isBypassed))
-				.sorted()
-				.peek(AbstractOutput::reLinkData)
-				.map(out -> out.inputData())
-				.toArray(support::newArray);
-
-		T in = support.wrapArray(array);
-
-		inputData(in);
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#calculateOutput()
+	 */
+	@Override
+	boolean calculateOutput() {
+		return false;
 	}
 
 }

@@ -61,18 +61,6 @@ class SubPipelineProcessor<T>
 	}
 
 	/**
-	 * Re link data.
-	 *
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
-	 */
-	@Override
-	void reLinkData() {
-		super.reLinkData();
-
-		subPipeline.head().reLinkData();
-	}
-
-	/**
 	 * Instantiates a new sub pipeline processor.
 	 *
 	 * @param pipeline    the pipeline

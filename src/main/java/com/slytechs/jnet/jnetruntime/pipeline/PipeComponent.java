@@ -20,7 +20,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.function.BooleanSupplier;
 
 import com.slytechs.jnet.jnetruntime.util.HasName;
-import com.slytechs.jnet.jnetruntime.util.HasRegistration;
+import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
  * Defines the common interface for components in a pipeline system.
@@ -34,7 +34,8 @@ import com.slytechs.jnet.jnetruntime.util.HasRegistration;
  * @param <T_BASE> The specific type of the pipeline component implementation
  * @author Mark Bednarczyk
  */
-public interface PipeComponent<T_BASE extends PipeComponent<T_BASE>> extends HasName, HasRegistration {
+public interface PipeComponent<T_BASE extends PipeComponent<T_BASE>>
+		extends HasName, Registration {
 
 	/**
 	 * Enables or disables the pipeline component.

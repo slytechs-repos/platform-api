@@ -19,7 +19,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 /**
  * Interface for components in a data processing pipeline that consume input
- * data.
+ * data using the provided input data descriptor interface.
  * 
  * <p>
  * This interface defines methods for accessing the input data and its type. It
@@ -33,7 +33,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 public interface HasInputData<T> {
 
 	/**
-	 * Retrieves the current input data of the component.
+	 * Retrieves the current input data descriptor interface of the component.
 	 * 
 	 * <p>
 	 * This method should return the most recent input data received by the
@@ -46,7 +46,8 @@ public interface HasInputData<T> {
 	T inputData();
 
 	/**
-	 * Retrieves the type of the input data consumed by this component.
+	 * Retrieves the type of the input data descriptor interface consumed by this
+	 * component.
 	 * 
 	 * <p>
 	 * This method should return a {@link DataType} object that describes the type

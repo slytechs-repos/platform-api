@@ -17,9 +17,13 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BooleanSupplier;
 
+import com.slytechs.jnet.jnetruntime.util.HasPriority;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -38,25 +42,32 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *                 chaining
  * @author Mark Bednarczyk
  */
-public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
-		implements PipeComponent<T_BASE> {
+public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
+		implements PipeComponent<T_BASE>, HasPriority, Comparable<HasPriority>, Registration {
 
 	/** The name. */
 	private String name;
 
 	/** The registration. */
-	private Registration registration;
+	private final AtomicReference<Registration> registration = new AtomicReference<>();
 
 	/** The enabled. */
-	private boolean enabled;
+	private boolean enabled = true;
 
 	/** The bypass. */
 	private boolean bypass;
 
+	protected final Lock readLock;
+	protected final Lock writeLock;
+	protected ReadWriteLock rwLock;
+
+	private int priority;
+
 	/**
 	 * Constructs an AbstractComponent with no name.
 	 */
-	public AbstractComponent() {
+	public AbstractComponent(PipeComponent<?> component, int priority) {
+		this(component, "", priority);
 	}
 
 	/**
@@ -64,8 +75,25 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 *
 	 * @param name The name of the component
 	 */
-	public AbstractComponent(String name) {
+	public AbstractComponent(PipeComponent<?> component, String name, int priority) {
+		this(((AbstractComponent<?>) component).rwLock, name, priority);
+	}
+
+	/**
+	 * Constructs an AbstractComponent with the specified name.
+	 *
+	 * @param name The name of the component
+	 */
+	private AbstractComponent(ReadWriteLock rwLock, String name, int priority) {
+		this.rwLock = rwLock;
+		this.priority = priority;
+		this.readLock = rwLock.readLock();
+		this.writeLock = rwLock.writeLock();
 		this.name = name;
+	}
+
+	AbstractComponent(String name) {
+		this(new ReentrantReadWriteLock(), name, HasPriority.DEFAULT_PRIORITY_VALUE);
 	}
 
 	/**
@@ -76,10 +104,19 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public final T_BASE bypass(boolean b) {
-		if (bypass == b)
-			return us();
-		this.bypass = b;
+		try {
+			writeLock.lock();
+			if (bypass == b)
+				return us();
+
+			this.bypass = b;
+
+		} finally {
+			writeLock.unlock();
+		}
+
 		onBypass(b);
+
 		return us();
 	}
 
@@ -94,6 +131,37 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 		return bypass(b.getAsBoolean());
 	}
 
+	protected final void checkIfIsEnabled() {
+		if (enabled == false)
+			throw new IllegalStateException("%s [%s] is disabled"
+					.formatted(getClass().getSimpleName(), name()));
+	}
+
+	protected final void checkIfIsRegistered() {
+		if (registration == null)
+			throw new IllegalStateException("%s [%s] is not registered"
+					.formatted(getClass().getSimpleName(), name()));
+	}
+
+	/**
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public final int compareTo(HasPriority o) {
+		return (this.priority < o.priority()) ? -1 : 1;
+	}
+
+	void disableDirect() {
+		try {
+			writeLock.lock();
+
+			this.enabled = false;
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
 	/**
 	 * Enables or disables the component.
 	 *
@@ -102,10 +170,20 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public final T_BASE enable(boolean b) {
-		if (enabled == b)
-			return us();
-		this.enabled = b;
+		try {
+			writeLock.lock();
+
+			if (enabled == b)
+				return us();
+
+			this.enabled = b;
+
+		} finally {
+			writeLock.unlock();
+		}
+
 		onEnable(b);
+
 		return us();
 	}
 
@@ -136,7 +214,14 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public final boolean isBypassed() {
-		return bypass;
+		try {
+			readLock.lock();
+
+			return bypass;
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
@@ -146,7 +231,14 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public final boolean isEnabled() {
-		return enabled;
+		try {
+			readLock.lock();
+
+			return enabled;
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
@@ -156,7 +248,14 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public final String name() {
-		return name;
+		try {
+			readLock.lock();
+
+			return name;
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
@@ -167,7 +266,15 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public final T_BASE name(String newName) {
-		this.name = newName;
+		try {
+			writeLock.lock();
+
+			this.name = newName;
+
+		} finally {
+			writeLock.unlock();
+		}
+
 		return us();
 	}
 
@@ -190,6 +297,16 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	/**
+	 * Hook method called when the priority values changes. Subclasses can override
+	 * this to implement specific behavior.
+	 *
+	 * @param newPriority The new priority
+	 */
+	protected void onPriorityChange(int newPriority) {
+
+	}
+
+	/**
 	 * Hook method called when the component is registered. Subclasses can override
 	 * this to implement specific behavior.
 	 */
@@ -203,15 +320,34 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	protected void onUnregistered() {
 	}
 
-	/**
-	 * Gets the registration information for this component.
-	 *
-	 * @return An Optional containing the Registration object if registered, or an
-	 *         empty Optional if not
-	 */
 	@Override
-	public final Optional<Registration> registration() {
-		return Optional.ofNullable(registration);
+	public final int priority() {
+		try {
+			readLock.lock();
+
+			return this.priority;
+
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	public final T_BASE priority(int newPriority) {
+		try {
+			writeLock.lock();
+			if (this.priority == newPriority)
+				return us();
+
+			HasPriority.checkPriorityValue(newPriority);
+
+			this.priority = newPriority;
+		} finally {
+			writeLock.unlock();
+		}
+
+		onPriorityChange(newPriority);
+
+		return us();
 	}
 
 	/**
@@ -224,7 +360,9 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 		if (enabled && (orNull == null) && (registration != null))
 			throw new IllegalStateException("element [%s] must be disabled before registration can be removed"
 					.formatted(name()));
-		this.registration = orNull;
+
+		this.registration.set(orNull);
+
 		if (orNull == null)
 			onUnregistered();
 		else
@@ -240,5 +378,16 @@ public abstract class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	@SuppressWarnings("unchecked")
 	protected final T_BASE us() {
 		return (T_BASE) this;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.util.Registration#unregister()
+	 */
+	@Override
+	public void unregister() {
+		if (registration.get() != null)
+			registration.get().unregister();
+
+		registration.set(null);
 	}
 }

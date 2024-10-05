@@ -338,7 +338,7 @@ public class TestSyntax {
 		 * @return the to uppercase processor
 		 */
 		public ToUppercaseProcessor peek(PipelineData peekAction) {
-			super.addOutputToNode(peekAction);
+			super.addExternalOutput(peekAction);
 			return this;
 		}
 
@@ -390,7 +390,7 @@ public class TestSyntax {
 		 * @return the to lowercase processor
 		 */
 		public ToLowercaseProcessor peek(PipelineData peekAction) {
-			super.addOutputToNode(peekAction);
+			super.addExternalOutput(peekAction);
 			return this;
 		}
 
@@ -412,7 +412,7 @@ public class TestSyntax {
 
 		pipeline.addOutput(TestPipelineOutput::new)
 				.createEndPoint("end#1")
-				.outputData((n, i) -> System.out.printf("name=%s, id=%d%n", n, i.get()));
+				.endPointData((n, i) -> System.out.printf("name=%s, id=%d%n", n, i.get()));
 
 		pipeline.addProcessor(2, ToUppercaseProcessor::new)
 				.peek((n, i, c) -> System.out.println(n));

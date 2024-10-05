@@ -17,6 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -35,28 +36,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends AbstractComponent<T_BASE>
-		implements DataProcessor<T, T_BASE>, Comparable<DataProcessor<?, ?>> {
-
-	/**
-	 * A dummy processor used for internal operations.
-	 *
-	 * @param <T> The type of data processed by this dummy processor
-	 * @author Mark Bednarczyk
-	 */
-	static class Dummy<T> extends AbstractProcessor<T, Dummy<T>> {
-
-		/**
-		 * Instantiates a new dummy.
-		 *
-		 * @param type the type
-		 */
-		Dummy(DataType type) {
-			super(type);
-		}
-	}
-
-	/** The priority. */
-	private int priority;
+		implements DataProcessor<T, T_BASE>, DoublyLinkedElement<AbstractProcessor<T, ?>> {
 
 	/** The data type. */
 	private final DataType dataType;
@@ -66,6 +46,7 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 
 	/** The output data. */
 	private T outputData; // Auto maintained and updated by DataList object
+	private T outputNextIn;
 
 	/** The output list. */
 	private final DataList<T> outputList;
@@ -74,24 +55,9 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	private final AbstractPipeline<T, ?> pipeline;
 
 	/** The next processor. */
-	private AbstractProcessor<T, ?> nextProcessor;
+	AbstractProcessor<T, ?> nextProcessor;
 
-	/** The next link registration. */
-	private Registration nextLinkRegistration;
-
-	/**
-	 * Constructs a dummy processor with the specified data type.
-	 *
-	 * @param dataType The data type for this processor
-	 */
-	private AbstractProcessor(DataType dataType) {
-		super("dummy");
-		this.pipeline = null;
-		this.dataType = dataType;
-		this.inputData = null;
-		this.outputList = new DataList<>(dataType, this::updateOutput);
-		enable(true);
-	}
+	AbstractProcessor<T, ?> prevProcessor;
 
 	/**
 	 * Constructs a new processor with the specified parameters.
@@ -105,18 +71,19 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	@SuppressWarnings("unchecked")
 	public AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
-		super(name);
+		super(pipeline, name, priority);
+
 		if (!(pipeline instanceof AbstractPipeline<T, ?> apipeline))
 			throw new IllegalArgumentException("invalid pipeline [%s]".formatted(pipeline.name()));
+
 		if (!type.isCompatibleWith(getClass()))
 			throw new IllegalArgumentException("processor subclass must implement data interface [%s]"
 					.formatted(type.dataClass()));
+
 		this.pipeline = apipeline;
-		this.priority = priority;
 		this.inputData = (T) this;
 		this.dataType = type;
-		this.outputList = new DataList<>(type, this::updateOutput);
-		enable(true);
+		this.outputList = new DataList<>(type, this::updateOutputField);
 	}
 
 	/**
@@ -130,15 +97,13 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @throws IllegalArgumentException if the pipeline is invalid
 	 */
 	AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type, T data) {
-		super(name);
+		super(pipeline, name, priority);
 		if (!(pipeline instanceof AbstractPipeline<T, ?> ac))
 			throw new IllegalArgumentException("invalid pipeline [%s]".formatted(pipeline.name()));
 		this.pipeline = ac;
-		this.priority = priority;
 		this.inputData = data;
 		this.dataType = type;
-		this.outputList = new DataList<>(type, this::updateOutput);
-		enable(true);
+		this.outputList = new DataList<>(type, this::updateOutputField);
 	}
 
 	/**
@@ -147,24 +112,53 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @param localOutput The local output to add
 	 * @return A Registration object for unregistering the output
 	 */
-	final protected Registration addOutputToNode(T localOutput) {
-		outputList.addFirst(localOutput);
-		return () -> outputList.remove(localOutput);
+	final protected Registration addExternalOutput(T localOutput) {
+		try {
+			writeLock.lock();
+
+			outputList.addFirst(localOutput);
+			return () -> outputList.remove(localOutput);
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
-	/**
-	 * Compares this processor to another based on priority. Processors are sorted
-	 * from lowest to highest priority value.
-	 *
-	 * @param o The other processor to compare to
-	 * @return A negative integer, zero, or a positive integer as this processor has
-	 *         lower, equal to, or higher priority than the specified processor
-	 */
-	@Override
-	public int compareTo(DataProcessor<?, ?> o) {
-		if (this.priority == o.priority())
-			return 0;
-		return (this.priority < o.priority()) ? -1 : 1;
+	T calculateInput() {
+		if (isBypassed())
+			return nextProcessor.calculateInput();
+
+		calculateOutput();
+
+		return inputData;
+	}
+
+	boolean calculateOutput() {
+		if (isBypassed()) {
+			prevProcessor.calculateOutput();
+
+			return false;
+		}
+
+		/* check for changes in our output and next chained input */
+		T latestIn = nextProcessor.calculateInput();
+		if (outputList.contains(latestIn))
+			return false; // No changes, nothing to do
+
+		/*
+		 * Remove previous data descriptor interface and replace with the latest.
+		 * 
+		 * 
+		 * Note: `DataList::outputList` automatically updates the `this.outputData`
+		 * field when the list changes, with the combined T wrapper to dispatch to all
+		 * T's in the `outputList`.
+		 */
+		outputList.remove(outputNextIn);
+		outputList.add(latestIn);
+
+		/* Save to make sure we keep track of chained data descriptor link */
+		outputNextIn = latestIn;
+		return true;
 	}
 
 	/**
@@ -180,7 +174,6 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	@Override
 	public T inputData() {
-		assert inputData != null : "[%s].inputData() data is null".formatted(name());
 		return inputData;
 	}
 
@@ -204,34 +197,27 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	}
 
 	/**
-	 * Gets the next processor in the pipeline.
-	 *
-	 * @return The next processor
+	 * @see com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement#nextElement()
 	 */
-	final AbstractProcessor<T, ?> nextProcessor() {
+	@Override
+	public AbstractProcessor<T, ?> nextElement() {
 		return nextProcessor;
 	}
 
 	/**
-	 * Sets the next processor in the pipeline.
-	 *
-	 * @param next The next processor to set
+	 * @see com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement#nextElement(java.lang.Object)
 	 */
-	void nextProcessor(AbstractProcessor<T, ?> next) {
-		unregister();
-		this.nextProcessor = next;
+	@Override
+	public void nextElement(AbstractProcessor<T, ?> e) {
+		this.nextProcessor = e;
 	}
 
 	/**
-	 * Gets the next non-bypassed processor in the pipeline.
-	 *
-	 * @return The next non-bypassed processor
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onBypass(boolean)
 	 */
-	final AbstractProcessor<T, ?> nextProcessorNotBypassed() {
-		AbstractProcessor<T, ?> p = nextProcessor();
-		while (p.isBypassed())
-			p = p.nextProcessor();
-		return p;
+	@Override
+	protected void onBypass(boolean newValue) {
+
 	}
 
 	/**
@@ -239,7 +225,22 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	@Override
 	protected void onEnable(boolean newValue) {
-		pipeline.onNodeEnable(this);
+		checkIfIsRegistered();
+
+		if (newValue)
+			pipeline.activateProcessor(this);
+		else
+			pipeline.deactivateProcessor(this);
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onPriorityChange(int)
+	 */
+	@Override
+	protected void onPriorityChange(int newPriority) {
+		checkIfIsRegistered();
+
+		pipeline.resortProcessor(this);
 	}
 
 	/**
@@ -247,8 +248,11 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	@Override
 	public T outputData() {
-		assert outputData != null : "[%s].outputData() data is null".formatted(name());
 		return outputData;
+	}
+
+	T outputData(T out) {
+		return this.outputData = out;
 	}
 
 	/**
@@ -260,44 +264,19 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	}
 
 	/**
-	 * Gets the parent pipeline of this processor.
-	 *
-	 * @return The parent pipeline
-	 */
-	AbstractPipeline<T, ?> parent() {
-		return pipeline;
-	}
-
-	/**
-	 * {@inheritDoc}
+	 * @see com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement#prevElement()
 	 */
 	@Override
-	public int priority() {
-		return priority;
+	public AbstractProcessor<T, ?> prevElement() {
+		return prevProcessor;
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * @see com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement#prevElement(java.lang.Object)
 	 */
 	@Override
-	public T_BASE priority(int newPriority) {
-		this.priority = newPriority;
-		return us();
-	}
-
-	/**
-	 * Re-links the data connections in the pipeline.
-	 */
-	void reLinkData() {
-		if (nextLinkRegistration != null)
-			unregister();
-		final T nextData = nextProcessorNotBypassed().inputData();
-		assert nextData != null : "[%s].nextProcessorNotBypassed() returns null".formatted(name());
-		outputList.addLast(nextData);
-		assert outputData != null : "[%s].register() output data is null".formatted(name());
-		nextLinkRegistration = () -> {
-			outputList.remove(nextData);
-		};
+	public void prevElement(AbstractProcessor<T, ?> e) {
+		this.prevProcessor = e;
 	}
 
 	/**
@@ -307,7 +286,7 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	public String toString() {
 		return ""
 				+ getClass().getSimpleName()
-				+ " [priority=" + priority
+				+ " [priority=" + priority()
 				+ ", enabled=" + isEnabled()
 				+ ", dataType=" + dataType
 				+ ", name=" + name()
@@ -315,20 +294,18 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	}
 
 	/**
-	 * Unregisters this processor from the pipeline.
-	 */
-	final void unregister() {
-		if (nextLinkRegistration != null)
-			nextLinkRegistration.unregister();
-		this.nextLinkRegistration = null;
-	}
-
-	/**
 	 * Updates the output data of this processor.
 	 *
 	 * @param newOutput The new output data
 	 */
-	private void updateOutput(T newOutput) {
-		this.outputData = newOutput;
+	private void updateOutputField(T newOutput) {
+		try {
+			writeLock.lock();
+
+			outputData(newOutput);
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 }

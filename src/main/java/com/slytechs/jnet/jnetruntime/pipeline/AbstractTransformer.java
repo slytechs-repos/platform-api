@@ -19,6 +19,8 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.Objects;
 
+import com.slytechs.jnet.jnetruntime.util.HasPriority;
+
 /**
  * Abstract base class for data transformers in a pipeline.
  * 
@@ -39,13 +41,15 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 
 	/** The output data. */
 	private T_OUT outputData;
-	
+
 	/** The input data. */
 	private T_IN inputData;
-	
+
+	private T_IN inputDataSave;
+
 	/** The input type. */
 	private final DataType inputType;
-	
+
 	/** The output type. */
 	private final DataType outputType;
 
@@ -58,10 +62,12 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param inputType  The type of the input data
 	 * @param outputType The type of the output data
 	 */
-	public AbstractTransformer(String name, T_IN input, DataType inputType, DataType outputType) {
-		super(name);
+	public AbstractTransformer(PipeComponent<?> component, String name, T_IN input, DataType inputType,
+			DataType outputType) {
+		super(component, name, HasPriority.DEFAULT_PRIORITY_VALUE);
 		assert inputType.isCompatibleWith(input.getClass());
 		this.inputData = input;
+		this.inputDataSave = input;
 		this.inputType = inputType;
 		this.outputType = outputType;
 	}
@@ -75,21 +81,29 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param outputType The type of the output data
 	 */
 	@SuppressWarnings("unchecked")
-	public AbstractTransformer(String name, DataType inputType, DataType outputType) {
-		super(name);
+	public AbstractTransformer(PipeComponent<?> component, String name, DataType inputType, DataType outputType) {
+		super(component, name, HasPriority.DEFAULT_PRIORITY_VALUE);
 		assert inputType.isCompatibleWith(this.getClass()) : ""
 				+ "incompatible input type [%s] with subclass [%s]"
 						.formatted(inputType.name(), this.getClass().getSimpleName());
 		this.inputType = inputType;
 		this.outputType = outputType;
 		this.inputData = (T_IN) this;
+		this.inputDataSave = (T_IN) this;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public T_OUT outputData() {
-		return this.outputData;
+		try {
+			readLock.lock();
+
+			return this.outputData;
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
@@ -99,8 +113,15 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @return The set output data
 	 */
 	T_OUT outputData(T_OUT output) {
-		this.outputData = output;
-		return output;
+		try {
+			writeLock.lock();
+			this.outputData = output;
+
+			return output;
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -110,15 +131,40 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @return The set input data
 	 */
 	T_IN inputData(T_IN input) {
-		this.inputData = input;
-		return input;
+		try {
+			writeLock.lock();
+			this.inputData = input;
+
+			return input;
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	protected final void restoreInputData() {
+		try {
+			writeLock.lock();
+
+			this.inputData = this.inputDataSave;
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public T_IN inputData() {
-		return this.inputData;
+		try {
+			readLock.lock();
+
+			return this.inputData;
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
@@ -142,23 +188,23 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 */
 	@Override
 	public String toString() {
-		var in = inputData == null ? "" : Objects.toIdentityString(inputData);
-		var out = outputData == null ? "" : Objects.toIdentityString(outputData);
-		return ""
-				+ getClass().getSimpleName()
-				+ " [name=" + name()
-				+ ", inputType=" + inputType
-				+ ", outputType=" + outputType
-				+ ", output=" + out
-				+ ", input=" + in
-				+ "]";
+		try {
+			readLock.lock();
+			var in = inputData == null ? "" : Objects.toIdentityString(inputData);
+			var out = outputData == null ? "" : Objects.toIdentityString(outputData);
+
+			return ""
+					+ getClass().getSimpleName()
+					+ " [name=" + name()
+					+ ", inputType=" + inputType
+					+ ", outputType=" + outputType
+					+ ", output=" + out
+					+ ", input=" + in
+					+ "]";
+
+		} finally {
+			readLock.unlock();
+		}
 	}
 
-	/**
-	 * Re-links the data connections in the pipeline. This method is intended to be
-	 * overridden by subclasses if necessary.
-	 */
-	void reLinkData() {
-		// Default implementation does nothing
-	}
 }

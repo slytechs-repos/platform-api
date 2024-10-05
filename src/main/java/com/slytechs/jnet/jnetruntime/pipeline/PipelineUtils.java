@@ -205,4 +205,19 @@ class PipelineUtils {
 			throw new IllegalStateException(e);
 		}
 	}
+
+	public static String ID(Object obj) {
+		if (obj == null)
+			return "Nil";
+
+		String str = obj.getClass().getSimpleName();
+		if (str.contains("Lambda")) {
+			String[] c = str.split("\\$\\$Lambda\\/");
+			String[] i = c[0].split("\\$");
+
+			return "%s$$%s".formatted(i[i.length - 1], c[1].substring(c[1].length() - 5));
+		}
+
+		return str;
+	}
 }

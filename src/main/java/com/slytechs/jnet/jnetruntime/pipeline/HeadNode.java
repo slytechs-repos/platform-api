@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static java.util.function.Predicate.*;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,25 +44,6 @@ public final class HeadNode<T>
 	 */
 	public HeadNode(Pipeline<T, ?> parent, String name, DataType type) {
 		super(parent, Pipeline.HEAD_BUILTIN_PRIORITY, name, type, null);
-
-		enable(true);
-	}
-
-	/**
-	 * Next processor.
-	 *
-	 * @param next the next
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#nextProcessor(com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor)
-	 */
-	@Override
-	void nextProcessor(AbstractProcessor<T, ?> next) {
-		super.nextProcessor(next);
-
-		T out = (next == null)
-				? null
-				: next.inputData();
-
-		inputMap.values().forEach(t -> t.outputData(out));
 	}
 
 	/**
@@ -77,6 +58,8 @@ public final class HeadNode<T>
 					.formatted(input.name(), id, name()));
 
 		inputMap.put(id, input);
+		setRegistration(() -> inputMap.remove(id));
+		input.outputData(outputData());
 	}
 
 	/**
@@ -86,36 +69,49 @@ public final class HeadNode<T>
 	 */
 	public String inputsToString() {
 		return inputMap.values().stream()
-				.map(in -> (in.isEnabled() ? "%s%s" : "!%s%s").formatted(in.name(), in.inputsToString()))
+				.sorted()
+				.map(in -> (in.isEnabled() ? "%s=>IX[%s(%s):%s]" : "!%s=>IN[%s(%s):%s]")
+						.formatted(in.entryPointsToString(), in.name(), ID(in.inputData()), ID(in.outputData())))
 				.collect(Collectors.joining(", ", "[", "]"));
 	}
 
 	/**
-	 * Re link data.
-	 *
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#reLinkData()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#outputData(java.lang.Object)
 	 */
 	@Override
-	void reLinkData() {
+	T outputData(T out) {
+		try {
+			writeLock.lock();
 
-		super.reLinkData();
+			// Do the actual set
+			T output = super.outputData(out);
 
-		T headOutput = outputData();
+			// Pass the output to all of the input nodes
+			inputMap.values().stream()
+					.filter(PipeComponent::isEnabled)
+					.sorted()
+					.forEach(in -> in.outputData(output));
 
-		inputMap.values().stream()
-				.filter(AbstractInput::isEnabled)
-				.filter(not(AbstractInput::isBypassed))
-				.peek(AbstractInput::reLinkData)
-				.forEach(t -> t.outputData(headOutput));
+			return out;
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
-	 * On input enable.
-	 *
-	 * @param b     the b
-	 * @param input the input
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#prevElement(com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor)
 	 */
-	public void onInputEnable(boolean b, AbstractInput<?, T, ?> input) {
-//		reLinkData();
+	@Override
+	public void prevElement(AbstractProcessor<T, ?> e) {
+		if (e == null)
+			return;
+
+		String n = e == null ? "" : e.name();
+
+		throw new UnsupportedOperationException(
+				"Can not prepend processor [%s] before the head node, use addInput() method to add data sources "
+						.formatted(n));
 	}
+
 }

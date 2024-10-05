@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint.EndPointFactory;
 import com.slytechs.jnet.jnetruntime.util.HasName;
-import com.slytechs.jnet.jnetruntime.util.HasPriority;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -43,121 +43,17 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends AbstractTransformer<T_IN, T_OUT, T_BASE>
-		implements OutputTransformer<T_OUT>, Comparable<AbstractOutput<?, ?, ?>>, HasPriority {
-
-	/**
-	 * Implementation of the EndPoint interface for managing output endpoints.
-	 *
-	 * @param <T> the generic type
-	 * @author Mark Bednarczyk
-	 */
-	private class EndPointImpl<T> implements EndPoint<T_OUT>, Comparable<EndPoint<T_OUT>> {
-
-		/** The id. */
-		private final String id;
-
-		/** The priority. */
-		private int priority = HasPriority.DEFAULT_PRIORITY_VALUE;
-
-		/** The data list registration. */
-		private Registration dataListRegistration;
-
-		/**
-		 * Constructs a new EndPointImpl with the given ID.
-		 *
-		 * @param id The identifier for this endpoint
-		 */
-		public EndPointImpl(String id) {
-			this.id = id;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public DataType outputData() {
-			return outputType();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public String id() {
-			return id;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void outputData(T_OUT data) {
-			if (this.dataListRegistration != null)
-				throw new IllegalStateException("output's [%s] endpoint [%s] is already set"
-						.formatted(name(), id()));
-
-			outputDataList.add(data);
-			this.dataListRegistration = () -> outputDataList.remove(data);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void unregister() {
-			if (dataListRegistration != null)
-				dataListRegistration.unregister();
-
-			endPointMap.remove(id);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public int priority() {
-			return priority;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public EndPoint<T_OUT> priority(int newPriority) {
-			HasPriority.checkPriorityValue(newPriority);
-			this.priority = newPriority;
-			return this;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public int compareTo(EndPoint<T_OUT> o) {
-			return this.priority - o.priority();
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public String name() {
-			return id;
-		}
-	}
+		implements OutputTransformer<T_OUT> {
 
 	/** The tail node. */
 	@SuppressWarnings("unused")
 	private final TailNode<T_IN> tailNode;
 
 	/** The output data list. */
-	private final DataList<T_OUT> outputDataList;
+	final DataList<T_OUT> outputList;
 
 	/** The end point map. */
-	private final Map<String, EndPoint<T_OUT>> endPointMap = new HashMap<>();
-
-	/** The priority. */
-	private int priority = HasPriority.DEFAULT_PRIORITY_VALUE;
+	final Map<String, EndPoint<T_OUT>> endPointMap = new HashMap<>();
 
 	/**
 	 * Constructs a new AbstractOutput with the specified parameters.
@@ -168,10 +64,10 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	 * @param outputType The type of output data
 	 */
 	public AbstractOutput(TailNode<T_IN> tailNode, String name, DataType inputType, DataType outputType) {
-		super(name, inputType, outputType);
+		super(tailNode, name, inputType, outputType);
 		this.tailNode = tailNode;
-		this.outputDataList = new DataList<>(outputType);
-		this.outputDataList.addChangeListener(super::outputData);
+		this.outputList = new DataList<>(outputType, super::outputData);
+
 		enable(true);
 	}
 
@@ -186,10 +82,10 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	 * @param outputType The type of output data
 	 */
 	public AbstractOutput(TailNode<T_IN> tailNode, String name, T_IN input, DataType inputType, DataType outputType) {
-		super(name, input, inputType, outputType);
+		super(tailNode, name, input, inputType, outputType);
 		this.tailNode = tailNode;
-		this.outputDataList = new DataList<>(outputType);
-		this.outputDataList.addChangeListener(super::outputData);
+		this.outputList = new DataList<>(outputType, super::outputData);
+
 		enable(true);
 	}
 
@@ -199,6 +95,7 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	@Override
 	public T_OUT addOutputData(T_OUT data) {
 		registerOutputData(data);
+
 		return data;
 	}
 
@@ -206,18 +103,38 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int compareTo(AbstractOutput<?, ?, ?> o) {
-		return this.priority - o.priority;
+	public EndPoint<T_OUT> createEndPoint(String id) {
+		EndPoint<T_OUT> endpoint = new MultiEndPoint<T_OUT>(this, id);
+		try {
+			writeLock.lock();
+
+			endPointMap.put(id, endpoint);
+
+			return endpoint;
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer#createEndPoint(java.lang.String,
+	 *      com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint.EndPointFactory)
 	 */
 	@Override
-	public EndPoint<T_OUT> createEndPoint(String id) {
-		var endpoint = new EndPointImpl<T_OUT>(id);
-		endPointMap.put(id, endpoint);
-		return endpoint;
+	public EndPoint<T_OUT> createEndPoint(String id, EndPointFactory<T_OUT> factory) {
+		EndPoint<T_OUT> endpoint = factory.newEndPointInstance(this, id);
+
+		try {
+			writeLock.lock();
+
+			endPointMap.put(id, endpoint);
+
+			return endpoint;
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -226,31 +143,17 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	 * @return A string representation of the outputs
 	 */
 	public String outputsToString() {
-		return endPointMap.values().stream()
-				.sorted()
-				.map(HasName::name)
-				.collect(Collectors.joining(",", "<", ">"));
-	}
+		try {
+			readLock.lock();
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int priority() {
-		return priority;
-	}
+			return endPointMap.values().stream()
+					.sorted()
+					.map(HasName::name)
+					.collect(Collectors.joining(",", "O[", "]"));
 
-	/**
-	 * Sets the priority of this output transformer.
-	 *
-	 * @param newPriority The new priority value
-	 * @return This output transformer instance
-	 * @throws IllegalArgumentException if the priority value is invalid
-	 */
-	public T_BASE priority(int newPriority) throws IllegalArgumentException {
-		HasPriority.checkPriorityValue(newPriority);
-		this.priority = newPriority;
-		return us();
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 	/**
@@ -258,7 +161,25 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	 */
 	@Override
 	public Registration registerOutputData(T_OUT data) {
-		outputDataList.add(data);
-		return () -> outputDataList.remove(data);
+		try {
+			writeLock.lock();
+
+			outputList.add(data);
+			return () -> outputList.remove(data);
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	void removeEndPoint(EndPoint<?> endPoint) {
+		try {
+			writeLock.lock();
+
+			endPointMap.remove(endPoint.id());
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 }

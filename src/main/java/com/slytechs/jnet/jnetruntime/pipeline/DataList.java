@@ -46,19 +46,19 @@ class DataList<T> {
 
 	/** The type. */
 	private final DataType type;
-	
+
 	/** The support. */
 	private final DataSupport<T> support;
-	
+
 	/** The component type. */
 	private final Class<T> componentType;
-	
+
 	/** The list. */
 	private final List<T> list = new ArrayList<>();
-	
+
 	/** The change listeners. */
 	private final DataChangeSupport<T> changeListeners = new DataChangeSupport<>();
-	
+
 	/** The data. */
 	private T data;
 
@@ -107,8 +107,8 @@ class DataList<T> {
 	 * @return A Registration object for unregistering the listener
 	 */
 	public Registration addChangeListener(DataChangeListener<T> listener) {
-		if (list.isEmpty())
-			listener.onDataChange(support.empty());
+//		if (list.isEmpty())
+//			listener.onDataChange(support.empty());
 		return changeListeners.addListener(listener);
 	}
 
@@ -299,5 +299,14 @@ class DataList<T> {
 		if (list.size() == 1)
 			return list.get(0);
 		return support.wrapArray(toArray());
+	}
+
+	/**
+	 * @param o
+	 * @return
+	 * @see java.util.List#contains(java.lang.Object)
+	 */
+	public boolean contains(T o) {
+		return list.contains(o);
 	}
 }

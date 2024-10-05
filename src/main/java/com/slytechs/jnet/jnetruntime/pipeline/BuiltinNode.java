@@ -39,6 +39,10 @@ abstract class BuiltinNode<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	public BuiltinNode(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
 		super(pipeline, priority, name, type);
+
+		setRegistration(() -> {
+			throw new UnsupportedOperationException("builtin nodes can not be unregistered");
+		});
 	}
 
 	/**
@@ -53,17 +57,10 @@ abstract class BuiltinNode<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	public BuiltinNode(Pipeline<T, ?> pipeline, int priority, String name, DataType type, T dataOut) {
 		super(pipeline, priority, name, type, dataOut);
-	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @throws UnsupportedOperationException always, as built-in nodes have fixed
-	 *                                       priorities
-	 */
-	@Override
-	public final T_BASE priority(int newPriority) {
-		throw new UnsupportedOperationException("builtin node's priority is read-only");
+		setRegistration(() -> {
+			throw new UnsupportedOperationException("builtin nodes can not be unregistered");
+		});
 	}
 
 	/**

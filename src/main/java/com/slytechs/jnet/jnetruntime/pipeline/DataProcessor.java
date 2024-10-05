@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 import com.slytechs.jnet.jnetruntime.util.HasName;
-import com.slytechs.jnet.jnetruntime.util.HasRegistration;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -34,7 +33,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk
  */
 public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
-		extends HasName, HasRegistration, PipeComponent<T_BASE>, HasOutputData<T>, HasInputData<T> {
+		extends HasName, PipeComponent<T_BASE>, HasOutputData<T>, HasInputData<T> {
 
 	/**
 	 * Represents a bypassable component in the pipeline.
@@ -130,7 +129,7 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @author Mark Bednarczyk
 	 */
 	public class DataChangeSupport<T> {
-		
+
 		/** The listener list. */
 		private final List<DataChangeListener<T>> listenerList = new ArrayList<>();
 

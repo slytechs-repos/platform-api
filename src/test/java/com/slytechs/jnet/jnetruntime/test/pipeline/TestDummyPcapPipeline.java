@@ -33,7 +33,6 @@ import com.slytechs.jnet.jnetruntime.pipeline.AbstractOutput;
 import com.slytechs.jnet.jnetruntime.pipeline.AbstractPipeline;
 import com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor;
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer;
-import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer.EntryPoint;
 import com.slytechs.jnet.jnetruntime.pipeline.DataType;
 import com.slytechs.jnet.jnetruntime.pipeline.HeadNode;
 import com.slytechs.jnet.jnetruntime.pipeline.Pipeline;
@@ -50,13 +49,13 @@ public class TestDummyPcapPipeline {
 	 * The Enum DataTypes.
 	 */
 	enum DataTypes implements DataType {
-		
+
 		/** The raw packet pipe. */
 		RAW_PACKET_PIPE(RawPacketPipe.class, DataTypes::wrapPipeline),
-		
+
 		/** The packetref handler. */
 		PACKETREF_HANDLER(PacketRefHandler.class, DataTypes::wrapOutput),
-		
+
 		/** The native pcap handler. */
 		NATIVE_PCAP_HANDLER(NativePcapHandler.class, DataTypes::wrapNativePcapHandler),
 
@@ -160,7 +159,7 @@ public class TestDummyPcapPipeline {
 	 * The Interface PacketRefHandler.
 	 */
 	interface PacketRefHandler {
-		
+
 		/**
 		 * Handle packet ref.
 		 *
@@ -188,8 +187,8 @@ public class TestDummyPcapPipeline {
 	/**
 	 * The Class PreProcessedPacketRefOutput.
 	 */
-	private static class PreProcessedPacketRefOutput
-			extends AbstractOutput<RawPacketPipe, PacketRefHandler, PreProcessedPacketRefOutput>
+	private static class PRefOutput
+			extends AbstractOutput<RawPacketPipe, PacketRefHandler, PRefOutput>
 			implements RawPacketPipe {
 
 		/**
@@ -197,7 +196,7 @@ public class TestDummyPcapPipeline {
 		 *
 		 * @param tailNode the tail node
 		 */
-		public PreProcessedPacketRefOutput(TailNode<RawPacketPipe> tailNode) {
+		public PRefOutput(TailNode<RawPacketPipe> tailNode) {
 			this(tailNode, "packetref-output");
 		}
 
@@ -207,7 +206,7 @@ public class TestDummyPcapPipeline {
 		 * @param tailNode the tail node
 		 * @param name     the name
 		 */
-		public PreProcessedPacketRefOutput(TailNode<RawPacketPipe> tailNode, String name) {
+		public PRefOutput(TailNode<RawPacketPipe> tailNode, String name) {
 			super(tailNode, name, DataTypes.RAW_PACKET_PIPE, DataTypes.PACKETREF_HANDLER);
 		}
 
@@ -253,7 +252,7 @@ public class TestDummyPcapPipeline {
 		 * @return the to uppercase processor
 		 */
 		public ToUppercaseProcessor peek(RawPacketPipe peekAction) {
-			super.addOutputToNode(peekAction);
+			super.addExternalOutput(peekAction);
 			return this;
 		}
 
@@ -299,7 +298,7 @@ public class TestDummyPcapPipeline {
 		 * @return the to lowercase processor
 		 */
 		public ToLowercaseProcessor peek(RawPacketPipe peekAction) {
-			super.addOutputToNode(peekAction);
+			super.addExternalOutput(peekAction);
 			return this;
 		}
 
@@ -337,16 +336,16 @@ public class TestDummyPcapPipeline {
 	 * The Class PcapHeader.
 	 */
 	private static class PcapHeader {
-		
+
 		/** The caplen. */
 		int caplen = 64;
-		
+
 		/** The wirelen. */
 		int wirelen = 128;
-		
+
 		/** The timestamp. */
 		long timestamp = System.currentTimeMillis();
-		
+
 		/** The header address. */
 		private MemorySegment headerAddress;
 
@@ -393,7 +392,7 @@ public class TestDummyPcapPipeline {
 
 		/** The pcap header. */
 		private MemorySegment pcapHeader;
-		
+
 		/** The packet data. */
 		private MemorySegment packetData;
 
@@ -514,12 +513,13 @@ public class TestDummyPcapPipeline {
 	/**
 	 * The Class PcapInput.
 	 */
-	private static class PcapInput extends AbstractInput<NativePcapHandler, RawPacketPipe, PcapInput>
+	private static class PcapInput
+			extends AbstractInput<NativePcapHandler, RawPacketPipe, PcapInput>
 			implements NativePcapHandler {
 
 		/** The pcap. */
 		private NetPcap pcap;
-		
+
 		/** The device name. */
 		private String deviceName;
 
@@ -530,7 +530,7 @@ public class TestDummyPcapPipeline {
 		 * @param pcap     the pcap
 		 */
 		public PcapInput(HeadNode<RawPacketPipe> headNode, NetPcap pcap) {
-			super(headNode, "pcap:" + pcap.getDeviceName(), DataTypes.NATIVE_PCAP_HANDLER, DataTypes.RAW_PACKET_PIPE);
+			super(headNode, "pcap/" + pcap.getDeviceName(), DataTypes.NATIVE_PCAP_HANDLER, DataTypes.RAW_PACKET_PIPE);
 			this.pcap = pcap;
 			this.deviceName = pcap.getDeviceName();
 		}
@@ -550,7 +550,6 @@ public class TestDummyPcapPipeline {
 
 			outputData().handleRawPacketPipe(hdr, Data);
 		}
-
 	}
 
 	/**
@@ -601,7 +600,6 @@ public class TestDummyPcapPipeline {
 		public void put(PacketRef pkt) {
 			deque.push(pkt);
 		}
-
 	}
 
 	/**
@@ -612,7 +610,7 @@ public class TestDummyPcapPipeline {
 
 		/** The collector. */
 		private final PacketRefCollector collector;
-		
+
 		/** The pcap. */
 		private final NetPcap pcap;
 
@@ -641,7 +639,7 @@ public class TestDummyPcapPipeline {
 		 */
 		public PacketRef nextEx() {
 			if (collector.isEmpty())
-				generateInputPacket();
+				callPcapNextEx();
 
 			assert !collector.isEmpty();
 
@@ -651,14 +649,14 @@ public class TestDummyPcapPipeline {
 		/**
 		 * Generate input packet.
 		 */
-		private void generateInputPacket() {
+		private void callPcapNextEx() {
 			var packetRef = pcap.nextEx();
 
 			NativePcapHandler input = inputData();
+			assert input != null;
 
 			input.handleNativePcapPacket(packetRef.pcapHeader(), packetRef.data(), null);
 		}
-
 	}
 
 	/**
@@ -676,22 +674,22 @@ public class TestDummyPcapPipeline {
 		var pipeline = new PacketRefPipeline();
 		var packetRefCollector = new PacketRefCollector();
 
-		var processedOutput = pipeline.addOutput(PreProcessedPacketRefOutput::new);
+		var processedOutput = pipeline.addOutput(PRefOutput::new);
 
-		processedOutput.createEndPoint("dispatcher");
+//		processedOutput.createEndPoint("dispatcher");
 
 		processedOutput.createEndPoint("collector")
 				.priority(HasPriority.MAX_PRIORITY_VALUE)
-				.outputData(packetRefCollector);
+				.endPointData(packetRefCollector);
 
-		pipeline.addProcessor(2, ToUppercaseProcessor::new);
+//		System.out.println(pipeline);
 
-		pipeline.addProcessor(1, ToLowercaseProcessor::new);
-
-		pipeline.enable(true);
+//		pipeline.addProcessor(2, ToUppercaseProcessor::new);
+//
+//		pipeline.addProcessor(1, ToLowercaseProcessor::new);
 
 		PcapInput pcapInput = pipeline.addInput(id, pcap, PcapInput::new);
-		EntryPoint<NativePcapHandler> loopEntryPoint = pcapInput.createEntryPoint("loop");
+//		EntryPoint<NativePcapHandler> loopEntryPoint = pcapInput.createEntryPoint("loop");
 		PcapNextExEntryPoint nextExEntryPoint = pcapInput.createEntryPoint(
 				"nextEx", // id
 				pcap, // NetPcap
@@ -699,9 +697,10 @@ public class TestDummyPcapPipeline {
 				PcapNextExEntryPoint::new);
 
 		System.out.println(pipeline);
+		System.out.println();
 
 		pcap.activate();
-		int packetCount = pcap.loop(loopEntryPoint.inputData(), "User message");
+//		int packetCount = pcap.loop(loopEntryPoint.inputData(), "User message");
 
 		PacketRef packetRef = nextExEntryPoint.nextEx();
 

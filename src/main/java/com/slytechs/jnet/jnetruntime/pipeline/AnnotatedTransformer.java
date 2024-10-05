@@ -125,6 +125,6 @@ class AnnotatedTransformer<T_IN, T_OUT>
 	 * @param outputType The output data type
 	 */
 	private AnnotatedTransformer(String name, T_IN in, DataType inputType, DataType outputType) {
-		super(name, in, inputType, outputType);
+		super(null, name, in, inputType, outputType);
 	}
 }

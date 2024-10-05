@@ -17,11 +17,13 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
 import static java.util.function.Predicate.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
@@ -31,6 +33,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputFactory.Arg2;
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer;
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputFactory;
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer;
+import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
 
 /**
  * Abstract implementation of a data processing pipeline.
@@ -61,18 +64,18 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 
 	/** The data type. */
 	private final DataType dataType;
-	
+
 	/** The head. */
 	private final HeadNode<T> head;
-	
+
 	/** The tail. */
 	private final TailNode<T> tail;
 
 	/** The initialized list. */
-	private final List<AbstractProcessor<T, ?>> initializedList = new ArrayList<>();
-	
+	private final List<AbstractProcessor<T, ?>> initializedProcessors = new ArrayList<>();
+
 	/** The active list. */
-	private final List<AbstractProcessor<T, ?>> activeList = new ArrayList<>();
+	private final Queue<AbstractProcessor<T, ?>> activeProcessors = new DoublyLinkedPriorityQueue<>();
 
 	/**
 	 * Constructs a new AbstractPipeline with the specified name and data type.
@@ -87,9 +90,99 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		this.head = new HeadNode<>(this, "head".formatted(name), dataType);
 		this.tail = new TailNode<>(this, "tail".formatted(name), dataType);
 
-		initializedList.add(head);
-		initializedList.add(tail);
-		Collections.sort(initializedList);
+		activeProcessors.add(head);
+		activeProcessors.add(tail);
+	}
+
+	private void activateAllProcessorsStillNotActive() {
+		initializedProcessors.stream()
+				.filter(PipeComponent::isEnabled)
+				.filter(not(activeProcessors::contains))
+				.forEach(this::activateProcessor);
+	}
+
+	/**
+	 * Links a processor to the active list of processors in the pipeline.
+	 *
+	 * @param processor The processor to link
+	 * @throws IllegalStateException if the processor is already active in this
+	 *                               pipeline
+	 */
+	void activateProcessor(AbstractProcessor<T, ?> processor) {
+		try {
+			writeLock.lock();
+
+			var isAdded = activeProcessors.add(processor);
+			if (!isAdded)
+				throw new IllegalStateException("processor [%s] already active in pipeline [%s]"
+						.formatted(processor.name(), name()));
+
+			var prevProcessor = processor.prevProcessor;
+			prevProcessor.calculateOutput();
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T_INPUT extends InputTransformer<?>> T_INPUT addInput(InputFactory<T, T_INPUT> factory) {
+		T_INPUT input = factory.newInstance(head);
+
+		addNewInput0((AbstractInput<?, T, ?>) input, input.inputType());
+
+		return input;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T_INPUT extends InputTransformer<?>> T_INPUT addInput(String id,
+			InputFactory<T, T_INPUT> factory) {
+		T_INPUT input = factory.newInstance(head);
+
+		addNewInput0((AbstractInput<?, T, ?>) input, id);
+
+		return input;
+	}
+
+	private void addNewInput0(AbstractInput<?, T, ?> input, Object id) {
+		head.addInput(input, id);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T_INPUT extends InputTransformer<?>, T1> T_INPUT addInput(String id, T1 arg1,
+			InputFactory.Arg1<T, T_INPUT, T1> factory) {
+		T_INPUT input = factory.newInstance1Arg(head, arg1);
+
+		head.addInput((AbstractInput<?, T, ?>) input, id);
+
+		return input;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T_INPUT extends InputTransformer<?>, T1, T2> T_INPUT addInput(String id, T1 arg1, T2 arg2,
+			Arg2<T, T_INPUT, T1, T2> factory) {
+
+		T_INPUT input = factory.newInstance2Args(head, arg1, arg2);
+
+		addNewInput0((AbstractInput<?, T, ?>) input, id);
+
+		return input;
 	}
 
 	/**
@@ -99,18 +192,52 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	 * @throws IllegalStateException if the processor is already initialized in this
 	 *                               pipeline
 	 */
-	private synchronized void addNewProcessor0(AbstractProcessor<T, ?> newProcessor) {
-		if (initializedList.contains(newProcessor))
-			throw new IllegalStateException("processor [%s] already initialized in pipeline [%s]"
-					.formatted(newProcessor.name(), name()));
+	private void addNewProcessor0(AbstractProcessor<T, ?> newProcessor) {
+		try {
+			writeLock.lock();
 
-		newProcessor.setRegistration(() -> removeProcessor0(newProcessor));
+			if (initializedProcessors.contains(newProcessor))
+				throw new IllegalStateException("processor [%s] already initialized in pipeline [%s]"
+						.formatted(newProcessor.name(), name()));
 
-		initializedList.add(newProcessor);
-		Collections.sort(initializedList);
+			newProcessor.setRegistration(() -> unregisterProcessor(newProcessor));
 
-		if (newProcessor.isEnabled())
-			linkProcessor(newProcessor);
+			initializedProcessors.add(newProcessor);
+			Collections.sort(initializedProcessors);
+
+			if (newProcessor.isEnabled())
+				activateProcessor(newProcessor);
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(OutputFactory<T, T_OUTPUT> factory) {
+		T_OUTPUT output = factory.newInstance(tail);
+
+		tail.addOutput((AbstractOutput<T, ?, ?>) output, output.outputType());
+
+		return output;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(String id,
+			OutputFactory<T, T_OUTPUT> factory) {
+		T_OUTPUT output = factory.newInstance(tail);
+
+		tail.addOutput((AbstractOutput<T, ?, ?>) output, id);
+
+		return output;
 	}
 
 	/**
@@ -152,28 +279,44 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		return dataType;
 	}
 
+	void deactivateProcessor(AbstractProcessor<T, ?> processor) {
+		try {
+			writeLock.lock();
+
+			var prevProcessor = processor.prevProcessor;
+
+			var isRemoved = activeProcessors.remove(processor);
+			if (!isRemoved)
+				throw new IllegalStateException("processor [%s] already inactive in pipeline [%s]"
+						.formatted(processor.name(), name()));
+
+			prevProcessor.calculateOutput();
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	void resortProcessor(AbstractProcessor<T, ?> processor) {
+		try {
+			writeLock.lock();
+
+			if (processor.isEnabled()) {
+				deactivateProcessor(processor);
+				activateProcessor(processor);
+			}
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized HeadNode<T> head() {
+	public HeadNode<T> head() {
 		return head;
-	}
-
-	/**
-	 * Links a processor to the active list of processors in the pipeline.
-	 *
-	 * @param processor The processor to link
-	 * @throws IllegalStateException if the processor is already active in this
-	 *                               pipeline
-	 */
-	synchronized void linkProcessor(AbstractProcessor<T, ?> processor) {
-		if (activeList.contains(processor))
-			throw new IllegalStateException("processor [%s] already active in pipeline [%s]"
-					.formatted(processor.name(), name()));
-
-		activeList.add(processor);
-		Collections.sort(activeList);
 	}
 
 	/**
@@ -181,39 +324,7 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	 */
 	@Override
 	protected void onEnable(boolean newValue) {
-		initializedList.stream()
-				.filter(PipeComponent::isEnabled)
-				.filter(not(activeList::contains))
-				.forEach(activeList::add);
-
-		relinkActiveNodes();
-	}
-
-	/**
-	 * Handles the enabling or disabling of a processor node.
-	 *
-	 * @param processor The processor that has been enabled or disabled
-	 */
-	synchronized void onNodeEnable(DataProcessor<T, ?> processor) {
-		if (!isEnabled())
-			return; // Not enabled, nothing to do
-
-		if (!(processor instanceof AbstractProcessor<T, ?> aprocessor))
-			throw new IllegalStateException("invalid processor implementation [%s]"
-					.formatted(processor.name()));
-
-		boolean b = aprocessor.isEnabled();
-
-		if (b == activeList.contains(aprocessor))
-			return;
-
-		if (b)
-			linkProcessor(aprocessor);
-		else
-			unlinkProcessor(aprocessor);
-
-		// List modified, need to relink nodes
-		relinkActiveNodes();
+		activateAllProcessorsStillNotActive();
 	}
 
 	/**
@@ -221,56 +332,15 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	 *
 	 * @param processor The processor whose output has changed
 	 */
-	synchronized void onOutputChange(AbstractProcessor<T, ?> processor) {
+	void onOutputChange(AbstractProcessor<T, ?> processor) {
 		// Implementation not provided in the original code
-	}
-
-	/**
-	 * Relinks all active nodes in the pipeline. This method is called when the
-	 * pipeline structure changes.
-	 */
-	private synchronized void relinkActiveNodes() {
-		Collections.sort(activeList);
-
-		AbstractProcessor<T, ?> prev = null;
-
-		for (AbstractProcessor<T, ?> p : activeList) {
-			if (prev != null)
-				prev.nextProcessor(p);
-
-			prev = p;
-		}
-
-		reRegisterActiveNodes();
-	}
-
-	/**
-	 * Removes a processor from the pipeline.
-	 *
-	 * @param processor The processor to remove
-	 */
-	private synchronized void removeProcessor0(AbstractProcessor<T, ?> processor) {
-		if (activeList.remove(processor))
-			relinkActiveNodes();
-
-		initializedList.remove(processor);
-	}
-
-	/**
-	 * Re-registers all active nodes in the pipeline. This method is called after
-	 * relinking to ensure proper data flow.
-	 */
-	private void reRegisterActiveNodes() {
-		for (AbstractProcessor<T, ?> p : activeList.reversed()) {
-			p.reLinkData();
-		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized TailNode<T> tail() {
+	public TailNode<T> tail() {
 		return tail;
 	}
 
@@ -281,12 +351,13 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	public String toString() {
 //		String initStr = initializedList.stream()
 //				.map(p -> (p.isEnabled() ? "(%s)" : "(!%s)").formatted(p.name()))
-//				.collect(Collectors.joining(",", "[", "]"));
+//				.collect(Collectors.joining(",", "[", "]"));deactivateProcessor
 
-		String activeStr = activeList.stream()
-				.filter(not(AbstractComponent::isBuiltin))
-				.map(p -> (p.isEnabled() ? "(%s)" : "(!%s)").formatted(p.name()))
-				.collect(Collectors.joining("->", "[", "]"));
+		String activeStr = activeProcessors.stream()
+//				.filter(not(AbstractComponent::isBuiltin))
+				.map(p -> (p.isEnabled() ? "%s(%s=>%s)" : "!%s(%s=>%s)")
+						.formatted(p.name(), ID(p.inputData()), ID(p.outputData())))
+				.collect(Collectors.joining(", ", "P[", "]"));
 
 		String inputStr = head.inputsToString();
 		String outStr = tail.outputsToString();
@@ -294,127 +365,33 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		return ""
 				+ getClass().getSimpleName()
 				+ " ["
-				+ "==>" + inputStr
-				+ "==>" + activeStr
-				+ "==>" + outStr
+				+ inputStr
+				+ "=>" + activeStr
+				+ "=>" + outStr
 				+ "]";
-	}
-
-	/**
-	 * Unlinks a processor from the active list of processors in the pipeline.
-	 *
-	 * @param processor The processor to unlink
-	 */
-	synchronized void unlinkProcessor(AbstractProcessor<T, ?> processor) {
-		processor.nextProcessor(null);
-		activeList.remove(processor);
-
-		relinkActiveNodes();
 	}
 
 	/**
 	 * Unregisters a processor from the pipeline.
 	 *
-	 * @param processor The processor to unregister
-	 * @throws IllegalStateException if the processor is not registered in this
-	 *                               pipeline
+	 * @param processor The processor to Unregisters
 	 */
-	void unregisterProcessor(AbstractProcessor<T, ?> processor) {
-		if (!initializedList.contains(processor) || processor.registration().isEmpty())
-			throw new IllegalStateException("Processor [%s] is not registered"
-					.formatted(name()));
+	private void unregisterProcessor(AbstractProcessor<T, ?> processor) {
 
-		processor.enable(false);
-		initializedList.remove(processor);
+		try {
+			writeLock.lock();
 
-		// Reset processor registration
-		processor.setRegistration(null);
-	}
+			deactivateProcessor(processor);
+			initializedProcessors.remove(processor);
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_INPUT extends InputTransformer<?>> T_INPUT addInput(InputFactory<T, T_INPUT> factory) {
-		T_INPUT input = factory.newInstance(head);
+			// Reset processor registration
+			processor.setRegistration(null);
 
-		head.addInput((AbstractInput<?, T, ?>) input, input.inputType());
+		} finally {
+			writeLock.unlock();
+		}
 
-		return input;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_INPUT extends InputTransformer<?>> T_INPUT addInput(String id, InputFactory<T, T_INPUT> factory) {
-		T_INPUT input = factory.newInstance(head);
-
-		head.addInput((AbstractInput<?, T, ?>) input, id);
-
-		return input;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(String id, OutputFactory<T, T_OUTPUT> factory) {
-		T_OUTPUT output = factory.newInstance(tail);
-
-		tail.addOutput((AbstractOutput<T, ?, ?>) output, id);
-
-		return output;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(OutputFactory<T, T_OUTPUT> factory) {
-		T_OUTPUT output = factory.newInstance(tail);
-
-		tail.addOutput((AbstractOutput<T, ?, ?>) output, output.outputType());
-
-		return output;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_INPUT extends InputTransformer<?>, T1> T_INPUT addInput(
-			String id,
-			T1 arg1,
-			InputFactory.Arg1<T, T_INPUT, T1> factory) {
-
-		T_INPUT input = factory.newInstance1Arg(head, arg1);
-
-		head.addInput((AbstractInput<?, T, ?>) input, id);
-
-		return input;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T_INPUT extends InputTransformer<?>, T1, T2> T_INPUT addInput(
-			String id,
-			T1 arg1,
-			T2 arg2,
-			Arg2<T, T_INPUT, T1, T2> factory) {
-
-		T_INPUT input = factory.newInstance2Args(head, arg1, arg2);
-
-		head.addInput((AbstractInput<?, T, ?>) input, id);
-
-		return input;
+		assert initializedProcessors.contains(processor) == false;
+		assert activeProcessors.contains(processor) == false;
 	}
 }

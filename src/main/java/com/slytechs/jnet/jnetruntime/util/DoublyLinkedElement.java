@@ -17,25 +17,12 @@
  */
 package com.slytechs.jnet.jnetruntime.util;
 
-/**
- * Defines an interface for objects that may have an associated Registration.
- * 
- * <p>
- * This interface provides a method to retrieve an Optional Registration object,
- * allowing implementations to indicate whether they have a registration and to
- * provide access to it if it exists.
- * </p>
- *
- * @author Mark Bednarczyk
- */
-public interface HasRegistration {
+public interface DoublyLinkedElement<E> {
+	E nextElement();
 
-	/**
-	 * Returns an Optional containing the Registration associated with this object,
-	 * if one exists.
-	 *
-	 * @return an Optional<Registration> which is empty if no registration exists,
-	 *         or contains the Registration if one is associated with this object
-	 */
-	Registration registration();
+	E prevElement();
+
+	void nextElement(E e);
+
+	void prevElement(E e);
 }

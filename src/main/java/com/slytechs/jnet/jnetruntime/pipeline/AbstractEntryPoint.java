@@ -19,6 +19,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer.EntryPoint;
 import com.slytechs.jnet.jnetruntime.util.HasName;
+import com.slytechs.jnet.jnetruntime.util.HasPriority;
 
 /**
  * Abstract base class for entry points in a pipeline's input transformer.
@@ -33,6 +34,7 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  * @author Mark Bednarczyk
  */
 public abstract class AbstractEntryPoint<T>
+		extends AbstractComponent<EntryPoint<T>>
 		implements EntryPoint<T>, HasName {
 
 	/** The id. */
@@ -40,6 +42,9 @@ public abstract class AbstractEntryPoint<T>
 
 	/** The input. */
 	private final AbstractInput<T, ?, ?> input;
+
+	private T inputData;
+	private final DataType inputType;
 
 	/**
 	 * Constructs a new AbstractEntryPoint with the specified input transformer and
@@ -49,32 +54,12 @@ public abstract class AbstractEntryPoint<T>
 	 * @param id    The unique identifier for this entry point
 	 */
 	public AbstractEntryPoint(AbstractInput<T, ?, ?> input, String id) {
+		super(input, id, HasPriority.DEFAULT_PRIORITY_VALUE);
 		this.id = id;
 		this.input = input;
-	}
+		this.inputType = input.inputType();
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * <p>
-	 * Unregisters this entry point from its associated input transformer.
-	 * </p>
-	 */
-	@Override
-	public void unregister() {
-		input.unregister(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * <p>
-	 * Retrieves the input data from the associated input transformer.
-	 * </p>
-	 */
-	@Override
-	public T inputData() {
-		return input.inputData();
+		inputData(input.inputData());
 	}
 
 	/**
@@ -93,23 +78,87 @@ public abstract class AbstractEntryPoint<T>
 	 * {@inheritDoc}
 	 * 
 	 * <p>
-	 * Retrieves the input data type from the associated input transformer.
+	 * Retrieves the input data from the associated input transformer.
 	 * </p>
 	 */
 	@Override
-	public DataType inputType() {
-		return input.inputType();
+	public T inputData() {
+		try {
+			readLock.lock();
+
+			checkIfIsRegistered();
+			checkIfIsEnabled();
+
+			return inputData;
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	void inputData(T newData) {
+		this.inputData = newData;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * <p>
-	 * Returns the name of this entry point, which is the same as its identifier.
+	 * Retrieves the input data type from the associated input transformer.
 	 * </p>
 	 */
 	@Override
-	public String name() {
-		return id();
+	public DataType inputType() {
+		return inputType;
 	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onBypass(boolean)
+	 */
+	@Override
+	protected void onBypass(boolean newValue) {
+		checkIfIsRegistered();
+
+		try {
+			writeLock.lock();
+
+			if (newValue)
+				inputData = inputType.empty();
+			else
+				inputData = input.inputData();
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * <p>
+	 * Unregisters this entry point from its associated input transformer.
+	 * </p>
+	 */
+	@Override
+	public void unregister() {
+		input.unregister(this);
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onEnable(boolean)
+	 */
+	@Override
+	protected void onEnable(boolean newValue) {
+		try {
+			writeLock.lock();
+
+			if (newValue)
+				inputData = null;
+			else
+				inputData = input.inputData();
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
 }

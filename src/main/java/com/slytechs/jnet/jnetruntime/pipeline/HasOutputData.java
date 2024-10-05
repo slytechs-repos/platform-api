@@ -19,7 +19,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 /**
  * Interface for components in a data processing pipeline that produce output
- * data.
+ * data descriptor interface.
  * 
  * <p>
  * This interface defines methods for accessing the output data and its type. It
@@ -39,7 +39,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 public interface HasOutputData<T> {
 
 	/**
-	 * Retrieves the current output data of the component.
+	 * Retrieves the current output data descriptor interface of the component.
 	 * 
 	 * <p>
 	 * This method should return the most recent output data produced by the
@@ -52,7 +52,8 @@ public interface HasOutputData<T> {
 	T outputData();
 
 	/**
-	 * Retrieves the type of the output data produced by this component.
+	 * Retrieves the type of the output data descriptor interface produced by this
+	 * component.
 	 * 
 	 * <p>
 	 * This method should return a {@link DataType} object that describes the type

@@ -20,6 +20,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.function.BooleanSupplier;
 
 import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer.EntryPoint.EntryPointFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint.EndPointFactory;
 import com.slytechs.jnet.jnetruntime.util.HasName;
 import com.slytechs.jnet.jnetruntime.util.HasPriority;
 import com.slytechs.jnet.jnetruntime.util.Registration;
@@ -34,7 +35,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk
  */
 public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
-		extends HasName, PipeComponent<T_BASE> {
+		extends HasName, HasPriority, PipeComponent<T_BASE> {
 
 	/**
 	 * Factory for creating input transformers.
@@ -107,7 +108,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * @param <T> The type of input data
 		 * @author Mark Bednarczyk
 		 */
-		interface EntryPoint<T> extends Registration, HasName {
+		interface EntryPoint<T> extends Registration, HasName, PipeComponent<EntryPoint<T>> {
 
 			/**
 			 * Factory for creating entry points.
@@ -170,18 +171,18 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			}
 
 			/**
-			 * Gets the input data for this entry point.
-			 *
-			 * @return The input data
-			 */
-			T inputData();
-
-			/**
 			 * Gets the identifier for this entry point.
 			 *
 			 * @return The identifier
 			 */
 			String id();
+
+			/**
+			 * Gets the input data for this entry point.
+			 *
+			 * @return The input data
+			 */
+			T inputData();
 
 			/**
 			 * Gets the input data type for this entry point.
@@ -267,7 +268,8 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param <T> The type of output data
 	 * @author Mark Bednarczyk
 	 */
-	interface OutputTransformer<T> extends HasOutputData<T>, HasPriority {
+	interface OutputTransformer<T>
+			extends HasOutputData<T>, HasPriority {
 
 		/**
 		 * Represents an end point for output data in the pipeline.
@@ -276,12 +278,24 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * @author Mark Bednarczyk
 		 */
 		interface EndPoint<T> extends Registration, HasPriority, HasName {
+
+			interface EndPointFactory<T> {
+				EndPoint<T> newEndPointInstance(OutputTransformer<T> output, String id);
+			}
+
 			/**
 			 * Sets the output data for this end point.
 			 *
 			 * @param data The output data
 			 */
-			void outputData(T data);
+			void endPointData(T data);
+
+			/**
+			 * Gets the output data type for this end point.
+			 *
+			 * @return The output data type
+			 */
+			DataType endPointType();
 
 			/**
 			 * Gets the identifier for this end point.
@@ -289,13 +303,6 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			 * @return The identifier
 			 */
 			String id();
-
-			/**
-			 * Gets the output data type for this end point.
-			 *
-			 * @return The output data type
-			 */
-			DataType outputData();
 
 			/**
 			 * Sets the priority for this end point.
@@ -315,20 +322,26 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		T addOutputData(T data);
 
 		/**
-		 * Registers output data with this transformer.
-		 *
-		 * @param data The output data to register
-		 * @return A registration object for the registered data
-		 */
-		Registration registerOutputData(T data);
-
-		/**
 		 * Creates a new end point with the given identifier.
 		 *
 		 * @param id The identifier for the end point
 		 * @return A new end point
 		 */
 		EndPoint<T> createEndPoint(String id);
+
+		EndPoint<T> createEndPoint(String id, EndPointFactory<T> factory);
+
+		default EndPoint<T> createMutableEndPoint(String id) {
+			return createEndPoint(id, MutableEndPoint::new);
+		}
+
+		/**
+		 * Registers output data with this transformer.
+		 *
+		 * @param data The output data to register
+		 * @return A registration object for the registered data
+		 */
+		Registration registerOutputData(T data);
 	}
 
 	/**
