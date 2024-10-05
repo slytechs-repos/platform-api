@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -200,7 +200,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 					.collect(Collectors.joining(", ", "I[", "]"));
 
 		} finally {
-			readLock.lock();
+			readLock.unlock();
 		}
 	}
 
@@ -228,10 +228,11 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 		try {
 			writeLock.lock();
 
-			if (newValue)
+			if (newValue) {
 				inputData(inputType().empty());
-			else
+			} else {
 				restoreInputData();
+			}
 
 			entryPointMap.values().stream()
 					.sorted()
@@ -251,10 +252,11 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 		try {
 			writeLock.lock();
 
-			if (newValue)
+			if (newValue) {
 				inputData(null);
-			else
+			} else {
 				restoreInputData();
+			}
 
 			entryPointMap.values().stream()
 					.sorted()
