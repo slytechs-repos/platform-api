@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
+
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -35,8 +37,8 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk
  */
 public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
-		extends AbstractComponent<T_BASE>
-		implements DataProcessor<T, T_BASE>, DoublyLinkedElement<AbstractProcessor<T, ?>> {
+		extends AbstractNode<T_BASE>
+		implements DataProcessor<T, T_BASE>, DownstreamDataListener<T>, DoublyLinkedElement<AbstractProcessor<T, ?>> {
 
 	/** The data type. */
 	private final DataType dataType;
@@ -45,7 +47,7 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	private T inputData;
 
 	/** The output data. */
-	private T outputData; // Auto maintained and updated by DataList object
+	protected T outputData; // Auto maintained and updated by DataList object
 	private T outputNextIn;
 
 	/** The output list. */
@@ -58,6 +60,15 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	AbstractProcessor<T, ?> nextProcessor;
 
 	AbstractProcessor<T, ?> prevProcessor;
+
+	protected AbstractProcessor(int priority, String name, DataType dataType) {
+		super(name);
+
+		this.pipeline = null;
+		this.outputList = null;
+		this.dataType = dataType;
+
+	}
 
 	/**
 	 * Constructs a new processor with the specified parameters.
@@ -73,17 +84,19 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	public AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
 		super(pipeline, name, priority);
 
-		if (!(pipeline instanceof AbstractPipeline<T, ?> apipeline))
+		if (!(pipeline instanceof AbstractPipeline<T, ?> apipeline)) {
 			throw new IllegalArgumentException("invalid pipeline [%s]".formatted(pipeline.name()));
+		}
 
-		if (!type.isCompatibleWith(getClass()))
+		if (!type.isCompatibleWith(getClass())) {
 			throw new IllegalArgumentException("processor subclass must implement data interface [%s]"
 					.formatted(type.dataClass()));
+		}
 
 		this.pipeline = apipeline;
 		this.inputData = (T) this;
 		this.dataType = type;
-		this.outputList = new DataList<>(type, this::updateOutputField);
+		this.outputList = new DataList<>(type, this::setGuardedOutputField);
 	}
 
 	/**
@@ -98,67 +111,42 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	AbstractProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type, T data) {
 		super(pipeline, name, priority);
-		if (!(pipeline instanceof AbstractPipeline<T, ?> ac))
+		if (!(pipeline instanceof AbstractPipeline<T, ?> ac)) {
 			throw new IllegalArgumentException("invalid pipeline [%s]".formatted(pipeline.name()));
+		}
 		this.pipeline = ac;
 		this.inputData = data;
 		this.dataType = type;
-		this.outputList = new DataList<>(type, this::updateOutputField);
+		this.outputList = new DataList<>(type, this::setGuardedOutputField);
 	}
-
-	/**
-	 * Adds a local output to this processor's output list.
-	 *
-	 * @param localOutput The local output to add
-	 * @return A Registration object for unregistering the output
-	 */
-	final protected Registration addExternalOutput(T localOutput) {
+	
+	private void removeFromOutputList(T data) {
 		try {
 			writeLock.lock();
-
-			outputList.addFirst(localOutput);
-			return () -> outputList.remove(localOutput);
-
+			outputList.remove(data);
+			
 		} finally {
 			writeLock.unlock();
 		}
 	}
 
-	T calculateInput() {
-		if (isBypassed())
-			return nextProcessor.calculateInput();
+	/**
+	 * Adds a local output to this processor's output list.
+	 *
+	 * @param newData The local output to add
+	 * @return A Registration object for unregistering the output
+	 */
+	final protected Registration addToOutputList(T newData) {
+		try {
+			writeLock.lock();
 
-		calculateOutput();
+			outputList.addFirst(newData);
+			
+			return () -> removeFromOutputList(newData);
 
-		return inputData;
-	}
-
-	boolean calculateOutput() {
-		if (isBypassed()) {
-			prevProcessor.calculateOutput();
-
-			return false;
+		} finally {
+			writeLock.unlock();
 		}
-
-		/* check for changes in our output and next chained input */
-		T latestIn = nextProcessor.calculateInput();
-		if (outputList.contains(latestIn))
-			return false; // No changes, nothing to do
-
-		/*
-		 * Remove previous data descriptor interface and replace with the latest.
-		 * 
-		 * 
-		 * Note: `DataList::outputList` automatically updates the `this.outputData`
-		 * field when the list changes, with the combined T wrapper to dispatch to all
-		 * T's in the `outputList`.
-		 */
-		outputList.remove(outputNextIn);
-		outputList.add(latestIn);
-
-		/* Save to make sure we keep track of chained data descriptor link */
-		outputNextIn = latestIn;
-		return true;
 	}
 
 	/**
@@ -184,8 +172,9 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	void inputData(T newInputData) {
 		this.inputData = newInputData;
-		if (inputData == null)
+		if (inputData == null) {
 			inputData = inputType().empty();
+		}
 	}
 
 	/**
@@ -213,11 +202,19 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onBypass(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onBypass(boolean)
 	 */
 	@Override
 	protected void onBypass(boolean newValue) {
-
+		if (isEnabled() == false) {
+			return;
+		}
+		
+		if (newValue == true) {
+			prevProcessor.onDataDownstreamChange(outputData);
+		} else {
+			prevProcessor.onDataDownstreamChange(inputData);
+		}
 	}
 
 	/**
@@ -227,14 +224,15 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	protected void onEnable(boolean newValue) {
 		checkIfIsRegistered();
 
-		if (newValue)
+		if (newValue) {
 			pipeline.activateProcessor(this);
-		else
+		} else {
 			pipeline.deactivateProcessor(this);
+		}
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onPriorityChange(int)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onPriorityChange(int)
 	 */
 	@Override
 	protected void onPriorityChange(int newPriority) {
@@ -249,10 +247,6 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	@Override
 	public T outputData() {
 		return outputData;
-	}
-
-	T outputData(T out) {
-		return this.outputData = out;
 	}
 
 	/**
@@ -288,6 +282,8 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 				+ getClass().getSimpleName()
 				+ " [priority=" + priority()
 				+ ", enabled=" + isEnabled()
+				+ ", output=" + ID(inputData)
+				+ ", input=" + ID(outputData)
 				+ ", dataType=" + dataType
 				+ ", name=" + name()
 				+ "]";
@@ -298,14 +294,94 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 *
 	 * @param newOutput The new output data
 	 */
-	private void updateOutputField(T newOutput) {
+	private void setGuardedOutputField(T newOutput) {
 		try {
 			writeLock.lock();
 
-			outputData(newOutput);
+			this.outputData = newOutput;
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	private boolean updateOutputList(T newOutput) {
+		try {
+			writeLock.lock();
+
+			// No change
+			if (newOutput == outputNextIn) {
+				return false;
+			}
+
+			if (registrationNextIn != null) {
+				registrationNextIn.unregister();
+				registrationNextIn = null;
+			}
+
+			if (newOutput != null) {
+				outputList.add(newOutput);
+				registrationNextIn = () -> outputList.remove(newOutput);
+			}
+
+			this.outputNextIn = newOutput;
+
+			return true;
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	private Registration registrationNextIn;
+
+	@Override
+	public void onDataDownstreamChange(T newData) {
+
+		try {
+			writeLock.lock();
+
+			boolean isEffectiveBypass = (isBypassed() || newData == null);
+
+			/*
+			 * If bypassed, then the upstream node needs the pass through newData to bypass
+			 * us, otherwise, our inline-input doesn't change so upstream does not need a
+			 * notification.
+			 * 
+			 * Null new data is also a implicit bypass, but no is-bypassed flags are
+			 * modified, but effectively with newData == null we are bypassed as well, so we
+			 * pass on.
+			 */
+			if (isEffectiveBypass) {
+				updateOutputList(null);
+				prevProcessor.onDataDownstreamChange(newData);
+
+			} else {
+				updateOutputList(newData);
+			}
 
 		} finally {
 			writeLock.unlock();
 		}
+	}
+
+	@Override
+	public void linkAllUpstream(T newData) {
+		try {
+			writeLock.lock();
+			
+			updateOutputList(newData);
+
+			boolean isEffectiveBypass = (isBypassed() || newData == null);
+
+			if (isEffectiveBypass) {
+				prevProcessor.linkAllUpstream(newData);
+
+			} else {
+				prevProcessor.linkAllUpstream(inputData);
+			}
+
+		} finally {
+			writeLock.unlock();
+		}
+
 	}
 }

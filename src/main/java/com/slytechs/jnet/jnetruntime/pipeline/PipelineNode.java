@@ -34,7 +34,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @param <T_BASE> The specific type of the pipeline component implementation
  * @author Mark Bednarczyk
  */
-public interface PipeComponent<T_BASE extends PipeComponent<T_BASE>>
+public interface PipelineNode<T_BASE extends PipelineNode<T_BASE>>
 		extends HasName, Registration {
 
 	/**

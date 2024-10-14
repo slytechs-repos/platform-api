@@ -19,6 +19,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +33,6 @@ public final class TailNode<T>
 
 	/** The output map. */
 	private final Map<Object, AbstractOutput<T, ?, ?>> outputMap = new HashMap<>();
-	private final DataList<T> inputList;
 
 	/**
 	 * Instantiates a new tail node.
@@ -44,16 +44,18 @@ public final class TailNode<T>
 	public TailNode(Pipeline<T, ?> parent, String name, DataType type) {
 		super(parent, Pipeline.TAIL_BUILTIN_PRIORITY, name, type, type.empty());
 
-		this.inputList = new DataList<>(type, this::inputData);
 	}
 
 	/**
 	 * Adds the output.
 	 *
-	 * @param output the output
-	 * @param id     the id
+	 * @param outNode the output
+	 * @param id      the id
 	 */
-	public void addOutput(AbstractOutput<T, ?, ?> output, Object id) {
+	public void addOutput(AbstractOutput<T, ?, ?> outNode, Object id) {
+		
+		Objects.requireNonNull(outNode, "outNode");
+		Objects.requireNonNull(id, "id");
 
 		try {
 			writeLock.lock();
@@ -63,21 +65,24 @@ public final class TailNode<T>
 					id instanceof String ||
 					id instanceof DataType
 					: "output [%s] id [%s] must of type String or DataType"
-							.formatted(output.name(), id);
+							.formatted(outNode.name(), id);
 
-			if (outputMap.containsKey(id))
+			if (outputMap.containsKey(id)) {
 				throw new IllegalArgumentException("output [%s] with this id [%s] already exists in pipeline [%s]"
-						.formatted(output.name(), id, name()));
+						.formatted(outNode.name(), id, name()));
+			}
 
-			outputMap.put(id, output);
-			inputList.add(output.inputData());
+			outputMap.put(id, outNode);
+			var r = super.addToOutputList(outNode.inputData());
 
-			output.setRegistration(() -> {
+			outNode.setRegistration(() -> {
 				outputMap.remove(id);
-				inputList.remove(output.inputData());
+				r.unregister();
 			});
 
-			super.prevProcessor.calculateOutput();
+			if (!isBypassed()) {
+				super.prevProcessor.onDataDownstreamChange(inputData());
+			}
 
 		} finally {
 			writeLock.unlock();
@@ -108,21 +113,33 @@ public final class TailNode<T>
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#nextElement(com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor)
 	 */
 	@Override
-	public void nextElement(AbstractProcessor<T, ?> e) {
-		if (e == null)
+	public final void nextElement(AbstractProcessor<T, ?> e) {
+		if (e == null) {
 			return;
+		}
 
 		throw new UnsupportedOperationException(
 				"Can not append processor [%s] before the tail node, use addOutput() method to add data sinks "
 						.formatted(e.name()));
 	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#calculateOutput()
-	 */
-	@Override
-	boolean calculateOutput() {
-		return false;
+	
+	void linkAllUpstream() {
+		
 	}
+
+	@Override
+	public final T inputData() {
+		if (isBypassed()) {
+			return null;
+		}
+		
+		return outputData();
+	}
+
+	@Override
+	void inputData(T newInputData) {
+		throw new UnsupportedOperationException();
+	}
+
 
 }

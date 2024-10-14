@@ -108,8 +108,9 @@ public class TestDummyPcapPipeline {
 		 */
 		static NativePcapHandler wrapNativePcapHandler(NativePcapHandler[] array) {
 			return (hdr, data, _) -> {
-				for (var out : array)
+				for (var out : array) {
 					out.handleNativePcapPacket(hdr, data, null);
+				}
 			};
 		}
 
@@ -121,8 +122,9 @@ public class TestDummyPcapPipeline {
 		 */
 		static RawPacketPipe wrapPipeline(RawPacketPipe[] array) {
 			return (h, d) -> {
-				for (var out : array)
+				for (var out : array) {
 					out.handleRawPacketPipe(h, d);
+				}
 			};
 		}
 
@@ -134,8 +136,9 @@ public class TestDummyPcapPipeline {
 		 */
 		static PacketRefHandler wrapOutput(PacketRefHandler[] array) {
 			return (nb, ai, buffer) -> {
-				for (var out : array)
+				for (var out : array) {
 					out.handlePacketRef(nb, ai, buffer);
+				}
 			};
 		}
 
@@ -252,7 +255,7 @@ public class TestDummyPcapPipeline {
 		 * @return the to uppercase processor
 		 */
 		public ToUppercaseProcessor peek(RawPacketPipe peekAction) {
-			super.addExternalOutput(peekAction);
+			super.addToOutputList(peekAction);
 			return this;
 		}
 
@@ -298,7 +301,7 @@ public class TestDummyPcapPipeline {
 		 * @return the to lowercase processor
 		 */
 		public ToLowercaseProcessor peek(RawPacketPipe peekAction) {
-			super.addExternalOutput(peekAction);
+			super.addToOutputList(peekAction);
 			return this;
 		}
 
@@ -638,8 +641,9 @@ public class TestDummyPcapPipeline {
 		 * @return the packet ref
 		 */
 		public PacketRef nextEx() {
-			if (collector.isEmpty())
+			if (collector.isEmpty()) {
 				callPcapNextEx();
+			}
 
 			assert !collector.isEmpty();
 

@@ -34,7 +34,7 @@ import com.slytechs.jnet.jnetruntime.util.HasPriority;
  * @author Mark Bednarczyk
  */
 public abstract class AbstractEntryPoint<T>
-		extends AbstractComponent<EntryPoint<T>>
+		extends AbstractNode<EntryPoint<T>>
 		implements EntryPoint<T>, HasName {
 
 	/** The id. */
@@ -112,7 +112,7 @@ public abstract class AbstractEntryPoint<T>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onBypass(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onBypass(boolean)
 	 */
 	@Override
 	protected void onBypass(boolean newValue) {
@@ -144,7 +144,7 @@ public abstract class AbstractEntryPoint<T>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onEnable(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onEnable(boolean)
 	 */
 	@Override
 	protected void onEnable(boolean newValue) {

@@ -338,7 +338,7 @@ public class TestSyntax {
 		 * @return the to uppercase processor
 		 */
 		public ToUppercaseProcessor peek(PipelineData peekAction) {
-			super.addExternalOutput(peekAction);
+			super.addToOutputList(peekAction);
 			return this;
 		}
 
@@ -390,7 +390,7 @@ public class TestSyntax {
 		 * @return the to lowercase processor
 		 */
 		public ToLowercaseProcessor peek(PipelineData peekAction) {
-			super.addExternalOutput(peekAction);
+			super.addToOutputList(peekAction);
 			return this;
 		}
 

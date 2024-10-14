@@ -17,14 +17,21 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.slytechs.jnet.jnetruntime.NotFound;
 import com.slytechs.jnet.jnetruntime.util.HasId;
 import com.slytechs.jnet.jnetruntime.util.HasName;
+import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
  * Represents a type of data in the pipeline system. This interface extends
@@ -42,6 +49,22 @@ public interface DataType extends HasId, HasName {
 	 * @author Mark Bednarczyk
 	 */
 	public class DataSupport<T> {
+
+		/**
+		 * Looks up a data class in currently registered data type registry and return a
+		 * data type.
+		 *
+		 * @param dataClass java class for that the data type describves
+		 * @return data type
+		 * @throws NotFound thrown if the data type for the specified class is not
+		 *                  registered
+		 */
+		static DataType lookupClass(Class<?> dataClass) throws NotFound {
+			return DataTypeRegistry.global()
+					.findType(dataClass)
+					.orElseThrow(() -> new NotFound("data class [%s] not found in global data type registry"
+							.formatted(dataClass.getSimpleName())));
+		}
 
 		/**
 		 * Creates the array wrapper.
@@ -68,15 +91,17 @@ public interface DataType extends HasId, HasName {
 
 		/** The data type. */
 		private final DataType dataType;
-		
+
 		/** The data class. */
 		private final Class<T> dataClass;
-		
+
 		/** The array wrapper. */
 		private final Function<T[], T> arrayWrapper;
-		
+
 		/** The empty. */
 		private final T empty;
+
+		private final Registration registration;
 
 		/**
 		 * Constructs a DataSupport instance without array or opaque wrapping
@@ -107,6 +132,9 @@ public interface DataType extends HasId, HasName {
 			this.dataClass = dataClass;
 			this.arrayWrapper = arrayWrapper;
 			this.empty = wrapCollection(Collections.emptyList());
+
+			this.registration = DataTypeRegistry.global()
+					.register(dataType, dataClass);
 		}
 
 		/**
@@ -136,6 +164,10 @@ public interface DataType extends HasId, HasName {
 			return empty;
 		}
 
+		public Registration registration() {
+			return registration;
+		}
+
 		/**
 		 * Wraps an array of data into a single instance.
 		 *
@@ -143,8 +175,9 @@ public interface DataType extends HasId, HasName {
 		 * @return A single instance representing the array
 		 */
 		public T wrapArray(T[] array) {
-			if (array.length == 1)
+			if (array.length == 1) {
 				return array[0];
+			}
 
 			return arrayWrapper.apply(array);
 		}
@@ -171,13 +204,69 @@ public interface DataType extends HasId, HasName {
 		}
 	}
 
+	class DataTypeRegistry {
+		private static final DataTypeRegistry global = new DataTypeRegistry();
+
+		public static synchronized DataTypeRegistry global() {
+			return global;
+		}
+
+		private final Map<Class<?>, List<DataType>> registry = new HashMap<>();
+
+		public synchronized Registration register(DataType dataType, Class<?> dataClass) {
+			var list = registry.computeIfAbsent(dataClass, (key) -> new ArrayList<DataType>());
+			list.add(dataType);
+
+			return () -> {
+				var listValue = registry.get(dataClass);
+				if (listValue != null) {
+					listValue.remove(dataType);
+				}
+			};
+		}
+
+		public synchronized Optional<DataType> findType(Class<?> dataClass) throws IllegalStateException {
+			var list = registry.get(dataClass);
+			if (list == null || list.isEmpty()) {
+				return Optional.empty();
+			}
+
+			if (list.size() > 1) {
+				throw new IllegalStateException(
+						"multiple data types %s registered for data class [%s], not allowed to pick one randomly"
+								.formatted(list, dataClass.getSimpleName()));
+			}
+
+			return Optional.of(list.get(0));
+		}
+
+		public synchronized List<DataType> listTypes(Class<?> dataClass) throws NotFound {
+			if (registry.containsKey(dataClass)) {
+				throw new NotFound(dataClass.getSimpleName());
+			}
+
+			return Collections.unmodifiableList(registry.get(dataClass));
+		}
+
+		public synchronized void unregister(DataType dataType) {
+			dataType.dataSupport()
+					.registration()
+					.unregister();
+		}
+
+		@Override
+		public synchronized String toString() {
+			return "DataTypeRegistry [registry=" + registry + "]";
+		}
+	}
+
 	/**
 	 * Interface for objects that have a DataType.
 	 *
 	 * @author Mark Bednarczyk
 	 */
 	public interface HasDataType {
-		
+
 		/**
 		 * Data type.
 		 *
@@ -231,8 +320,9 @@ public interface DataType extends HasId, HasName {
 		 */
 		static IntString wrapArray(IntString[] array) {
 			return str -> {
-				for (var i : array)
+				for (var i : array) {
 					i.accept(str);
+				}
 			};
 		}
 
@@ -260,7 +350,7 @@ public interface DataType extends HasId, HasName {
 
 		/** The opaque. */
 		private U opaque;
-		
+
 		/** The data. */
 		private final T data;
 
@@ -318,7 +408,7 @@ public interface DataType extends HasId, HasName {
 	 * @author Mark Bednarczyk
 	 */
 	public enum Primitives implements DataType {
-		
+
 		/** The int string. */
 		INT_STRING(IntString.class, IntString::wrapOpaque, IntString::wrapArray);
 

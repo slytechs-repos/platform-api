@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 
+import com.slytechs.jnet.jnetruntime.NotFound;
 import com.slytechs.jnet.jnetruntime.util.HasName;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -33,7 +34,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk
  */
 public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
-		extends HasName, PipeComponent<T_BASE>, HasOutputData<T>, HasInputData<T> {
+		extends HasName, PipelineNode<T_BASE>, HasOutputData<T>, HasInputData<T> {
 
 	/**
 	 * Represents a bypassable component in the pipeline.
@@ -92,7 +93,15 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @param <T_BASE> The specific type of the processor implementation
 	 */
 	interface ProcessorFactory<T, T_BASE extends DataProcessor<T, T_BASE>> {
-
+		
+		interface Builder1Arg<T, T1, T_BASE extends DataProcessor<T, T_BASE>> {
+			ProcessorFactory<T, T_BASE> newFactory(T1 arg1) throws NotFound;
+		}
+		
+		interface Builder2Args<T, T1, T2, T_BASE extends DataProcessor<T, T_BASE>> {
+			ProcessorFactory<T, T_BASE> newFactory(T1 arg1, T2 arg2);
+		}
+		
 		/**
 		 * Factory for creating named data processors.
 		 *
@@ -120,6 +129,10 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		 * @return A new processor instance
 		 */
 		T_BASE newProcessor(Pipeline<T, ?> parent, int priority);
+		
+		default DataType dataType() {
+			throw new UnsupportedOperationException("missing builder implementation");
+		}
 	}
 
 	/**

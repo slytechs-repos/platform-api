@@ -17,8 +17,8 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
-import static java.util.function.Predicate.*;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
+import static java.util.function.Predicate.not;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,7 +59,7 @@ import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
  * @author Mark Bednarczyk
  */
 public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
-		extends AbstractComponent<T_PIPE>
+		extends AbstractNode<T_PIPE>
 		implements Pipeline<T, T_PIPE> {
 
 	/** The data type. */
@@ -96,7 +96,7 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 
 	private void activateAllProcessorsStillNotActive() {
 		initializedProcessors.stream()
-				.filter(PipeComponent::isEnabled)
+				.filter(PipelineNode::isEnabled)
 				.filter(not(activeProcessors::contains))
 				.forEach(this::activateProcessor);
 	}
@@ -113,12 +113,21 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 			writeLock.lock();
 
 			var isAdded = activeProcessors.add(processor);
-			if (!isAdded)
+			if (!isAdded) {
 				throw new IllegalStateException("processor [%s] already active in pipeline [%s]"
 						.formatted(processor.name(), name()));
+			}
+			
+			var next = processor.nextProcessor;
+			var prev = processor.prevProcessor;
+			var curr = processor;
+			
+			assert next != null;
+			assert prev != null;
+			
+			curr.onDataDownstreamChange(next.inputData());
+			prev.onDataDownstreamChange(processor.inputData());
 
-			var prevProcessor = processor.prevProcessor;
-			prevProcessor.calculateOutput();
 
 		} finally {
 			writeLock.unlock();
@@ -196,17 +205,19 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		try {
 			writeLock.lock();
 
-			if (initializedProcessors.contains(newProcessor))
+			if (initializedProcessors.contains(newProcessor)) {
 				throw new IllegalStateException("processor [%s] already initialized in pipeline [%s]"
 						.formatted(newProcessor.name(), name()));
+			}
 
 			newProcessor.setRegistration(() -> unregisterProcessor(newProcessor));
 
 			initializedProcessors.add(newProcessor);
 			Collections.sort(initializedProcessors);
 
-			if (newProcessor.isEnabled())
+			if (newProcessor.isEnabled()) {
 				activateProcessor(newProcessor);
+			}
 
 		} finally {
 			writeLock.unlock();
@@ -283,14 +294,18 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		try {
 			writeLock.lock();
 
-			var prevProcessor = processor.prevProcessor;
+			var prev = processor.prevProcessor;
+			var next = processor.nextProcessor;
+			var curr = processor;
 
-			var isRemoved = activeProcessors.remove(processor);
-			if (!isRemoved)
+			var isRemoved = activeProcessors.remove(curr);
+			if (!isRemoved) {
 				throw new IllegalStateException("processor [%s] already inactive in pipeline [%s]"
-						.formatted(processor.name(), name()));
-
-			prevProcessor.calculateOutput();
+						.formatted(curr.name(), name()));
+			}
+			
+			curr.unregister();
+			prev.onDataDownstreamChange(next.inputData());
 
 		} finally {
 			writeLock.unlock();
@@ -355,7 +370,7 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 
 		String activeStr = activeProcessors.stream()
 //				.filter(not(AbstractComponent::isBuiltin))
-				.map(p -> (p.isEnabled() ? "%s(%s=>%s)" : "!%s(%s=>%s)")
+				.map(p -> (p.isEnabled() ? "%s(%s:%s)" : "!%s(%s:%s)")
 						.formatted(p.name(), ID(p.inputData()), ID(p.outputData())))
 				.collect(Collectors.joining(", ", "P[", "]"));
 

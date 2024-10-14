@@ -35,7 +35,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk
  */
 public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
-		extends HasName, HasPriority, PipeComponent<T_BASE> {
+		extends HasName, HasPriority, PipelineNode<T_BASE> {
 
 	/**
 	 * Factory for creating input transformers.
@@ -108,7 +108,7 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		 * @param <T> The type of input data
 		 * @author Mark Bednarczyk
 		 */
-		interface EntryPoint<T> extends Registration, HasName, PipeComponent<EntryPoint<T>> {
+		interface EntryPoint<T> extends Registration, HasName, PipelineNode<EntryPoint<T>> {
 
 			/**
 			 * Factory for creating entry points.
@@ -314,14 +314,6 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		}
 
 		/**
-		 * Adds output data to this transformer.
-		 *
-		 * @param data The output data to add
-		 * @return The added output data
-		 */
-		T addOutputData(T data);
-
-		/**
 		 * Creates a new end point with the given identifier.
 		 *
 		 * @param id The identifier for the end point
@@ -334,14 +326,6 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		default EndPoint<T> createMutableEndPoint(String id) {
 			return createEndPoint(id, MutableEndPoint::new);
 		}
-
-		/**
-		 * Registers output data with this transformer.
-		 *
-		 * @param data The output data to register
-		 * @return A registration object for the registered data
-		 */
-		Registration registerOutputData(T data);
 	}
 
 	/**

@@ -29,7 +29,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk
  */
 public class MultiEndPoint<T>
-		extends AbstractComponent<MultiEndPoint<T>>
+		extends AbstractNode<MultiEndPoint<T>>
 		implements EndPoint<T> {
 
 	/** The id. */
@@ -46,7 +46,7 @@ public class MultiEndPoint<T>
 	 * @param id The identifier for this endpoint
 	 */
 	public MultiEndPoint(OutputTransformer<T> output, String id) {
-		super((PipeComponent<?>) output, id, HasPriority.DEFAULT_PRIORITY_VALUE);
+		super((PipelineNode<?>) output, id, HasPriority.DEFAULT_PRIORITY_VALUE);
 		this.id = id;
 		this.output = (AbstractOutput<?, T, ?>) output;
 	}

@@ -42,8 +42,8 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *                 chaining
  * @author Mark Bednarczyk
  */
-public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
-		implements PipeComponent<T_BASE>, HasPriority, Comparable<HasPriority>, Registration {
+public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
+		implements PipelineNode<T_BASE>, HasPriority, Comparable<HasPriority>, Registration {
 
 	/** The name. */
 	private String name;
@@ -66,7 +66,7 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	/**
 	 * Constructs an AbstractComponent with no name.
 	 */
-	public AbstractComponent(PipeComponent<?> component, int priority) {
+	public AbstractNode(PipelineNode<?> component, int priority) {
 		this(component, "", priority);
 	}
 
@@ -75,8 +75,8 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 *
 	 * @param name The name of the component
 	 */
-	public AbstractComponent(PipeComponent<?> component, String name, int priority) {
-		this(((AbstractComponent<?>) component).rwLock, name, priority);
+	public AbstractNode(PipelineNode<?> component, String name, int priority) {
+		this(((AbstractNode<?>) component).rwLock, name, priority);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 *
 	 * @param name The name of the component
 	 */
-	private AbstractComponent(ReadWriteLock rwLock, String name, int priority) {
+	private AbstractNode(ReadWriteLock rwLock, String name, int priority) {
 		this.rwLock = rwLock;
 		this.priority = priority;
 		this.readLock = rwLock.readLock();
@@ -92,7 +92,7 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 		this.name = name;
 	}
 
-	AbstractComponent(String name) {
+	AbstractNode(String name) {
 		this(new ReentrantReadWriteLock(), name, HasPriority.DEFAULT_PRIORITY_VALUE);
 	}
 
@@ -106,8 +106,9 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	public final T_BASE bypass(boolean b) {
 		try {
 			writeLock.lock();
-			if (bypass == b)
+			if (bypass == b) {
 				return us();
+			}
 
 			this.bypass = b;
 
@@ -132,15 +133,17 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	}
 
 	protected final void checkIfIsEnabled() {
-		if (enabled == false)
+		if (enabled == false) {
 			throw new IllegalStateException("%s [%s] is disabled"
 					.formatted(getClass().getSimpleName(), name()));
+		}
 	}
 
 	protected final void checkIfIsRegistered() {
-		if (registration == null)
+		if (registration == null) {
 			throw new IllegalStateException("%s [%s] is not registered"
 					.formatted(getClass().getSimpleName(), name()));
+		}
 	}
 
 	/**
@@ -173,8 +176,9 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 		try {
 			writeLock.lock();
 
-			if (enabled == b)
+			if (enabled == b) {
 				return us();
+			}
 
 			this.enabled = b;
 
@@ -335,8 +339,9 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	public final T_BASE priority(int newPriority) {
 		try {
 			writeLock.lock();
-			if (this.priority == newPriority)
+			if (this.priority == newPriority) {
 				return us();
+			}
 
 			HasPriority.checkPriorityValue(newPriority);
 
@@ -357,16 +362,18 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 * @param orNull The new Registration object, or null to unregister
 	 */
 	final void setRegistration(Registration orNull) {
-		if (enabled && (orNull == null) && (registration != null))
+		if (enabled && (orNull == null) && (registration != null)) {
 			throw new IllegalStateException("element [%s] must be disabled before registration can be removed"
 					.formatted(name()));
+		}
 
 		this.registration.set(orNull);
 
-		if (orNull == null)
+		if (orNull == null) {
 			onUnregistered();
-		else
+		} else {
 			onRegistration();
+		}
 	}
 
 	/**
@@ -385,8 +392,9 @@ public class AbstractComponent<T_BASE extends PipeComponent<T_BASE>>
 	 */
 	@Override
 	public void unregister() {
-		if (registration.get() != null)
+		if (registration.get() != null) {
 			registration.get().unregister();
+		}
 
 		registration.set(null);
 	}

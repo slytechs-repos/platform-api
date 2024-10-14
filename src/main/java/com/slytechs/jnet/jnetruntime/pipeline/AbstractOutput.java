@@ -67,8 +67,6 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		super(tailNode, name, inputType, outputType);
 		this.tailNode = tailNode;
 		this.outputList = new DataList<>(outputType, super::outputData);
-
-		enable(true);
 	}
 
 	/**
@@ -87,16 +85,6 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		this.outputList = new DataList<>(outputType, super::outputData);
 
 		enable(true);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public T_OUT addOutputData(T_OUT data) {
-		registerOutputData(data);
-
-		return data;
 	}
 
 	/**
@@ -156,16 +144,22 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Registration registerOutputData(T_OUT data) {
+	private void removeFromOutputList(T_OUT data) {
 		try {
 			writeLock.lock();
+			outputList.remove(data);
 
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	Registration addToOutputList(T_OUT data) {
+		try {
+			writeLock.lock();
 			outputList.add(data);
-			return () -> outputList.remove(data);
+
+			return () -> removeFromOutputList(data);
 
 		} finally {
 			writeLock.unlock();
@@ -182,4 +176,5 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 			writeLock.unlock();
 		}
 	}
+
 }

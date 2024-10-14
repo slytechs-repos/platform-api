@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.util.Objects;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
 
 import com.slytechs.jnet.jnetruntime.util.HasPriority;
 
@@ -35,8 +35,8 @@ import com.slytechs.jnet.jnetruntime.util.HasPriority;
  * @param <T_BASE> The specific type of the transformer implementation
  * @author Mark Bednarczyk
  */
-public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipeComponent<T_BASE>>
-		extends AbstractComponent<T_BASE>
+public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipelineNode<T_BASE>>
+		extends AbstractNode<T_BASE>
 		implements DataTransformer<T_IN, T_OUT, T_BASE> {
 
 	/** The output data. */
@@ -62,7 +62,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param inputType  The type of the input data
 	 * @param outputType The type of the output data
 	 */
-	public AbstractTransformer(PipeComponent<?> component, String name, T_IN input, DataType inputType,
+	public AbstractTransformer(PipelineNode<?> component, String name, T_IN input, DataType inputType,
 			DataType outputType) {
 		super(component, name, HasPriority.DEFAULT_PRIORITY_VALUE);
 		assert inputType.isCompatibleWith(input.getClass());
@@ -81,7 +81,7 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @param outputType The type of the output data
 	 */
 	@SuppressWarnings("unchecked")
-	public AbstractTransformer(PipeComponent<?> component, String name, DataType inputType, DataType outputType) {
+	public AbstractTransformer(PipelineNode<?> component, String name, DataType inputType, DataType outputType) {
 		super(component, name, HasPriority.DEFAULT_PRIORITY_VALUE);
 		assert inputType.isCompatibleWith(this.getClass()) : ""
 				+ "incompatible input type [%s] with subclass [%s]"
@@ -190,16 +190,14 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	public String toString() {
 		try {
 			readLock.lock();
-			var in = inputData == null ? "" : Objects.toIdentityString(inputData);
-			var out = outputData == null ? "" : Objects.toIdentityString(outputData);
 
 			return ""
 					+ getClass().getSimpleName()
 					+ " [name=" + name()
+					+ ", output=" + ID(inputData)
+					+ ", input=" + ID(outputData)
 					+ ", inputType=" + inputType
 					+ ", outputType=" + outputType
-					+ ", output=" + out
-					+ ", input=" + in
 					+ "]";
 
 		} finally {

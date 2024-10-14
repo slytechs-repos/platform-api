@@ -17,40 +17,68 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import static com.slytechs.jnet.jnetruntime.util.SystemProperties.boolValue;
+
+import com.slytechs.jnet.jnetruntime.NotFound;
+import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
+import com.slytechs.jnet.jnetruntime.pipeline.DataType.DataSupport;
+
 /**
  * @author Mark Bednarczyk
  *
  */
 public class PeekProcessor<T>
-		extends AbstractProcessor<T, PeekProcessor<T>> {
+		extends AbstractProcessor<T, PeekProcessor<T>> 
+		implements ProcessorFactory<T, PeekProcessor<T>>{
+		
+	/** System property which enables/disables the {@code PeekProcessor} (default is true). */
+	public static final String PROPERTY_PEEK_PROCESSOR_ENABLE = "peek.processor.enable";
 
-//	private final DataProxyMethodHandle<T> proxyHandle;
-
+	/** System property which bypasses the {@code PeekProcessor} (default is false). */
+	public static final String PROPERTY_PEEK_PROCESSOR_BYPASS = "peek.processor.bypass";
+	
+	public static final String NAME = "Peek";
+	
+	private final boolean envEnable = boolValue(PROPERTY_PEEK_PROCESSOR_ENABLE, true);
+	private final boolean envBypass = boolValue(PROPERTY_PEEK_PROCESSOR_BYPASS, false);
+	
 	/**
 	 * @param pipeline
 	 * @param priority
 	 * @param name
 	 * @param type
 	 */
-	public PeekProcessor(Pipeline<T, ?> pipeline, int priority) {
-		super(pipeline, priority, "peek", pipeline.dataType(), null);
+	private PeekProcessor(Pipeline<T, ?> pipeline, int priority) {
+		super(pipeline, priority, NAME, pipeline.dataType(), null);
 
-//		this.proxyHandle = new DataProxyMethodHandle<>(pipeline.dataType().dataClass(), null);
-//		inputData(proxyHandle.getProxy());
+		/*
+		 * Peek processor forwards all input data to output so add update both
+		 * outputData and inputData. This way they will both
+		 * be automatically updated to the latest output changes.
+		 */
+		super.outputList.addChangeListener(this::inputData);
+		
+		enable(envEnable);
+		bypass(envBypass);
+	}
+	
+	public PeekProcessor(Class<T> dataClass) throws NotFound {
+		super(0, NAME, DataSupport.lookupClass(dataClass));
+	}
+	
+	public PeekProcessor(DataType dataType) throws NotFound {
+		super(0, NAME, dataType);
 	}
 
 	public PeekProcessor<T> peek(T peekAction) {
-		addExternalOutput(peekAction);
+		addToOutputList(peekAction);
 
 		return this;
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#inputData()
-	 */
 	@Override
-	public T inputData() {
-		return outputData();
+	public PeekProcessor<T> newProcessor(Pipeline<T, ?> parent, int priority) {
+		return new PeekProcessor<>(parent, priority);
 	}
 
 }

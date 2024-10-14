@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,13 +53,22 @@ public final class HeadNode<T>
 	 * @param id    the id
 	 */
 	public void addInput(AbstractInput<?, T, ?> input, Object id) {
-		if (inputMap.containsKey(id))
-			throw new IllegalArgumentException("input [%s] with this id [%s] already exists in pipeline [%s]"
-					.formatted(input.name(), id, name()));
 
-		inputMap.put(id, input);
-		setRegistration(() -> inputMap.remove(id));
-		input.outputData(outputData());
+		try {
+			writeLock.lock();
+
+			if (inputMap.containsKey(id)) {
+				throw new IllegalArgumentException("input [%s] with this id [%s] already exists in pipeline [%s]"
+						.formatted(input.name(), id, name()));
+			}
+
+			inputMap.put(id, input);
+			setRegistration(() -> inputMap.remove(id));
+			input.outputData(outputData());
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -68,31 +77,57 @@ public final class HeadNode<T>
 	 * @return the string
 	 */
 	public String inputsToString() {
-		return inputMap.values().stream()
-				.sorted()
-				.map(in -> (in.isEnabled() ? "%s=>IX[%s(%s):%s]" : "!%s=>IN[%s(%s):%s]")
-						.formatted(in.entryPointsToString(), in.name(), ID(in.inputData()), ID(in.outputData())))
-				.collect(Collectors.joining(", ", "[", "]"));
+		try {
+			readLock.lock();
+
+			return inputMap.values().stream()
+					.sorted()
+					.map(in -> (in.isEnabled()
+							? "%s=>IX[%s(%s:%s)]"
+							: "!%s=>IN[%s(%s:%s)]")
+							.formatted(
+									in.toStringEntryPoints(),
+									in.name(), ID(in.inputData()),
+									ID(in.outputData())))
+					.collect(Collectors.joining(", ", "[", "]"));
+		} finally {
+			readLock.unlock();
+		}
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractProcessor#outputData(java.lang.Object)
-	 */
 	@Override
-	T outputData(T out) {
+	public void onDataDownstreamChange(T newData) {
 		try {
 			writeLock.lock();
 
 			// Do the actual set
-			T output = super.outputData(out);
+			super.outputData = newData;
 
 			// Pass the output to all of the input nodes
 			inputMap.values().stream()
-					.filter(PipeComponent::isEnabled)
+					.filter(PipelineNode::isEnabled)
 					.sorted()
-					.forEach(in -> in.outputData(output));
+					.forEach(in -> in.onDataDownstreamChange(newData));
 
-			return out;
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	@Override
+	public void linkAllUpstream(T newData) {
+		
+		try {
+			writeLock.lock();
+
+			// Do the actual set
+			super.outputData = newData;
+
+			// Pass the output to all of the input nodes
+			inputMap.values().stream()
+					.filter(PipelineNode::isEnabled)
+					.sorted()
+					.forEach(in -> in.linkAllUpstream(newData));
 
 		} finally {
 			writeLock.unlock();
@@ -104,8 +139,9 @@ public final class HeadNode<T>
 	 */
 	@Override
 	public void prevElement(AbstractProcessor<T, ?> e) {
-		if (e == null)
+		if (e == null) {
 			return;
+		}
 
 		String n = e == null ? "" : e.name();
 

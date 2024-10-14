@@ -40,6 +40,8 @@ public class DataProxy<T> {
 		this.data = data;
 		this.invokeMethod = getInvokeMethod(functionalInterfaceClass);
 		this.proxy = createProxy();
+		
+		this.invokeMethod.setAccessible(true);
 	}
 
 	/**
@@ -49,9 +51,6 @@ public class DataProxy<T> {
 	 * @throws IllegalArgumentException If the instance is null.
 	 */
 	public void setInstance(T instance) {
-		if (instance == null)
-			throw new IllegalArgumentException("Instance must not be null");
-
 		instanceRef.set(instance);
 	}
 
@@ -72,9 +71,12 @@ public class DataProxy<T> {
 				new Class<?>[] { functionalInterfaceClass },
 				(proxy, method, args) ->
 				{
+                    method.setAccessible(true);
+					
 					T instance = instanceRef.get();
-					if (instance == null)
+					if (instance == null) {
 						throw new IllegalStateException("No instance set for proxy");
+					}
 
 					if (method.equals(invokeMethod)) {
 						MethodHandle handle = MethodHandles.lookup()
@@ -121,9 +123,10 @@ public class DataProxy<T> {
 			invokeMethod = method;
 		}
 
-		if (invokeMethod == null)
+		if (invokeMethod == null) {
 			throw new IllegalArgumentException("No suitable method found in the functional interface " +
 					functionalInterfaceClass.getName());
+		}
 
 		return invokeMethod;
 	}

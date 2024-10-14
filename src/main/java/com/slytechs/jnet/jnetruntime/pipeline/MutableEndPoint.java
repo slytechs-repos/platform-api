@@ -27,7 +27,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *
  */
 public class MutableEndPoint<T>
-		extends AbstractComponent<MutableEndPoint<T>>
+		extends AbstractNode<MutableEndPoint<T>>
 		implements EndPoint<T> {
 
 	/** The id. */
@@ -40,14 +40,15 @@ public class MutableEndPoint<T>
 	private final DataProxy<T> dataProxy;
 
 	public MutableEndPoint(OutputTransformer<T> output, String id) {
-		super((PipeComponent<?>) output, id, 0);
+		super((PipelineNode<?>) output, id, 0);
 		this.output = (AbstractOutput<?, T, ?>) output;
 		this.id = id;
 
 		DataSupport<T> support = endPointType().dataSupport();
 		this.dataProxy = new DataProxy<>(support.dataClass(), null);
 
-		this.outputRegistration = output.registerOutputData(dataProxy.getProxy());
+		this.outputRegistration = this.output
+				.addToOutputList(dataProxy.getProxy());
 	}
 
 	/**
@@ -72,7 +73,6 @@ public class MutableEndPoint<T>
 	@Override
 	public void endPointData(T data) {
 		try {
-			System.out.println("endPointData:: rwLock=" + rwLock);
 			writeLock.lock();
 
 			dataProxy.setInstance(data);

@@ -96,7 +96,7 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  * @see InputTransformer
  * @see OutputTransformer
  */
-public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName, PipeComponent<T_BASE> {
+public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName, PipelineNode<T_BASE> {
 
 	/**
 	 * Factory interface for creating new pipeline instances.

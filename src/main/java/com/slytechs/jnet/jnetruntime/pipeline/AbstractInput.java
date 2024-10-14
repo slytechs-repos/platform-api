@@ -46,7 +46,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.InputTransformer.E
  */
 public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends AbstractTransformer<T_IN, T_OUT, T_BASE>
-		implements InputTransformer<T_IN> {
+		implements InputTransformer<T_IN>, DownstreamDataListener<T_OUT> {
 
 	/**
 	 * Default implementation of EntryPoint for AbstractInput.
@@ -190,7 +190,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	 *
 	 * @return A string representation of the input entry points
 	 */
-	public String entryPointsToString() {
+	public String toStringEntryPoints() {
 		try {
 			readLock.lock();
 
@@ -221,7 +221,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onBypass(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onBypass(boolean)
 	 */
 	@Override
 	protected void onBypass(boolean newValue) {
@@ -236,7 +236,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 
 			entryPointMap.values().stream()
 					.sorted()
-					.filter(PipeComponent::isEnabled)
+					.filter(PipelineNode::isEnabled)
 					.forEach(e -> e.inputData(inputData()));
 
 		} finally {
@@ -245,7 +245,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractComponent#onEnable(boolean)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onEnable(boolean)
 	 */
 	@Override
 	protected void onEnable(boolean newValue) {
@@ -260,12 +260,43 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 
 			entryPointMap.values().stream()
 					.sorted()
-					.filter(PipeComponent::isEnabled)
+					.filter(PipelineNode::isEnabled)
 					.forEach(e -> e.inputData(inputData()));
 
 		} finally {
 			writeLock.unlock();
 		}
+	}
+
+	@Override
+	public void linkAllUpstream(T_OUT downstreamData) {
+		try {
+			writeLock.lock();
+
+			this.outputData(downstreamData);
+
+			entryPointMap.values().stream()
+					.sorted()
+					.filter(PipelineNode::isEnabled)
+					.forEach(e -> e.inputData(inputData()));
+
+		} finally {
+			writeLock.unlock();
+		}
+		
+	}
+
+	@Override
+	public void onDataDownstreamChange(T_OUT newData) {
+		try {
+			writeLock.lock();
+
+			this.outputData(newData);
+
+		} finally {
+			writeLock.unlock();
+		}
+		
 	}
 
 }
