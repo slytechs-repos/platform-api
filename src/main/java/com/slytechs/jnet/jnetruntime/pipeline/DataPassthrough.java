@@ -6,8 +6,7 @@ public interface DataPassthrough<T, T_BASE extends DataPassthrough<T, T_BASE>>
 	default T inputData() {
 		return outputData();
 	}
-	
+
 	T outputData();
-	
-	void outputData(T newOutput);
+
 }

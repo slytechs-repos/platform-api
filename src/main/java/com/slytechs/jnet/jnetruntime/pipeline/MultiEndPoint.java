@@ -52,10 +52,21 @@ public class MultiEndPoint<T>
 	}
 
 	/**
+	 * Constructs a new EndPointImpl with the given ID.
+	 *
+	 * @param id The identifier for this endpoint
+	 */
+	public MultiEndPoint(String name, OutputTransformer<T> output, String id) {
+		super((PipelineNode<?>) output, id, HasPriority.DEFAULT_PRIORITY_VALUE);
+		this.id = id;
+		this.output = (AbstractOutput<?, T, ?>) output;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void endPointData(T data) {
+	public void data(T data) {
 		if (this.dataListRegistration != null)
 			throw new IllegalStateException("output's [%s] endpoint [%s] is already set"
 					.formatted(name(), id()));
@@ -68,8 +79,8 @@ public class MultiEndPoint<T>
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DataType endPointType() {
-		return endPointType();
+	public DataType dataType() {
+		return output.outputType();
 	}
 
 	/**

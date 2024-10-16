@@ -239,13 +239,6 @@ public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName
 	DataType dataType();
 
 	/**
-	 * Gets the head node of the pipeline.
-	 *
-	 * @return The head node
-	 */
-	HeadNode<T> head();
-
-	/**
 	 * Checks if the pipeline is currently bypassed.
 	 *
 	 * @return True if the pipeline is bypassed, false otherwise
@@ -253,10 +246,4 @@ public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName
 	@Override
 	boolean isBypassed();
 
-	/**
-	 * Gets the tail node of the pipeline.
-	 *
-	 * @return The tail node
-	 */
-	TailNode<T> tail();
 }

@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -84,19 +84,19 @@ public final class HeadNode<T>
 					.sorted()
 					.map(in -> (in.isEnabled()
 							? "%s=>IX[%s(%s:%s)]"
-							: "!%s=>IN[%s(%s:%s)]")
+							: "!%s=>IX[%s(%s:%s)]")
 							.formatted(
 									in.toStringEntryPoints(),
 									in.name(), ID(in.inputData()),
 									ID(in.outputData())))
-					.collect(Collectors.joining(", ", "[", "]"));
+					.collect(Collectors.joining(", ", "", ""));
 		} finally {
 			readLock.unlock();
 		}
 	}
 
 	@Override
-	public void onDataDownstreamChange(T newData) {
+	public void linkDownstream(T newData) {
 		try {
 			writeLock.lock();
 
@@ -107,27 +107,7 @@ public final class HeadNode<T>
 			inputMap.values().stream()
 					.filter(PipelineNode::isEnabled)
 					.sorted()
-					.forEach(in -> in.onDataDownstreamChange(newData));
-
-		} finally {
-			writeLock.unlock();
-		}
-	}
-
-	@Override
-	public void linkAllUpstream(T newData) {
-		
-		try {
-			writeLock.lock();
-
-			// Do the actual set
-			super.outputData = newData;
-
-			// Pass the output to all of the input nodes
-			inputMap.values().stream()
-					.filter(PipelineNode::isEnabled)
-					.sorted()
-					.forEach(in -> in.linkAllUpstream(newData));
+					.forEach(in -> in.linkDownstream(newData));
 
 		} finally {
 			writeLock.unlock();

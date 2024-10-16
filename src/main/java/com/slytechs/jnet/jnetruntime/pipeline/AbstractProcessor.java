@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
 
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
 import com.slytechs.jnet.jnetruntime.util.Registration;
@@ -54,12 +54,14 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	private final DataList<T> outputList;
 
 	/** The pipeline. */
-	private final AbstractPipeline<T, ?> pipeline;
+	protected final AbstractPipeline<T, ?> pipeline;
 
 	/** The next processor. */
 	AbstractProcessor<T, ?> nextProcessor;
 
 	AbstractProcessor<T, ?> prevProcessor;
+
+	private Registration registrationNextIn;
 
 	protected AbstractProcessor(int priority, String name, DataType dataType) {
 		super(name);
@@ -119,16 +121,6 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		this.dataType = type;
 		this.outputList = new DataList<>(type, this::setGuardedOutputField);
 	}
-	
-	private void removeFromOutputList(T data) {
-		try {
-			writeLock.lock();
-			outputList.remove(data);
-			
-		} finally {
-			writeLock.unlock();
-		}
-	}
 
 	/**
 	 * Adds a local output to this processor's output list.
@@ -141,7 +133,7 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 			writeLock.lock();
 
 			outputList.addFirst(newData);
-			
+
 			return () -> removeFromOutputList(newData);
 
 		} finally {
@@ -162,19 +154,10 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	@Override
 	public T inputData() {
-		return inputData;
-	}
+		if (isBypassed())
+			return outputData;
 
-	/**
-	 * Sets the input data for this processor.
-	 *
-	 * @param newInputData The new input data
-	 */
-	void inputData(T newInputData) {
-		this.inputData = newInputData;
-		if (inputData == null) {
-			inputData = inputType().empty();
-		}
+		return inputData;
 	}
 
 	/**
@@ -183,6 +166,24 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	@Override
 	public DataType inputType() {
 		return this.dataType;
+	}
+
+	@Override
+	public void linkDownstream(T newData) {
+
+		try {
+			writeLock.lock();
+
+			updateOutputList(newData);
+
+			if (isBypassed()) {
+				relinkUpstream();
+
+			} else {}
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -202,6 +203,14 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	}
 
 	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onAutoPrune(boolean)
+	 */
+	@Override
+	protected void onAutoPrune(boolean newAutoPruneValue) {
+		prune(newAutoPruneValue == true && newAutoPruneValue);
+	}
+
+	/**
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onBypass(boolean)
 	 */
 	@Override
@@ -209,12 +218,9 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		if (isEnabled() == false) {
 			return;
 		}
-		
-		if (newValue == true) {
-			prevProcessor.onDataDownstreamChange(outputData);
-		} else {
-			prevProcessor.onDataDownstreamChange(inputData);
-		}
+
+		prevProcessor.linkDownstream(inputData());
+
 	}
 
 	/**
@@ -238,7 +244,15 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	protected void onPriorityChange(int newPriority) {
 		checkIfIsRegistered();
 
-		pipeline.resortProcessor(this);
+		pipeline.reSortProcessor(this);
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onPrune(boolean)
+	 */
+	@Override
+	void onPrune(boolean newValue) {
+		relinkUpstream();
 	}
 
 	/**
@@ -246,6 +260,9 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 */
 	@Override
 	public T outputData() {
+		if (outputData == null && !isBypassed())
+			return dataType.empty();
+
 		return outputData;
 	}
 
@@ -273,20 +290,20 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		this.prevProcessor = e;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return ""
-				+ getClass().getSimpleName()
-				+ " [priority=" + priority()
-				+ ", enabled=" + isEnabled()
-				+ ", output=" + ID(inputData)
-				+ ", input=" + ID(outputData)
-				+ ", dataType=" + dataType
-				+ ", name=" + name()
-				+ "]";
+	private void relinkUpstream() {
+		assert isEnabled();
+
+		prevProcessor.linkDownstream(inputData());
+	}
+
+	private void removeFromOutputList(T data) {
+		try {
+			writeLock.lock();
+			outputList.remove(data);
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -299,9 +316,35 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 			writeLock.lock();
 
 			this.outputData = newOutput;
+
+			prevProcessor.linkDownstream(newOutput);
+
+			if (isAutoPruned())
+				prune(newOutput == null);
+
 		} finally {
 			writeLock.unlock();
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return ""
+				+ getClass().getSimpleName()
+				+ " [priority=" + priority()
+				+ ", enabled=" + isEnabled()
+				+ ", output=" + ID(outputData)
+				+ ", input=" + ID(inputData)
+				+ ", dataType=" + dataType
+				+ ", name=" + name()
+				+ "]";
+	}
+
+	public String dataToString() {
+		return "%s:%s".formatted(ID(inputData), ID(outputData));
 	}
 
 	private boolean updateOutputList(T newOutput) {
@@ -329,59 +372,5 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		} finally {
 			writeLock.unlock();
 		}
-	}
-
-	private Registration registrationNextIn;
-
-	@Override
-	public void onDataDownstreamChange(T newData) {
-
-		try {
-			writeLock.lock();
-
-			boolean isEffectiveBypass = (isBypassed() || newData == null);
-
-			/*
-			 * If bypassed, then the upstream node needs the pass through newData to bypass
-			 * us, otherwise, our inline-input doesn't change so upstream does not need a
-			 * notification.
-			 * 
-			 * Null new data is also a implicit bypass, but no is-bypassed flags are
-			 * modified, but effectively with newData == null we are bypassed as well, so we
-			 * pass on.
-			 */
-			if (isEffectiveBypass) {
-				updateOutputList(null);
-				prevProcessor.onDataDownstreamChange(newData);
-
-			} else {
-				updateOutputList(newData);
-			}
-
-		} finally {
-			writeLock.unlock();
-		}
-	}
-
-	@Override
-	public void linkAllUpstream(T newData) {
-		try {
-			writeLock.lock();
-			
-			updateOutputList(newData);
-
-			boolean isEffectiveBypass = (isBypassed() || newData == null);
-
-			if (isEffectiveBypass) {
-				prevProcessor.linkAllUpstream(newData);
-
-			} else {
-				prevProcessor.linkAllUpstream(inputData);
-			}
-
-		} finally {
-			writeLock.unlock();
-		}
-
 	}
 }

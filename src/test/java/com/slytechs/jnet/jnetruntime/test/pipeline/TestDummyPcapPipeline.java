@@ -656,7 +656,7 @@ public class TestDummyPcapPipeline {
 		private void callPcapNextEx() {
 			var packetRef = pcap.nextEx();
 
-			NativePcapHandler input = inputData();
+			NativePcapHandler input = data();
 			assert input != null;
 
 			input.handleNativePcapPacket(packetRef.pcapHeader(), packetRef.data(), null);
@@ -684,7 +684,7 @@ public class TestDummyPcapPipeline {
 
 		processedOutput.createEndPoint("collector")
 				.priority(HasPriority.MAX_PRIORITY_VALUE)
-				.endPointData(packetRefCollector);
+				.data(packetRefCollector);
 
 //		System.out.println(pipeline);
 

@@ -37,12 +37,12 @@ public final class TailNode<T>
 	/**
 	 * Instantiates a new tail node.
 	 *
-	 * @param parent the parent
-	 * @param name   public Registration addInput(InputEntryPoint<?> input) {
-	 * @param type   the type
+	 * @param pipeline the parent
+	 * @param name     public Registration addInput(InputEntryPoint<?> input) {
+	 * @param type     the type
 	 */
-	public TailNode(Pipeline<T, ?> parent, String name, DataType type) {
-		super(parent, Pipeline.TAIL_BUILTIN_PRIORITY, name, type, type.empty());
+	public TailNode(Pipeline<T, ?> pipeline, String name, DataType type) {
+		super(pipeline, Pipeline.TAIL_BUILTIN_PRIORITY, name, type, type.empty());
 
 	}
 
@@ -53,7 +53,7 @@ public final class TailNode<T>
 	 * @param id      the id
 	 */
 	public void addOutput(AbstractOutput<T, ?, ?> outNode, Object id) {
-		
+
 		Objects.requireNonNull(outNode, "outNode");
 		Objects.requireNonNull(id, "id");
 
@@ -81,7 +81,7 @@ public final class TailNode<T>
 			});
 
 			if (!isBypassed()) {
-				super.prevProcessor.onDataDownstreamChange(inputData());
+				super.prevProcessor.linkDownstream(inputData());
 			}
 
 		} finally {
@@ -122,9 +122,9 @@ public final class TailNode<T>
 				"Can not append processor [%s] before the tail node, use addOutput() method to add data sinks "
 						.formatted(e.name()));
 	}
-	
+
 	void linkAllUpstream() {
-		
+
 	}
 
 	@Override
@@ -132,14 +132,8 @@ public final class TailNode<T>
 		if (isBypassed()) {
 			return null;
 		}
-		
+
 		return outputData();
 	}
-
-	@Override
-	void inputData(T newInputData) {
-		throw new UnsupportedOperationException();
-	}
-
 
 }

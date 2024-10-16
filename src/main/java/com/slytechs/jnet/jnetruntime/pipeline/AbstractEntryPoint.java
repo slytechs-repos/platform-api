@@ -82,7 +82,7 @@ public abstract class AbstractEntryPoint<T>
 	 * </p>
 	 */
 	@Override
-	public T inputData() {
+	public T data() {
 		try {
 			readLock.lock();
 
@@ -107,7 +107,7 @@ public abstract class AbstractEntryPoint<T>
 	 * </p>
 	 */
 	@Override
-	public DataType inputType() {
+	public DataType dataType() {
 		return inputType;
 	}
 

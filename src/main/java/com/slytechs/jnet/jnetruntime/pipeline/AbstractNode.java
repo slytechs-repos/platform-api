@@ -42,7 +42,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  *                 chaining
  * @author Mark Bednarczyk
  */
-public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
+class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		implements PipelineNode<T_BASE>, HasPriority, Comparable<HasPriority>, Registration {
 
 	/** The name. */
@@ -55,11 +55,34 @@ public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	private boolean enabled = true;
 
 	/** The bypass. */
-	private boolean bypass;
+	private boolean bypass = false;
+
+	/**
+	 * Indicates whether this node is currently pruned from the processing graph.
+	 * 
+	 * When true, this node is considered inactive and will not process or propagate
+	 * data. This can be set manually or as a result of auto-pruning.
+	 * 
+	 * @see #autoPrune
+	 */
+	private boolean prune = false;
+
+	/**
+	 * Controls the auto-pruning behavior of this node.
+	 * 
+	 * When true, this node will automatically be pruned (deactivated) if it has no
+	 * active downstream nodes to receive its output. This allows for dynamic
+	 * optimization of the processing pipeline.
+	 * 
+	 * @see #prune
+	 * @see #autoPrune(boolean)
+	 * @see #isAutoPruned()
+	 */
+	private boolean autoPrune = false;
 
 	protected final Lock readLock;
 	protected final Lock writeLock;
-	protected ReadWriteLock rwLock;
+	protected final ReadWriteLock rwLock;
 
 	private int priority;
 
@@ -97,6 +120,45 @@ public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	}
 
 	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#isAutoPruned()
+	 */
+	@Override
+	public final boolean isAutoPruned() {
+		return this.autoPrune;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#autoPrune(boolean)
+	 */
+	@Override
+	public final T_BASE autoPrune(boolean newAutoPruneValue) {
+		if (autoPrune == newAutoPruneValue)
+			return us();
+
+		this.autoPrune = newAutoPruneValue;
+		onAutoPrune(autoPrune);
+
+		return us();
+	}
+
+	/**
+	 * Called when the auto-prune status of this node changes.
+	 * 
+	 * This method is invoked internally whenever the auto-prune setting is
+	 * modified, allowing subclasses to react to changes in the auto-prune status.
+	 * It provides an opportunity to perform any necessary adjustments or
+	 * notifications when the auto-prune functionality is enabled or disabled.
+	 * 
+	 * @param newValue The new auto-prune status: true if auto-pruning has been
+	 *                 enabled, false if it has been disabled
+	 * @see #autoPrune(boolean)
+	 * @see #isAutoPruned()
+	 */
+	protected void onAutoPrune(boolean newValue) {
+
+	}
+
+	/**
 	 * Sets the bypass state of the component.
 	 *
 	 * @param b True to bypass the component, false otherwise
@@ -119,6 +181,30 @@ public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		onBypass(b);
 
 		return us();
+	}
+
+	/**
+	 * A "pruned" state is when a node is optimized away or not needed or active due
+	 * to null output, thus nowhere for the data to be forwarded to or explicit
+	 * bypass has been invoked. Either way, the node forwards its input directly to
+	 * its output.
+	 *
+	 * @param newPruneState true if node will be pruned
+	 * @return instance to this node
+	 */
+	final T_BASE prune(boolean newPruneState) {
+		if (this.prune == newPruneState)
+			return us();
+
+		this.prune = newPruneState;
+
+		onPrune(prune);
+
+		return us();
+	}
+
+	void onPrune(boolean newValue) {
+
 	}
 
 	/**
@@ -151,18 +237,10 @@ public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	 */
 	@Override
 	public final int compareTo(HasPriority o) {
+		if (this.priority == o.priority())
+			return 0;
+
 		return (this.priority < o.priority()) ? -1 : 1;
-	}
-
-	void disableDirect() {
-		try {
-			writeLock.lock();
-
-			this.enabled = false;
-
-		} finally {
-			writeLock.unlock();
-		}
 	}
 
 	/**
@@ -182,13 +260,14 @@ public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 
 			this.enabled = b;
 
+			onEnable(b);
+
+			return us();
+
 		} finally {
 			writeLock.unlock();
 		}
 
-		onEnable(b);
-
-		return us();
 	}
 
 	/**
@@ -221,7 +300,7 @@ public class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		try {
 			readLock.lock();
 
-			return bypass;
+			return bypass || prune;
 
 		} finally {
 			readLock.unlock();

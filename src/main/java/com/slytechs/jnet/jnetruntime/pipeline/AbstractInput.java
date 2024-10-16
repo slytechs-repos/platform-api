@@ -196,7 +196,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 
 			return entryPointMap.values().stream()
 					.sorted()
-					.map(t -> "%s(%s)".formatted(t.id(), ID(t.inputData())))
+					.map(t -> "%s(%s)".formatted(t.id(), ID(t.data())))
 					.collect(Collectors.joining(", ", "I[", "]"));
 
 		} finally {
@@ -269,25 +269,7 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	}
 
 	@Override
-	public void linkAllUpstream(T_OUT downstreamData) {
-		try {
-			writeLock.lock();
-
-			this.outputData(downstreamData);
-
-			entryPointMap.values().stream()
-					.sorted()
-					.filter(PipelineNode::isEnabled)
-					.forEach(e -> e.inputData(inputData()));
-
-		} finally {
-			writeLock.unlock();
-		}
-		
-	}
-
-	@Override
-	public void onDataDownstreamChange(T_OUT newData) {
+	public void linkDownstream(T_OUT newData) {
 		try {
 			writeLock.lock();
 

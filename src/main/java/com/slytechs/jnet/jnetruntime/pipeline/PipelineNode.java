@@ -68,9 +68,40 @@ public interface PipelineNode<T_BASE extends PipelineNode<T_BASE>>
 	boolean isBypassed();
 
 	/**
-	 * Sets a new name for the pipeline component.
+	 * Checks if the auto-prune functionality is currently enabled for this node.
+	 * 
+	 * Auto-pruning, when enabled, automatically deactivates this node if it has no
+	 * active downstream nodes to receive its output. This occurs when all
+	 * downstream nodes are either disabled, bypassed, or not expecting input.
+	 * 
+	 * This method allows you to query the current auto-prune status without
+	 * modifying it.
+	 * 
+	 * @return true if auto-pruning is enabled, false otherwise
+	 * @see #autoPrune(boolean) for setting the auto-prune functionality
+	 */
+	boolean isAutoPruned();
+
+	/**
+	 * Sets the auto-prune functionality for this node.
+	 * 
+	 * When auto-prune is enabled, the node will be automatically deactivated if it
+	 * has no active downstream nodes to receive its output. This optimization
+	 * occurs when all downstream nodes are either disabled, bypassed, or not
+	 * expecting input.
+	 * 
+	 * Auto-pruning allows for dynamic optimization of the processing pipeline by
+	 * eliminating unnecessary computations in inactive branches.
 	 *
-	 * @param newName The new name for the component
+	 * @param enableAutoPrune true to enable auto-pruning, false to disable it
+	 * @return the current instance, allowing for method chaining
+	 */
+	T_BASE autoPrune(boolean enableAutoPrune);
+
+	/**
+	 * Sets a new name for the pipeline node.
+	 *
+	 * @param newName The new name for the node
 	 * @return This component instance for method chaining
 	 */
 	T_BASE name(String newName);

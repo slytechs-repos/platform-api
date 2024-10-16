@@ -182,14 +182,14 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			 *
 			 * @return The input data
 			 */
-			T inputData();
+			T data();
 
 			/**
 			 * Gets the input data type for this entry point.
 			 *
 			 * @return The input data type
 			 */
-			DataType inputType();
+			DataType dataType();
 		}
 
 		/**
@@ -288,14 +288,26 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			 *
 			 * @param data The output data
 			 */
-			void endPointData(T data);
+			void data(T data);
+
+			default EndPoint<T> clear() {
+				data(null);
+
+				return this;
+			}
+
+			default EndPoint<T> empty() {
+				data(dataType().empty());
+
+				return this;
+			}
 
 			/**
 			 * Gets the output data type for this end point.
 			 *
 			 * @return The output data type
 			 */
-			DataType endPointType();
+			DataType dataType();
 
 			/**
 			 * Gets the identifier for this end point.

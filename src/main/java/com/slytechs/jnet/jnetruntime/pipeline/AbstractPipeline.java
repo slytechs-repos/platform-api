@@ -1,14 +1,14 @@
 /*
  * Sly Technologies Free License
- * 
+ *
  * Copyright 2024 Sly Technologies Inc.
  *
  * Licensed under the Sly Technologies Free License (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.slytechs.com/free-license-text
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -17,13 +17,13 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
-import static java.util.function.Predicate.not;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
@@ -37,14 +37,14 @@ import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
 
 /**
  * Abstract implementation of a data processing pipeline.
- * 
+ *
  * <p>
  * This class provides a foundation for creating data processing pipelines with
  * customizable inputs, processors, and outputs. It manages the lifecycle of
  * pipeline components, including initialization, activation, and deactivation
  * of processors.
  * </p>
- * 
+ *
  * <p>
  * The pipeline consists of three main parts:
  * <ul>
@@ -61,6 +61,18 @@ import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
 public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		extends AbstractNode<T_PIPE>
 		implements Pipeline<T, T_PIPE> {
+
+	private static final BiFunction<String, String, String> PROC_ACTIVE_ERROR_MSG = (n1, n2) -> ""
+			+ "processor [%s] already active in pipeline [%s]".formatted(n1, n2);
+
+	private static final Function<Object, String> AP_ERROR_MSG = obj -> ""
+			+ "unsupported processor implementation [%s]".formatted(obj.getClass().getSimpleName());
+
+	private static final BiFunction<String, String, String> DUP_PROC_ERROR_MSG = (n1, n2) -> ""
+			+ "processor [%s] already initialized in pipeline [%s]".formatted(n1, n2);
+
+	private static final BiFunction<String, String, String> PROC_INACTIVE_ERROR_MSG = (n1, n2) -> ""
+			+ "processor [%s] already inactive in pipeline [%s]".formatted(n1, n2);
 
 	/** The data type. */
 	private final DataType dataType;
@@ -94,11 +106,16 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		activeProcessors.add(tail);
 	}
 
-	private void activateAllProcessorsStillNotActive() {
-		initializedProcessors.stream()
-				.filter(PipelineNode::isEnabled)
-				.filter(not(activeProcessors::contains))
-				.forEach(this::activateProcessor);
+	void activateBuiltin(BuiltinNode<T, ?> node) {
+		if (node == tail)
+			tail.prevProcessor.linkDownstream(tail.inputData());
+
+		else if (node == head)
+			head.linkDownstream(head.nextProcessor.inputData());
+
+		else
+			throw new IllegalStateException("unknow builtin node type");
+
 	}
 
 	/**
@@ -109,25 +126,26 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	 *                               pipeline
 	 */
 	void activateProcessor(AbstractProcessor<T, ?> processor) {
+		Objects.requireNonNull(processor, "processor");
+
+		assert (processor instanceof BuiltinNode<?, ?>) == false;
+
 		try {
 			writeLock.lock();
 
 			var isAdded = activeProcessors.add(processor);
-			if (!isAdded) {
-				throw new IllegalStateException("processor [%s] already active in pipeline [%s]"
-						.formatted(processor.name(), name()));
-			}
-			
+			if (!isAdded)
+				throw new IllegalStateException(PROC_ACTIVE_ERROR_MSG.apply(processor.name(), name()));
+
 			var next = processor.nextProcessor;
 			var prev = processor.prevProcessor;
 			var curr = processor;
-			
+
 			assert next != null;
 			assert prev != null;
-			
-			curr.onDataDownstreamChange(next.inputData());
-			prev.onDataDownstreamChange(processor.inputData());
 
+			curr.linkDownstream(next.inputData());
+			prev.linkDownstream(curr.inputData());
 
 		} finally {
 			writeLock.unlock();
@@ -161,10 +179,6 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		return input;
 	}
 
-	private void addNewInput0(AbstractInput<?, T, ?> input, Object id) {
-		head.addInput(input, id);
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -194,30 +208,34 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		return input;
 	}
 
+	private void addNewInput0(AbstractInput<?, T, ?> input, Object id) {
+		head.addInput(input, id);
+	}
+
 	/**
 	 * Adds a new processor to the pipeline.
 	 *
-	 * @param newProcessor The processor to add
+	 * @param newAProcessor The processor to add
 	 * @throws IllegalStateException if the processor is already initialized in this
 	 *                               pipeline
 	 */
-	private void addNewProcessor0(AbstractProcessor<T, ?> newProcessor) {
+	private void addNewProcessor0(DataProcessor<T, ?> newProcessor) {
+		if (!(newProcessor instanceof AbstractProcessor<T, ?> processor))
+			throw new IllegalArgumentException(AP_ERROR_MSG.apply(newProcessor));
+
 		try {
 			writeLock.lock();
 
-			if (initializedProcessors.contains(newProcessor)) {
-				throw new IllegalStateException("processor [%s] already initialized in pipeline [%s]"
-						.formatted(newProcessor.name(), name()));
-			}
+			if (initializedProcessors.contains(processor))
+				throw new IllegalStateException(DUP_PROC_ERROR_MSG.apply(processor.name(), name()));
 
-			newProcessor.setRegistration(() -> unregisterProcessor(newProcessor));
+			processor.setRegistration(() -> unregisterProcessor(processor));
 
-			initializedProcessors.add(newProcessor);
+			initializedProcessors.add(processor);
 			Collections.sort(initializedProcessors);
 
-			if (newProcessor.isEnabled()) {
-				activateProcessor(newProcessor);
-			}
+			if (processor.isEnabled())
+				activateProcessor(processor);
 
 		} finally {
 			writeLock.unlock();
@@ -254,14 +272,13 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T_PROC extends DataProcessor<T, T_PROC>> T_PROC addProcessor(int priority,
 			ProcessorFactory<T, T_PROC> processorFactory) {
 
 		T_PROC p = processorFactory.newProcessor(this, priority);
 
-		addNewProcessor0((AbstractProcessor<T, ?>) p);
+		addNewProcessor0(p);
 
 		return p;
 	}
@@ -269,7 +286,6 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	/**
 	 * {@inheritDoc}
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T_PROC extends DataProcessor<T, T_PROC>> T_PROC addProcessor(int priority,
 			String name,
@@ -277,7 +293,7 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 
 		T_PROC p = processorFactory.newProcessor(this, priority, name);
 
-		addNewProcessor0((AbstractProcessor<T, ?>) p);
+		addNewProcessor0(p);
 
 		return p;
 	}
@@ -290,7 +306,21 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		return dataType;
 	}
 
+	void deactivateBuiltin(BuiltinNode<T, ?> node) {
+
+		if (node == tail)
+			tail.prevProcessor.linkDownstream(null);
+
+		else if (node == head)
+			head.linkDownstream(null);
+
+		else
+			throw new IllegalStateException("unknow builtin node type");
+	}
+
 	void deactivateProcessor(AbstractProcessor<T, ?> processor) {
+		assert (processor instanceof BuiltinNode<?, ?>) == false;
+
 		try {
 			writeLock.lock();
 
@@ -299,39 +329,15 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 			var curr = processor;
 
 			var isRemoved = activeProcessors.remove(curr);
-			if (!isRemoved) {
-				throw new IllegalStateException("processor [%s] already inactive in pipeline [%s]"
-						.formatted(curr.name(), name()));
-			}
-			
+			if (!isRemoved)
+				throw new IllegalStateException(PROC_INACTIVE_ERROR_MSG.apply(curr.name(), name()));
+
 			curr.unregister();
-			prev.onDataDownstreamChange(next.inputData());
+			prev.linkDownstream(next.inputData());
 
 		} finally {
 			writeLock.unlock();
 		}
-	}
-
-	void resortProcessor(AbstractProcessor<T, ?> processor) {
-		try {
-			writeLock.lock();
-
-			if (processor.isEnabled()) {
-				deactivateProcessor(processor);
-				activateProcessor(processor);
-			}
-
-		} finally {
-			writeLock.unlock();
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public HeadNode<T> head() {
-		return head;
 	}
 
 	/**
@@ -339,24 +345,22 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	 */
 	@Override
 	protected void onEnable(boolean newValue) {
-		activateAllProcessorsStillNotActive();
+		head.enable(newValue);
 	}
 
-	/**
-	 * Handles changes in the output of a processor.
-	 *
-	 * @param processor The processor whose output has changed
-	 */
-	void onOutputChange(AbstractProcessor<T, ?> processor) {
-		// Implementation not provided in the original code
-	}
+	void reSortProcessor(AbstractProcessor<T, ?> processor) {
+		if (!processor.isEnabled())
+			return;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public TailNode<T> tail() {
-		return tail;
+		try {
+			writeLock.lock();
+
+			deactivateProcessor(processor);
+			activateProcessor(processor);
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	/**
@@ -370,20 +374,24 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 
 		String activeStr = activeProcessors.stream()
 //				.filter(not(AbstractComponent::isBuiltin))
-				.map(p -> (p.isEnabled() ? "%s(%s:%s)" : "!%s(%s:%s)")
-						.formatted(p.name(), ID(p.inputData()), ID(p.outputData())))
+				.map(p -> (p.isEnabled() ? "%s(%s)" : "!%s(%s:%s)")
+						.formatted(p.name(), p.dataToString()))
 				.collect(Collectors.joining(", ", "P[", "]"));
 
 		String inputStr = head.inputsToString();
 		String outStr = tail.outputsToString();
 
-		return ""
+		var str = ""
 				+ getClass().getSimpleName()
 				+ " ["
-				+ inputStr
+				+ "=>" + inputStr
 				+ "=>" + activeStr
 				+ "=>" + outStr
-				+ "]";
+				+ "\n]";
+
+		str = str.replaceAll("=>", "\n  =>");
+
+		return str;
 	}
 
 	/**
@@ -406,7 +414,7 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 			writeLock.unlock();
 		}
 
-		assert initializedProcessors.contains(processor) == false;
-		assert activeProcessors.contains(processor) == false;
+		assert !initializedProcessors.contains(processor);
+		assert !activeProcessors.contains(processor);
 	}
 }

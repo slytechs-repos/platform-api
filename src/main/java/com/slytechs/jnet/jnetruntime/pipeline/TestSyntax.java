@@ -412,7 +412,7 @@ public class TestSyntax {
 
 		pipeline.addOutput(TestPipelineOutput::new)
 				.createEndPoint("end#1")
-				.endPointData((n, i) -> System.out.printf("name=%s, id=%d%n", n, i.get()));
+				.data((n, i) -> System.out.printf("name=%s, id=%d%n", n, i.get()));
 
 		pipeline.addProcessor(2, ToUppercaseProcessor::new)
 				.peek((n, i, c) -> System.out.println(n));
@@ -424,7 +424,7 @@ public class TestSyntax {
 
 		System.out.println(pipeline);
 
-		InputData data = entryPoint.inputData();
+		InputData data = entryPoint.data();
 		data.handleInputData("George".toCharArray(), 10);
 		System.out.println(pipeline);
 

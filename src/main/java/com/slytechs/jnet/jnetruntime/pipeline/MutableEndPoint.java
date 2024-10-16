@@ -44,7 +44,7 @@ public class MutableEndPoint<T>
 		this.output = (AbstractOutput<?, T, ?>) output;
 		this.id = id;
 
-		DataSupport<T> support = endPointType().dataSupport();
+		DataSupport<T> support = dataType().dataSupport();
 		this.dataProxy = new DataProxy<>(support.dataClass(), null);
 
 		this.outputRegistration = this.output
@@ -68,10 +68,10 @@ public class MutableEndPoint<T>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#endPointData(java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#data(java.lang.Object)
 	 */
 	@Override
-	public void endPointData(T data) {
+	public void data(T data) {
 		try {
 			writeLock.lock();
 
@@ -91,10 +91,10 @@ public class MutableEndPoint<T>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#endPointType()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#dataType()
 	 */
 	@Override
-	public DataType endPointType() {
+	public DataType dataType() {
 		return output.outputType();
 	}
 

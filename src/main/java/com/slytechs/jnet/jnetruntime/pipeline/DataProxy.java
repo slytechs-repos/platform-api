@@ -40,7 +40,7 @@ public class DataProxy<T> {
 		this.data = data;
 		this.invokeMethod = getInvokeMethod(functionalInterfaceClass);
 		this.proxy = createProxy();
-		
+
 		this.invokeMethod.setAccessible(true);
 	}
 
@@ -69,10 +69,9 @@ public class DataProxy<T> {
 		return (T) Proxy.newProxyInstance(
 				functionalInterfaceClass.getClassLoader(),
 				new Class<?>[] { functionalInterfaceClass },
-				(proxy, method, args) ->
-				{
-                    method.setAccessible(true);
-					
+				(Object proxy, Method method, Object[] args) -> {
+//					method.setAccessible(true);
+
 					T instance = instanceRef.get();
 					if (instance == null) {
 						throw new IllegalStateException("No instance set for proxy");
