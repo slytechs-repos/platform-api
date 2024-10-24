@@ -19,12 +19,13 @@
  * Net modules runtime utilties and APIs
  */
 module com.slytechs.jnet.jnetruntime {
-	
+
 	/* Public API */
 	exports com.slytechs.jnet.jnetruntime;
 	exports com.slytechs.jnet.jnetruntime.time;
 	exports com.slytechs.jnet.jnetruntime.hash;
 	exports com.slytechs.jnet.jnetruntime.util;
+	exports com.slytechs.jnet.jnetruntime.util.config;
 	exports com.slytechs.jnet.jnetruntime.pipeline;
 
 	/* Private API */

@@ -37,6 +37,53 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		extends HasName, PipelineNode<T_BASE>, HasOutputData<T>, HasInputData<T> {
 
 	/**
+	 * Listener interface for data change events.
+	 *
+	 * @param <T> The type of data being processed
+	 * @see DataChangeEvent
+	 */
+	interface DataChangeListener<T> {
+		/**
+		 * Called when the data changes.
+		 *
+		 * @param newData The new data
+		 */
+		void onDataChange(T newData);
+	}
+
+	/**
+	 * Supports data change notifications for processors.
+	 *
+	 * @param <T> The type of data being processed
+	 * @author Mark Bednarczyk
+	 */
+	public class DataChangeSupport<T> {
+
+		/** The listener list. */
+		private final List<DataChangeListener<T>> listenerList = new ArrayList<>();
+
+		/**
+		 * Adds a data change listener.
+		 *
+		 * @param listener The listener to add
+		 * @return A registration object for the added listener
+		 */
+		public Registration addListener(DataChangeListener<T> listener) {
+			listenerList.add(listener);
+			return () -> listenerList.remove(listener);
+		}
+
+		/**
+		 * Dispatches a data change event to all registered listeners.
+		 *
+		 * @param newData The new data to dispatch
+		 */
+		public void dispatch(T newData) {
+			listenerList.forEach(l -> l.onDataChange(newData));
+		}
+	}
+
+	/**
 	 * Represents a bypassable component in the pipeline.
 	 *
 	 * @param <T>      The type of data processed by this component
@@ -44,15 +91,6 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @author Mark Bednarczyk
 	 */
 	interface IsBypassable<T, T_BASE extends IsBypassable<T, T_BASE>> {
-
-		/**
-		 * Checks if this component is currently bypassed.
-		 *
-		 * @return true if bypassed, false otherwise
-		 */
-		default boolean isBypassed() {
-			return bypassData() != null;
-		}
 
 		/**
 		 * Sets the bypass state of this component.
@@ -71,6 +109,14 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		T_BASE bypass(BooleanSupplier b);
 
 		/**
+		 * Sets the bypass data for this component.
+		 *
+		 * @param bypassData The bypass data to set
+		 * @return This component instance
+		 */
+		T_BASE bypass(T bypassData);
+
+		/**
 		 * Gets the bypass data for this component.
 		 *
 		 * @return The bypass data
@@ -78,12 +124,13 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		T bypassData();
 
 		/**
-		 * Sets the bypass data for this component.
+		 * Checks if this component is currently bypassed.
 		 *
-		 * @param bypassData The bypass data to set
-		 * @return This component instance
+		 * @return true if bypassed, false otherwise
 		 */
-		T_BASE bypass(T bypassData);
+		default boolean isBypassed() {
+			return bypassData() != null;
+		}
 	}
 
 	/**
@@ -121,6 +168,10 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 			T_BASE newProcessor(Pipeline<T, ?> parent, int priority, String name);
 		}
 
+		default DataType dataType() {
+			throw new UnsupportedOperationException("missing builder implementation");
+		}
+		
 		/**
 		 * Creates a new processor instance.
 		 *
@@ -129,64 +180,7 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		 * @return A new processor instance
 		 */
 		T_BASE newProcessor(Pipeline<T, ?> parent, int priority);
-		
-		default DataType dataType() {
-			throw new UnsupportedOperationException("missing builder implementation");
-		}
 	}
-
-	/**
-	 * Supports data change notifications for processors.
-	 *
-	 * @param <T> The type of data being processed
-	 * @author Mark Bednarczyk
-	 */
-	public class DataChangeSupport<T> {
-
-		/** The listener list. */
-		private final List<DataChangeListener<T>> listenerList = new ArrayList<>();
-
-		/**
-		 * Adds a data change listener.
-		 *
-		 * @param listener The listener to add
-		 * @return A registration object for the added listener
-		 */
-		public Registration addListener(DataChangeListener<T> listener) {
-			listenerList.add(listener);
-			return () -> listenerList.remove(listener);
-		}
-
-		/**
-		 * Dispatches a data change event to all registered listeners.
-		 *
-		 * @param newData The new data to dispatch
-		 */
-		public void dispatch(T newData) {
-			listenerList.forEach(l -> l.onDataChange(newData));
-		}
-	}
-
-	/**
-	 * Listener interface for data change events.
-	 *
-	 * @param <T> The type of data being processed
-	 * @see DataChangeEvent
-	 */
-	interface DataChangeListener<T> {
-		/**
-		 * Called when the data changes.
-		 *
-		 * @param newData The new data
-		 */
-		void onDataChange(T newData);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	T inputData();
 
 	/**
 	 * Gets the data type processed by this processor.
@@ -194,6 +188,12 @@ public interface DataProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @return The data type
 	 */
 	DataType dataType();
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	T inputData();
 
 	/**
 	 * Gets the priority of this processor.

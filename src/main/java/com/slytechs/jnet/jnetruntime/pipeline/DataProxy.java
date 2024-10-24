@@ -19,88 +19,19 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class DataProxy<T> {
 
-	private final AtomicReference<T> instanceRef = new AtomicReference<>();
-	private final Class<T> functionalInterfaceClass;
-	private final Object data;
-	private final T proxy;
-	private final Method invokeMethod;
-
 	/**
-	 * Creates a new DataProxyMethodHandle for the specified functional interface.
-	 *
-	 * @param functionalInterfaceClass The Class object representing the functional
-	 *                                 interface.
-	 * @param data                     The data to be forwarded along with method
-	 *                                 invocations.
-	 * @throws IllegalArgumentException If no suitable method is found in the
-	 *                                  functional interface.
+	 * A functional interface for demonstration purposes.
 	 */
-	public DataProxy(Class<T> functionalInterfaceClass, Object data) {
-		this.functionalInterfaceClass = functionalInterfaceClass;
-		this.data = data;
-		this.invokeMethod = getInvokeMethod(functionalInterfaceClass);
-		this.proxy = createProxy();
-
-		this.invokeMethod.setAccessible(true);
+	@FunctionalInterface
+	interface DataOperation {
+		/**
+		 * Performs this operation on the given argument.
+		 *
+		 * @param x The input argument.
+		 * @return The result of the operation.
+		 */
+		int operate(int x);
 	}
-
-	/**
-	 * Sets a new instance for the proxy to delegate to.
-	 *
-	 * @param instance The new instance of the functional interface.
-	 * @throws IllegalArgumentException If the instance is null.
-	 */
-	public void setInstance(T instance) {
-		instanceRef.set(instance);
-	}
-
-	/**
-	 * Gets the proxy instance that wraps the current functional interface instance.
-	 *
-	 * @return The proxy instance.
-	 */
-	public T getProxy() {
-		return proxy;
-	}
-
-	@SuppressWarnings("unchecked")
-	private T createProxy() {
-
-		return (T) Proxy.newProxyInstance(
-				functionalInterfaceClass.getClassLoader(),
-				new Class<?>[] { functionalInterfaceClass },
-				(Object proxy, Method method, Object[] args) -> {
-//					method.setAccessible(true);
-
-					T instance = instanceRef.get();
-					if (instance == null) {
-						throw new IllegalStateException("No instance set for proxy");
-					}
-
-					if (method.equals(invokeMethod)) {
-						MethodHandle handle = MethodHandles.lookup()
-								.unreflect(invokeMethod)
-								.bindTo(instance);
-
-						// Check if the method can accept an additional parameter
-						if (args != null && args.length < method.getParameterCount()) {
-							// If it can, add the data as the last argument
-							Object[] newArgs = new Object[args.length + 1];
-							System.arraycopy(args, 0, newArgs, 0, args.length);
-							newArgs[args.length] = data;
-
-							return handle.invokeWithArguments(newArgs);
-
-						} else {
-							// If it can't, just call the method with the original arguments
-							return handle.invokeWithArguments(args);
-						}
-					}
-
-					return method.invoke(instance, args);
-				});
-	}
-
 	private static Method getInvokeMethod(Class<?> functionalInterfaceClass) {
 		Method[] methods = functionalInterfaceClass.getMethods();
 		Method invokeMethod = null;
@@ -129,7 +60,6 @@ public class DataProxy<T> {
 
 		return invokeMethod;
 	}
-
 	/**
 	 * Main method demonstrating the usage of the DataProxyMethodHandle.
 	 *
@@ -178,18 +108,88 @@ public class DataProxy<T> {
 
 		proxiedRunnable.run();
 	}
+	private final AtomicReference<T> instanceRef = new AtomicReference<>();
+	private final Class<T> functionalInterfaceClass;
+
+	private final Object data;
+
+	private final T proxy;
+
+	private final Method invokeMethod;
 
 	/**
-	 * A functional interface for demonstration purposes.
+	 * Creates a new DataProxyMethodHandle for the specified functional interface.
+	 *
+	 * @param functionalInterfaceClass The Class object representing the functional
+	 *                                 interface.
+	 * @param data                     The data to be forwarded along with method
+	 *                                 invocations.
+	 * @throws IllegalArgumentException If no suitable method is found in the
+	 *                                  functional interface.
 	 */
-	@FunctionalInterface
-	interface DataOperation {
-		/**
-		 * Performs this operation on the given argument.
-		 *
-		 * @param x The input argument.
-		 * @return The result of the operation.
-		 */
-		int operate(int x);
+	public DataProxy(Class<T> functionalInterfaceClass, Object data) {
+		this.functionalInterfaceClass = functionalInterfaceClass;
+		this.data = data;
+		this.invokeMethod = getInvokeMethod(functionalInterfaceClass);
+		this.proxy = createProxy();
+
+		this.invokeMethod.setAccessible(true);
+	}
+
+	@SuppressWarnings("unchecked")
+	private T createProxy() {
+
+		return (T) Proxy.newProxyInstance(
+				functionalInterfaceClass.getClassLoader(),
+				new Class<?>[] { functionalInterfaceClass },
+				(Object proxy, Method method, Object[] args) -> {
+//					method.setAccessible(true);
+
+					T instance = instanceRef.get();
+					if (instance == null) {
+						throw new IllegalStateException("No instance set for proxy");
+					}
+
+					if (method.equals(invokeMethod)) {
+						MethodHandle handle = MethodHandles.lookup()
+								.unreflect(invokeMethod)
+								.bindTo(instance);
+
+						// Check if the method can accept an additional parameter
+						if (args != null && args.length < method.getParameterCount()) {
+							// If it can, add the data as the last argument
+							Object[] newArgs = new Object[args.length + 1];
+							System.arraycopy(args, 0, newArgs, 0, args.length);
+							newArgs[args.length] = data;
+
+							return handle.invokeWithArguments(newArgs);
+
+						} else {
+							// If it can't, just call the method with the original arguments
+							return handle.invokeWithArguments(args);
+						}
+					}
+
+					return method.invoke(instance, args);
+				});
+	}
+
+	/**
+	 * Gets the proxy instance that wraps the current functional interface instance.
+	 *
+	 * @return The proxy instance.
+	 */
+	public T getProxy() {
+		return proxy;
+	}
+
+	/**
+	 * Sets a new instance for the proxy to delegate to.
+	 *
+	 * @param instance The new instance of the functional interface.
+	 * @throws IllegalArgumentException If the instance is null.
+	 */
+	public void setInstance(T instance) {
+		instanceRef.set(instance);
 	}
 }

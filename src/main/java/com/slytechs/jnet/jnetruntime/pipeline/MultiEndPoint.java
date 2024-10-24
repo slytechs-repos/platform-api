@@ -64,15 +64,19 @@ public class MultiEndPoint<T>
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @return
 	 */
 	@Override
-	public void data(T data) {
-		if (this.dataListRegistration != null)
-			throw new IllegalStateException("output's [%s] endpoint [%s] is already set"
-					.formatted(name(), id()));
+	public EndPoint<T> data(T data) {
+//		if (this.dataListRegistration != null)
+//			throw new IllegalStateException("output's [%s] endpoint [%s] is already set"
+//					.formatted(name(), id()));
 
 		output.outputList.add(data);
 		this.dataListRegistration = () -> output.outputList.remove(data);
+
+		return this;
 	}
 
 	/**
@@ -100,5 +104,23 @@ public class MultiEndPoint<T>
 			dataListRegistration.unregister();
 
 		output.endPointMap.remove(id);
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#userOpaque()
+	 */
+	@Override
+	public Object userOpaque() {
+		return this.output.userOpaque();
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#userOpaque(java.lang.Object)
+	 */
+	@Override
+	public EndPoint<T> userOpaque(Object newOpaque) {
+		this.output.userOpaque(newOpaque);
+
+		return this;
 	}
 }

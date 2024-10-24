@@ -124,19 +124,19 @@ public final class PipeMethodHandle<T> implements HasOutputData<T> {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DataType outputType() {
+		return output.outputType();
+	}
+
+	/**
 	 * Sets the output supplier for this method handle.
 	 *
 	 * @param newOutputSupplier The new output supplier
 	 */
 	void setOutputSupplier(HasOutputData<T> newOutputSupplier) {
 		this.output = newOutputSupplier;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DataType outputType() {
-		return output.outputType();
 	}
 }

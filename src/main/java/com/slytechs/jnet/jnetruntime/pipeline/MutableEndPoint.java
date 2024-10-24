@@ -52,6 +52,39 @@ public class MutableEndPoint<T>
 	}
 
 	/**
+	 * @return
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#data(java.lang.Object)
+	 */
+	@Override
+	public EndPoint<T> data(T data) {
+		try {
+			writeLock.lock();
+
+			dataProxy.setInstance(data);
+
+			return this;
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#dataType()
+	 */
+	@Override
+	public DataType dataType() {
+		return output.outputType();
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#id()
+	 */
+	@Override
+	public String id() {
+		return id;
+	}
+
+	/**
 	 * @see com.slytechs.jnet.jnetruntime.util.Registration#unregister()
 	 */
 	@Override
@@ -68,34 +101,21 @@ public class MutableEndPoint<T>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#data(java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#userOpaque()
 	 */
 	@Override
-	public void data(T data) {
-		try {
-			writeLock.lock();
-
-			dataProxy.setInstance(data);
-
-		} finally {
-			writeLock.unlock();
-		}
+	public Object userOpaque() {
+		return this.output.userOpaque();
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#id()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#userOpaque(java.lang.Object)
 	 */
 	@Override
-	public String id() {
-		return id;
-	}
+	public EndPoint<T> userOpaque(Object newOpaque) {
+		this.output.userOpaque(newOpaque);
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer.OutputTransformer.EndPoint#dataType()
-	 */
-	@Override
-	public DataType dataType() {
-		return output.outputType();
+		return this;
 	}
 
 }

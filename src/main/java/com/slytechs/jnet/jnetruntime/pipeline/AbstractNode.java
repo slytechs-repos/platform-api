@@ -120,14 +120,6 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#isAutoPruned()
-	 */
-	@Override
-	public final boolean isAutoPruned() {
-		return this.autoPrune;
-	}
-
-	/**
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#autoPrune(boolean)
 	 */
 	@Override
@@ -139,23 +131,6 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		onAutoPrune(autoPrune);
 
 		return us();
-	}
-
-	/**
-	 * Called when the auto-prune status of this node changes.
-	 * 
-	 * This method is invoked internally whenever the auto-prune setting is
-	 * modified, allowing subclasses to react to changes in the auto-prune status.
-	 * It provides an opportunity to perform any necessary adjustments or
-	 * notifications when the auto-prune functionality is enabled or disabled.
-	 * 
-	 * @param newValue The new auto-prune status: true if auto-pruning has been
-	 *                 enabled, false if it has been disabled
-	 * @see #autoPrune(boolean)
-	 * @see #isAutoPruned()
-	 */
-	protected void onAutoPrune(boolean newValue) {
-
 	}
 
 	/**
@@ -181,30 +156,6 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		onBypass(b);
 
 		return us();
-	}
-
-	/**
-	 * A "pruned" state is when a node is optimized away or not needed or active due
-	 * to null output, thus nowhere for the data to be forwarded to or explicit
-	 * bypass has been invoked. Either way, the node forwards its input directly to
-	 * its output.
-	 *
-	 * @param newPruneState true if node will be pruned
-	 * @return instance to this node
-	 */
-	final T_BASE prune(boolean newPruneState) {
-		if (this.prune == newPruneState)
-			return us();
-
-		this.prune = newPruneState;
-
-		onPrune(prune);
-
-		return us();
-	}
-
-	void onPrune(boolean newValue) {
-
 	}
 
 	/**
@@ -282,6 +233,14 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	}
 
 	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.PipelineNode#isAutoPruned()
+	 */
+	@Override
+	public final boolean isAutoPruned() {
+		return this.autoPrune;
+	}
+
+	/**
 	 * Determines if this component is a built-in component.
 	 *
 	 * @return True if this is a built-in component, false otherwise
@@ -297,9 +256,8 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	 */
 	@Override
 	public final boolean isBypassed() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return bypass || prune;
 
 		} finally {
@@ -314,9 +272,8 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	 */
 	@Override
 	public final boolean isEnabled() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return enabled;
 
 		} finally {
@@ -331,9 +288,8 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	 */
 	@Override
 	public final String name() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return name;
 
 		} finally {
@@ -349,9 +305,8 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	 */
 	@Override
 	public final T_BASE name(String newName) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			this.name = newName;
 
 		} finally {
@@ -359,6 +314,23 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		}
 
 		return us();
+	}
+
+	/**
+	 * Called when the auto-prune status of this node changes.
+	 * 
+	 * This method is invoked internally whenever the auto-prune setting is
+	 * modified, allowing subclasses to react to changes in the auto-prune status.
+	 * It provides an opportunity to perform any necessary adjustments or
+	 * notifications when the auto-prune functionality is enabled or disabled.
+	 * 
+	 * @param newValue The new auto-prune status: true if auto-pruning has been
+	 *                 enabled, false if it has been disabled
+	 * @see #autoPrune(boolean)
+	 * @see #isAutoPruned()
+	 */
+	protected void onAutoPrune(boolean newValue) {
+
 	}
 
 	/**
@@ -389,6 +361,10 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 
 	}
 
+	void onPrune(boolean newValue) {
+
+	}
+
 	/**
 	 * Hook method called when the component is registered. Subclasses can override
 	 * this to implement specific behavior.
@@ -405,9 +381,8 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 
 	@Override
 	public final int priority() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return this.priority;
 
 		} finally {
@@ -416,8 +391,8 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	}
 
 	public final T_BASE priority(int newPriority) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
 			if (this.priority == newPriority) {
 				return us();
 			}
@@ -430,6 +405,26 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		}
 
 		onPriorityChange(newPriority);
+
+		return us();
+	}
+
+	/**
+	 * A "pruned" state is when a node is optimized away or not needed or active due
+	 * to null output, thus nowhere for the data to be forwarded to or explicit
+	 * bypass has been invoked. Either way, the node forwards its input directly to
+	 * its output.
+	 *
+	 * @param newPruneState true if node will be pruned
+	 * @return instance to this node
+	 */
+	final T_BASE prune(boolean newPruneState) {
+		if (this.prune == newPruneState)
+			return us();
+
+		this.prune = newPruneState;
+
+		onPrune(prune);
 
 		return us();
 	}
@@ -456,17 +451,6 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 	}
 
 	/**
-	 * Helper method to return this instance cast to the appropriate type for method
-	 * chaining.
-	 *
-	 * @return This instance cast to T_BASE
-	 */
-	@SuppressWarnings("unchecked")
-	protected final T_BASE us() {
-		return (T_BASE) this;
-	}
-
-	/**
 	 * @see com.slytechs.jnet.jnetruntime.util.Registration#unregister()
 	 */
 	@Override
@@ -476,5 +460,16 @@ class AbstractNode<T_BASE extends PipelineNode<T_BASE>>
 		}
 
 		registration.set(null);
+	}
+
+	/**
+	 * Helper method to return this instance cast to the appropriate type for method
+	 * chaining.
+	 *
+	 * @return This instance cast to T_BASE
+	 */
+	@SuppressWarnings("unchecked")
+	protected final T_BASE us() {
+		return (T_BASE) this;
 	}
 }

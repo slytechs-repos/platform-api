@@ -129,9 +129,8 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @return A Registration object for unregistering the output
 	 */
 	final protected Registration addToOutputList(T newData) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			outputList.addFirst(newData);
 
 			return () -> removeFromOutputList(newData);
@@ -139,6 +138,10 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 		} finally {
 			writeLock.unlock();
 		}
+	}
+
+	public String dataToString() {
+		return "%s:%s".formatted(ID(inputData), ID(outputData));
 	}
 
 	/**
@@ -171,9 +174,8 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	@Override
 	public void linkDownstream(T newData) {
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			updateOutputList(newData);
 
 			if (isBypassed()) {
@@ -312,9 +314,8 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 	 * @param newOutput The new output data
 	 */
 	private void setGuardedOutputField(T newOutput) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			this.outputData = newOutput;
 
 			prevProcessor.linkDownstream(newOutput);
@@ -343,14 +344,9 @@ public class AbstractProcessor<T, T_BASE extends DataProcessor<T, T_BASE>>
 				+ "]";
 	}
 
-	public String dataToString() {
-		return "%s:%s".formatted(ID(inputData), ID(outputData));
-	}
-
 	private boolean updateOutputList(T newOutput) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			// No change
 			if (newOutput == outputNextIn) {
 				return false;

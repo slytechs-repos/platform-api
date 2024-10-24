@@ -41,10 +41,9 @@ public abstract class PassthroughProcessor<T, T_BASE extends PassthroughProcesso
 	 * @param priority
 	 * @param name
 	 * @param type
-	 * @param data
 	 */
-	public PassthroughProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type, T data) {
-		super(pipeline, priority, name, type, data);
+	public PassthroughProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
+		super(pipeline, priority, name, type);
 	}
 
 	/**
@@ -52,9 +51,15 @@ public abstract class PassthroughProcessor<T, T_BASE extends PassthroughProcesso
 	 * @param priority
 	 * @param name
 	 * @param type
+	 * @param data
 	 */
-	public PassthroughProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type) {
-		super(pipeline, priority, name, type);
+	public PassthroughProcessor(Pipeline<T, ?> pipeline, int priority, String name, DataType type, T data) {
+		super(pipeline, priority, name, type, data);
+	}
+
+	@Override
+	public String dataToString() {
+		return "%s".formatted(ID(outputData));
 	}
 
 	/**
@@ -63,11 +68,6 @@ public abstract class PassthroughProcessor<T, T_BASE extends PassthroughProcesso
 	@Override
 	public final T inputData() {
 		return outputData();
-	}
-
-	@Override
-	public String dataToString() {
-		return "%s".formatted(ID(outputData));
 	}
 
 	/**

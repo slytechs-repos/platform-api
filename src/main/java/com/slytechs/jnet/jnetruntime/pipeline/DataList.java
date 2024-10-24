@@ -101,58 +101,6 @@ class DataList<T> {
 	}
 
 	/**
-	 * Adds a change listener to this DataList.
-	 *
-	 * @param listener The DataChangeListener to be added
-	 * @return A Registration object for unregistering the listener
-	 */
-	public Registration addChangeListener(DataChangeListener<T> listener) {
-//		if (list.isEmpty())
-//			listener.onDataChange(support.empty());
-		return changeListeners.addListener(listener);
-	}
-
-	/**
-	 * Update.
-	 *
-	 * @param b the b
-	 * @return true, if successful
-	 */
-	private boolean update(boolean b) {
-		data = wrap();
-		changeListeners.dispatch(data);
-		return b;
-	}
-
-	/**
-	 * Validate type.
-	 *
-	 * @param data the data
-	 * @throws IllegalArgumentException the illegal argument exception
-	 */
-	private void validateType(T data) throws IllegalArgumentException {
-		if (!type.isCompatibleWith(data.getClass()))
-			throw new IllegalArgumentException("data parameter [%s] does not match data type [%s] class [%s]"
-					.formatted(data.getClass(), type, type.dataClass()));
-	}
-
-	/**
-	 * Validate type.
-	 *
-	 * @param collection the collection
-	 * @throws IllegalArgumentException the illegal argument exception
-	 */
-	private void validateType(Collection<T> collection) throws IllegalArgumentException {
-		if (collection instanceof List<T> list && !list.isEmpty()) {
-			validateType(list.get(0));
-			return;
-		}
-		Iterator<T> it = collection.iterator();
-		if (it.hasNext())
-			validateType(it.next());
-	}
-
-	/**
 	 * Adds a new element to the list.
 	 *
 	 * @param data The element to be added
@@ -162,6 +110,31 @@ class DataList<T> {
 	public boolean add(T data) {
 		validateType(data);
 		return update(list.add(data));
+	}
+
+	/**
+	 * Adds all elements from the specified collection to this list.
+	 *
+	 * @param c The collection of elements to be added
+	 * @return true if the list changed as a result of the call
+	 * @throws IllegalArgumentException if any element in the collection has an
+	 *                                  incompatible type
+	 */
+	public boolean addAll(Collection<T> c) {
+		validateType(c);
+		return update(list.addAll(c));
+	}
+
+	/**
+	 * Adds a change listener to this DataList.
+	 *
+	 * @param listener The DataChangeListener to be added
+	 * @return A Registration object for unregistering the listener
+	 */
+	public Registration addChangeListener(DataChangeListener<T> listener) {
+//		if (list.isEmpty())
+//			listener.onDataChange(support.empty());
+		return changeListeners.addListener(listener);
 	}
 
 	/**
@@ -189,33 +162,29 @@ class DataList<T> {
 	}
 
 	/**
+	 * Removes all elements from this list.
+	 */
+	public void clear() {
+		list.clear();
+		update(false);
+	}
+
+	/**
+	 * @param o
+	 * @return
+	 * @see java.util.List#contains(java.lang.Object)
+	 */
+	public boolean contains(T o) {
+		return list.contains(o);
+	}
+
+	/**
 	 * Returns the current wrapped data.
 	 *
 	 * @return The current wrapped data
 	 */
 	public T data() {
 		return this.data;
-	}
-
-	/**
-	 * Adds all elements from the specified collection to this list.
-	 *
-	 * @param c The collection of elements to be added
-	 * @return true if the list changed as a result of the call
-	 * @throws IllegalArgumentException if any element in the collection has an
-	 *                                  incompatible type
-	 */
-	public boolean addAll(Collection<T> c) {
-		validateType(c);
-		return update(list.addAll(c));
-	}
-
-	/**
-	 * Removes all elements from this list.
-	 */
-	public void clear() {
-		list.clear();
-		update(false);
 	}
 
 	/**
@@ -291,6 +260,46 @@ class DataList<T> {
 	}
 
 	/**
+	 * Update.
+	 *
+	 * @param b the b
+	 * @return true, if successful
+	 */
+	private boolean update(boolean b) {
+		data = wrap();
+		changeListeners.dispatch(data);
+		return b;
+	}
+
+	/**
+	 * Validate type.
+	 *
+	 * @param collection the collection
+	 * @throws IllegalArgumentException the illegal argument exception
+	 */
+	private void validateType(Collection<T> collection) throws IllegalArgumentException {
+		if (collection instanceof List<T> list && !list.isEmpty()) {
+			validateType(list.get(0));
+			return;
+		}
+		Iterator<T> it = collection.iterator();
+		if (it.hasNext())
+			validateType(it.next());
+	}
+
+	/**
+	 * Validate type.
+	 *
+	 * @param data the data
+	 * @throws IllegalArgumentException the illegal argument exception
+	 */
+	private void validateType(T data) throws IllegalArgumentException {
+		if (!type.isCompatibleWith(data.getClass()))
+			throw new IllegalArgumentException("data parameter [%s] does not match data type [%s] class [%s]"
+					.formatted(data.getClass(), type, type.dataClass()));
+	}
+
+	/**
 	 * Wraps the current list data based on the associated DataType.
 	 *
 	 * @return The wrapped data
@@ -299,14 +308,5 @@ class DataList<T> {
 		if (list.size() == 1)
 			return list.get(0);
 		return support.wrapArray(toArray());
-	}
-
-	/**
-	 * @param o
-	 * @return
-	 * @see java.util.List#contains(java.lang.Object)
-	 */
-	public boolean contains(T o) {
-		return list.contains(o);
 	}
 }

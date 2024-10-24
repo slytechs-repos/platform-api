@@ -37,24 +37,38 @@ import java.util.stream.IntStream;
 class PipelineUtils {
 
 	/**
-	 * Instantiates a new pipeline utils.
+	 * Returns a string representation of a bypass flag.
+	 *
+	 * @param b The boolean flag
+	 * @return "bypassed" if true, "exec" if false
 	 */
-	private PipelineUtils() {
-		/* Do not instantiate */
+	public static String bypassFlagLabel(boolean b) {
+		return b ? "bypassed" : "exec";
 	}
 
 	/**
-	 * Creates a new array of the specified component type and size.
+	 * Creates a MethodHandle for a given method and container object.
 	 *
-	 * @param <T>           The component type of the array
-	 * @param componentType The class object representing the component type
-	 * @param size          The size of the array
-	 * @return A new array of the specified type and size
+	 * @param method         The method to create a handle for
+	 * @param container      The container object (null for static methods)
+	 * @param containerClass The class of the container
+	 * @return A MethodHandle for the specified method
+	 * @throws IllegalStateException if the method handle cannot be created
 	 */
-	public static <T> T[] newArray(Class<T> componentType, int size) {
-		@SuppressWarnings("unchecked")
-		T[] array = (T[]) Array.newInstance(componentType, size);
-		return array;
+	public static MethodHandle createMethodHandle(Method method, Object container, Class<?> containerClass) {
+		try {
+			boolean isStatic = (container == null);
+			var methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
+			var mh = isStatic
+					? MethodHandles.lookup().findStatic(containerClass, method.getName(), methodType)
+					: MethodHandles.lookup().findVirtual(containerClass, method.getName(), methodType);
+			if (!isStatic)
+				mh = mh.bindTo(container);
+			return mh;
+		} catch (Throwable e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
 	}
 
 	/**
@@ -68,28 +82,43 @@ class PipelineUtils {
 	}
 
 	/**
-	 * Returns a string representation of a bypass flag.
+	 * Extracts the parameter types from a data handling method in a class.
 	 *
-	 * @param b The boolean flag
-	 * @return "bypassed" if true, "exec" if false
+	 * @param templateClass The class to extract parameters from
+	 * @return An array of Class objects representing the parameter types
+	 * @throws IllegalStateException if no suitable method is found or if multiple
+	 *                               methods are found
 	 */
-	public static String bypassFlagLabel(boolean b) {
-		return b ? "bypassed" : "exec";
+	private static Class<?>[] extractDataParameters(Class<?> templateClass) {
+		var methodList = Arrays.stream(templateClass.getDeclaredMethods())
+				.filter(m -> (m.getModifiers() & Modifier.STATIC) == 0)
+				.toList();
+		if (methodList.size() > 1)
+			methodList = methodList.stream()
+					.filter(m -> m.isAnnotationPresent(ADataHandler.class))
+					.toList();
+		if (methodList.isEmpty())
+			throw new IllegalStateException("invalid data handle type, no dynamic data method in type %s"
+					.formatted(templateClass.toString()));
+		if (methodList.size() > 1)
+			throw new IllegalStateException("invalid data handle type, too many data methods in type %s"
+					.formatted(templateClass.toString()));
+		return methodList.get(0).getParameterTypes();
 	}
 
-	/**
-	 * Recursively looks up an annotation on a method or its declaring class.
-	 *
-	 * @param <T>    The type of the annotation
-	 * @param method The method to search for the annotation
-	 * @param atype  The class of the annotation to look for
-	 * @return The annotation if found, null otherwise
-	 */
-	public static <T extends Annotation> T lookupAnnotationRecusively(Method method, Class<T> atype) {
-		T a = method.getAnnotation(atype);
-		if (a == null)
-			return lookupAnnotationRecusively(method.getDeclaringClass(), atype);
-		return a;
+	public static String ID(Object obj) {
+		if (obj == null)
+			return "Nil";
+
+		String str = obj.getClass().getSimpleName();
+		if (str.contains("Lambda")) {
+			String[] c = str.split("\\$\\$Lambda\\/");
+			String[] i = c[0].split("\\$");
+
+			return "%s$$%s".formatted(i[i.length - 1], c[1].substring(c[1].length() - 5));
+		}
+
+		return str;
 	}
 
 	/**
@@ -106,6 +135,21 @@ class PipelineUtils {
 		T a = clazz.getAnnotation(atype);
 		if (a == null)
 			return lookupAnnotationRecusively(clazz.getSuperclass(), atype);
+		return a;
+	}
+
+	/**
+	 * Recursively looks up an annotation on a method or its declaring class.
+	 *
+	 * @param <T>    The type of the annotation
+	 * @param method The method to search for the annotation
+	 * @param atype  The class of the annotation to look for
+	 * @return The annotation if found, null otherwise
+	 */
+	public static <T extends Annotation> T lookupAnnotationRecusively(Method method, Class<T> atype) {
+		T a = method.getAnnotation(atype);
+		if (a == null)
+			return lookupAnnotationRecusively(method.getDeclaringClass(), atype);
 		return a;
 	}
 
@@ -157,67 +201,23 @@ class PipelineUtils {
 	}
 
 	/**
-	 * Extracts the parameter types from a data handling method in a class.
+	 * Creates a new array of the specified component type and size.
 	 *
-	 * @param templateClass The class to extract parameters from
-	 * @return An array of Class objects representing the parameter types
-	 * @throws IllegalStateException if no suitable method is found or if multiple
-	 *                               methods are found
+	 * @param <T>           The component type of the array
+	 * @param componentType The class object representing the component type
+	 * @param size          The size of the array
+	 * @return A new array of the specified type and size
 	 */
-	private static Class<?>[] extractDataParameters(Class<?> templateClass) {
-		var methodList = Arrays.stream(templateClass.getDeclaredMethods())
-				.filter(m -> (m.getModifiers() & Modifier.STATIC) == 0)
-				.toList();
-		if (methodList.size() > 1)
-			methodList = methodList.stream()
-					.filter(m -> m.isAnnotationPresent(ADataHandler.class))
-					.toList();
-		if (methodList.isEmpty())
-			throw new IllegalStateException("invalid data handle type, no dynamic data method in type %s"
-					.formatted(templateClass.toString()));
-		if (methodList.size() > 1)
-			throw new IllegalStateException("invalid data handle type, too many data methods in type %s"
-					.formatted(templateClass.toString()));
-		return methodList.get(0).getParameterTypes();
+	public static <T> T[] newArray(Class<T> componentType, int size) {
+		@SuppressWarnings("unchecked")
+		T[] array = (T[]) Array.newInstance(componentType, size);
+		return array;
 	}
 
 	/**
-	 * Creates a MethodHandle for a given method and container object.
-	 *
-	 * @param method         The method to create a handle for
-	 * @param container      The container object (null for static methods)
-	 * @param containerClass The class of the container
-	 * @return A MethodHandle for the specified method
-	 * @throws IllegalStateException if the method handle cannot be created
+	 * Instantiates a new pipeline utils.
 	 */
-	public static MethodHandle createMethodHandle(Method method, Object container, Class<?> containerClass) {
-		try {
-			boolean isStatic = (container == null);
-			var methodType = MethodType.methodType(method.getReturnType(), method.getParameterTypes());
-			var mh = isStatic
-					? MethodHandles.lookup().findStatic(containerClass, method.getName(), methodType)
-					: MethodHandles.lookup().findVirtual(containerClass, method.getName(), methodType);
-			if (!isStatic)
-				mh = mh.bindTo(container);
-			return mh;
-		} catch (Throwable e) {
-			e.printStackTrace();
-			throw new IllegalStateException(e);
-		}
-	}
-
-	public static String ID(Object obj) {
-		if (obj == null)
-			return "Nil";
-
-		String str = obj.getClass().getSimpleName();
-		if (str.contains("Lambda")) {
-			String[] c = str.split("\\$\\$Lambda\\/");
-			String[] i = c[0].split("\\$");
-
-			return "%s$$%s".formatted(i[i.length - 1], c[1].substring(c[1].length() - 5));
-		}
-
-		return str;
+	private PipelineUtils() {
+		/* Do not instantiate */
 	}
 }

@@ -121,25 +121,6 @@ public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName
 	int TAIL_BUILTIN_PRIORITY = Integer.MAX_VALUE;
 
 	/**
-	 * Adds an output transformer to the pipeline.
-	 *
-	 * @param <T_OUTPUT> The type of the output transformer
-	 * @param factory    The factory to create the output transformer
-	 * @return The created output transformer
-	 */
-	<T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(OutputFactory<T, T_OUTPUT> factory);
-
-	/**
-	 * Adds an output transformer with a specific ID to the pipeline.
-	 *
-	 * @param <T_OUTPUT> The type of the output transformer
-	 * @param id         The identifier for the output
-	 * @param factory    The factory to create the output transformer
-	 * @return The created output transformer
-	 */
-	<T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(String id, OutputFactory<T, T_OUTPUT> factory);
-
-	/**
 	 * Adds an input transformer to the pipeline.
 	 *
 	 * @param <T_INPUT> The type of the input transformer
@@ -187,6 +168,25 @@ public interface Pipeline<T, T_BASE extends Pipeline<T, T_BASE>> extends HasName
 	 */
 	<T_INPUT extends InputTransformer<?>, T1, T2> T_INPUT addInput(String id, T1 arg1, T2 arg2,
 			InputFactory.Arg2<T, T_INPUT, T1, T2> factory);
+
+	/**
+	 * Adds an output transformer to the pipeline.
+	 *
+	 * @param <T_OUTPUT> The type of the output transformer
+	 * @param factory    The factory to create the output transformer
+	 * @return The created output transformer
+	 */
+	<T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(OutputFactory<T, T_OUTPUT> factory);
+
+	/**
+	 * Adds an output transformer with a specific ID to the pipeline.
+	 *
+	 * @param <T_OUTPUT> The type of the output transformer
+	 * @param id         The identifier for the output
+	 * @param factory    The factory to create the output transformer
+	 * @return The created output transformer
+	 */
+	<T_OUTPUT extends OutputTransformer<?>> T_OUTPUT addOutput(String id, OutputFactory<T, T_OUTPUT> factory);
 
 	/**
 	 * Adds a processor to the pipeline with a specified priority.

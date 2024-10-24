@@ -54,9 +54,8 @@ public final class HeadNode<T>
 	 */
 	public void addInput(AbstractInput<?, T, ?> input, Object id) {
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			if (inputMap.containsKey(id)) {
 				throw new IllegalArgumentException("input [%s] with this id [%s] already exists in pipeline [%s]"
 						.formatted(input.name(), id, name()));
@@ -77,18 +76,18 @@ public final class HeadNode<T>
 	 * @return the string
 	 */
 	public String inputsToString() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return inputMap.values().stream()
 					.sorted()
 					.map(in -> (in.isEnabled()
-							? "%s=>IX[%s(%s:%s)]"
-							: "!%s=>IX[%s(%s:%s)]")
+							? "IX[%s(%s:%s)] < %s"
+							: "!IX[%s(%s:%s)] < %s")
 							.formatted(
-									in.toStringEntryPoints(),
-									in.name(), ID(in.inputData()),
-									ID(in.outputData())))
+									in.name(),
+									ID(in.inputData()),
+									ID(in.outputData()),
+									in.toStringEntryPoints()))
 					.collect(Collectors.joining(", ", "", ""));
 		} finally {
 			readLock.unlock();
@@ -97,9 +96,8 @@ public final class HeadNode<T>
 
 	@Override
 	public void linkDownstream(T newData) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			// Do the actual set
 			super.outputData = newData;
 

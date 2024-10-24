@@ -66,37 +66,21 @@ public abstract class AbstractEntryPoint<T>
 	 * {@inheritDoc}
 	 * 
 	 * <p>
-	 * Returns the unique identifier of this entry point.
-	 * </p>
-	 */
-	@Override
-	public String id() {
-		return id;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * <p>
 	 * Retrieves the input data from the associated input transformer.
 	 * </p>
 	 */
 	@Override
 	public T data() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			checkIfIsRegistered();
 			checkIfIsEnabled();
 
 			return inputData;
+
 		} finally {
 			readLock.unlock();
 		}
-	}
-
-	void inputData(T newData) {
-		this.inputData = newData;
 	}
 
 	/**
@@ -112,17 +96,49 @@ public abstract class AbstractEntryPoint<T>
 	}
 
 	/**
+	 * {@inheritDoc}
+	 * 
+	 * <p>
+	 * Returns the unique identifier of this entry point.
+	 * </p>
+	 */
+	@Override
+	public String id() {
+		return id;
+	}
+
+	void inputData(T newData) {
+		this.inputData = newData;
+	}
+
+	/**
 	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onBypass(boolean)
 	 */
 	@Override
 	protected void onBypass(boolean newValue) {
 		checkIfIsRegistered();
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			if (newValue)
 				inputData = inputType.empty();
+			else
+				inputData = input.inputData();
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onEnable(boolean)
+	 */
+	@Override
+	protected void onEnable(boolean newValue) {
+		writeLock.lock();
+		try {
+			if (newValue)
+				inputData = null;
 			else
 				inputData = input.inputData();
 
@@ -141,24 +157,6 @@ public abstract class AbstractEntryPoint<T>
 	@Override
 	public void unregister() {
 		input.unregister(this);
-	}
-
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.AbstractNode#onEnable(boolean)
-	 */
-	@Override
-	protected void onEnable(boolean newValue) {
-		try {
-			writeLock.lock();
-
-			if (newValue)
-				inputData = null;
-			else
-				inputData = input.inputData();
-
-		} finally {
-			writeLock.unlock();
-		}
 	}
 
 }

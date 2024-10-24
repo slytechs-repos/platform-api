@@ -15,10 +15,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.util;
+package com.slytechs.jnet.jnetruntime.util.config;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import com.slytechs.jnet.jnetruntime.util.CountUnit;
+import com.slytechs.jnet.jnetruntime.util.Unit;
 
 /**
  * System properties retrieval utility methods.
@@ -26,6 +29,14 @@ import java.util.function.Function;
  * @author Mark Bednarczyk
  */
 public final class SystemProperties {
+
+	public interface SystemPropertySetter {
+		void setProperty(String property, String value);
+	}
+
+	public interface SystemPropertyGetter<T> {
+		T getProperty(String property, T defaultValue);
+	}
 
 	/**
 	 * Boolean value. Values of 1 and 0 also translate to true and false.
@@ -43,6 +54,21 @@ public final class SystemProperties {
 
 			return Boolean.parseBoolean(value);
 		}, defaultValue);
+	}
+
+	public static boolean boolValue(String property, boolean defaultValue, SystemPropertySetter action) {
+		boolean r = guarded(property, value -> {
+
+			/* Special case to allow boolean '1' and '0' as being true/false */
+			if ((value.equals("0") || value.equals("1")))
+				return value.equals("0") ? false : true;
+
+			return Boolean.parseBoolean(value);
+		}, defaultValue);
+
+		action.setProperty(property, Boolean.toString(r));
+
+		return r;
 	}
 
 	/**
@@ -202,12 +228,12 @@ public final class SystemProperties {
 	 * @param onProperty   the on property
 	 * @return the string
 	 */
-	public static String stringValue(String property, String defaultValue, BiConsumer<String, String> onProperty) {
+	public static String stringValue(String property, String defaultValue, SystemPropertySetter onProperty) {
 		String value = System.getProperty(property);
 		if (value != null)
-			onProperty.accept(property, value);
+			onProperty.setProperty(property, value);
 		else
-			onProperty.accept(property, defaultValue);
+			onProperty.setProperty(property, defaultValue);
 
 		return value;
 	}

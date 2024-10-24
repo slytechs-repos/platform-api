@@ -38,12 +38,20 @@ public interface PipelineNode<T_BASE extends PipelineNode<T_BASE>>
 		extends HasName, Registration {
 
 	/**
-	 * Enables or disables the pipeline component.
+	 * Sets the auto-prune functionality for this node.
+	 * 
+	 * When auto-prune is enabled, the node will be automatically deactivated if it
+	 * has no active downstream nodes to receive its output. This optimization
+	 * occurs when all downstream nodes are either disabled, bypassed, or not
+	 * expecting input.
+	 * 
+	 * Auto-pruning allows for dynamic optimization of the processing pipeline by
+	 * eliminating unnecessary computations in inactive branches.
 	 *
-	 * @param b true to enable the component, false to disable
-	 * @return This component instance for method chaining
+	 * @param enableAutoPrune true to enable auto-pruning, false to disable it
+	 * @return the current instance, allowing for method chaining
 	 */
-	T_BASE enable(boolean b);
+	T_BASE autoPrune(boolean enableAutoPrune);
 
 	/**
 	 * Sets the bypass state of the pipeline component.
@@ -54,18 +62,28 @@ public interface PipelineNode<T_BASE extends PipelineNode<T_BASE>>
 	T_BASE bypass(boolean b);
 
 	/**
-	 * Checks if the pipeline component is currently enabled.
+	 * Sets the bypass state of the pipeline component based on a boolean supplier.
 	 *
-	 * @return true if the component is enabled, false otherwise
+	 * @param b A BooleanSupplier that determines whether to bypass the component
+	 * @return This component instance for method chaining
 	 */
-	boolean isEnabled();
+	T_BASE bypass(BooleanSupplier b);
 
 	/**
-	 * Checks if the pipeline component is currently bypassed.
+	 * Enables or disables the pipeline component.
 	 *
-	 * @return true if the component is bypassed, false otherwise
+	 * @param b true to enable the component, false to disable
+	 * @return This component instance for method chaining
 	 */
-	boolean isBypassed();
+	T_BASE enable(boolean b);
+
+	/**
+	 * Enables or disables the pipeline component based on a boolean supplier.
+	 *
+	 * @param b A BooleanSupplier that determines whether to enable the component
+	 * @return This component instance for method chaining
+	 */
+	T_BASE enable(BooleanSupplier b);
 
 	/**
 	 * Checks if the auto-prune functionality is currently enabled for this node.
@@ -83,20 +101,18 @@ public interface PipelineNode<T_BASE extends PipelineNode<T_BASE>>
 	boolean isAutoPruned();
 
 	/**
-	 * Sets the auto-prune functionality for this node.
-	 * 
-	 * When auto-prune is enabled, the node will be automatically deactivated if it
-	 * has no active downstream nodes to receive its output. This optimization
-	 * occurs when all downstream nodes are either disabled, bypassed, or not
-	 * expecting input.
-	 * 
-	 * Auto-pruning allows for dynamic optimization of the processing pipeline by
-	 * eliminating unnecessary computations in inactive branches.
+	 * Checks if the pipeline component is currently bypassed.
 	 *
-	 * @param enableAutoPrune true to enable auto-pruning, false to disable it
-	 * @return the current instance, allowing for method chaining
+	 * @return true if the component is bypassed, false otherwise
 	 */
-	T_BASE autoPrune(boolean enableAutoPrune);
+	boolean isBypassed();
+
+	/**
+	 * Checks if the pipeline component is currently enabled.
+	 *
+	 * @return true if the component is enabled, false otherwise
+	 */
+	boolean isEnabled();
 
 	/**
 	 * Sets a new name for the pipeline node.
@@ -105,20 +121,4 @@ public interface PipelineNode<T_BASE extends PipelineNode<T_BASE>>
 	 * @return This component instance for method chaining
 	 */
 	T_BASE name(String newName);
-
-	/**
-	 * Enables or disables the pipeline component based on a boolean supplier.
-	 *
-	 * @param b A BooleanSupplier that determines whether to enable the component
-	 * @return This component instance for method chaining
-	 */
-	T_BASE enable(BooleanSupplier b);
-
-	/**
-	 * Sets the bypass state of the pipeline component based on a boolean supplier.
-	 *
-	 * @param b A BooleanSupplier that determines whether to bypass the component
-	 * @return This component instance for method chaining
-	 */
-	T_BASE bypass(BooleanSupplier b);
 }

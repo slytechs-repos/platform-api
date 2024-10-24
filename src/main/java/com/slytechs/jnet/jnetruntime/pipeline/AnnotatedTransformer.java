@@ -38,47 +38,6 @@ class AnnotatedTransformer<T_IN, T_OUT>
 		implements HasOutputData<T_OUT> {
 
 	/**
-	 * Creates a list of AnnotatedTransformer instances from a container object.
-	 *
-	 * @param <T_IN>            The input type for the transformers
-	 * @param <T_OUT>           The output type for the transformers
-	 * @param container         The container object with annotated methods
-	 * @param dataHandleAdaptor The adaptor for creating data handles
-	 * @return A list of AnnotatedTransformer instances
-	 */
-	public static <T_IN, T_OUT> List<AnnotatedTransformer<?, ?>> list(
-			Object container,
-			DataHandleAdaptor<T_IN, T_OUT> dataHandleAdaptor) {
-		if (container instanceof Class<?> containerClass)
-			return list(null, containerClass, dataHandleAdaptor);
-		return list(container, container.getClass(), dataHandleAdaptor);
-	}
-
-	/**
-	 * Creates a list of AnnotatedTransformer instances from a container object and
-	 * its class.
-	 *
-	 * @param container         The container object with annotated methods (can be
-	 *                          null for static methods)
-	 * @param containerClass    The class of the container
-	 * @param dataHandleAdaptor The adaptor for creating data handles
-	 * @return A list of AnnotatedTransformer instances
-	 * @throws NullPointerException if containerClass is null
-	 */
-	private static List<AnnotatedTransformer<?, ?>> list(
-			Object container,
-			Class<?> containerClass, DataHandleAdaptor<?, ?> dataHandleAdaptor) {
-		Objects.requireNonNull(containerClass, "container class");
-		List<AnnotatedTransformer<?, ?>> list = new ArrayList<>();
-		for (var m : containerClass.getDeclaredMethods()) {
-			var at = createTransformer(m, container, containerClass, dataHandleAdaptor);
-			if (at != null)
-				list.add(at);
-		}
-		return list;
-	}
-
-	/**
 	 * Creates an AnnotatedTransformer instance from an annotated method.
 	 *
 	 * @param <T_IN>            The input type for the transformer
@@ -114,6 +73,47 @@ class AnnotatedTransformer<T_IN, T_OUT>
 				outDataType);
 		mh.setOutputSupplier(at);
 		return at;
+	}
+
+	/**
+	 * Creates a list of AnnotatedTransformer instances from a container object and
+	 * its class.
+	 *
+	 * @param container         The container object with annotated methods (can be
+	 *                          null for static methods)
+	 * @param containerClass    The class of the container
+	 * @param dataHandleAdaptor The adaptor for creating data handles
+	 * @return A list of AnnotatedTransformer instances
+	 * @throws NullPointerException if containerClass is null
+	 */
+	private static List<AnnotatedTransformer<?, ?>> list(
+			Object container,
+			Class<?> containerClass, DataHandleAdaptor<?, ?> dataHandleAdaptor) {
+		Objects.requireNonNull(containerClass, "container class");
+		List<AnnotatedTransformer<?, ?>> list = new ArrayList<>();
+		for (var m : containerClass.getDeclaredMethods()) {
+			var at = createTransformer(m, container, containerClass, dataHandleAdaptor);
+			if (at != null)
+				list.add(at);
+		}
+		return list;
+	}
+
+	/**
+	 * Creates a list of AnnotatedTransformer instances from a container object.
+	 *
+	 * @param <T_IN>            The input type for the transformers
+	 * @param <T_OUT>           The output type for the transformers
+	 * @param container         The container object with annotated methods
+	 * @param dataHandleAdaptor The adaptor for creating data handles
+	 * @return A list of AnnotatedTransformer instances
+	 */
+	public static <T_IN, T_OUT> List<AnnotatedTransformer<?, ?>> list(
+			Object container,
+			DataHandleAdaptor<T_IN, T_OUT> dataHandleAdaptor) {
+		if (container instanceof Class<?> containerClass)
+			return list(null, containerClass, dataHandleAdaptor);
+		return list(container, container.getClass(), dataHandleAdaptor);
 	}
 
 	/**

@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
 
 import com.slytechs.jnet.jnetruntime.util.HasPriority;
 
@@ -35,7 +35,7 @@ import com.slytechs.jnet.jnetruntime.util.HasPriority;
  * @param <T_BASE> The specific type of the transformer implementation
  * @author Mark Bednarczyk
  */
-public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipelineNode<T_BASE>>
+public abstract class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE> & PipelineNode<T_BASE>>
 		extends AbstractNode<T_BASE>
 		implements DataTransformer<T_IN, T_OUT, T_BASE> {
 
@@ -52,25 +52,6 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 
 	/** The output type. */
 	private final DataType outputType;
-
-	/**
-	 * Constructs a new AbstractTransformer with specified name, input data, input
-	 * type, and output type.
-	 *
-	 * @param name       The name of the transformer
-	 * @param input      The initial input data
-	 * @param inputType  The type of the input data
-	 * @param outputType The type of the output data
-	 */
-	public AbstractTransformer(PipelineNode<?> component, String name, T_IN input, DataType inputType,
-			DataType outputType) {
-		super(component, name, HasPriority.DEFAULT_PRIORITY_VALUE);
-		assert inputType.isCompatibleWith(input.getClass());
-		this.inputData = input;
-		this.inputDataSave = input;
-		this.inputType = inputType;
-		this.outputType = outputType;
-	}
 
 	/**
 	 * Constructs a new AbstractTransformer with specified name, input type, and
@@ -93,12 +74,75 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	}
 
 	/**
+	 * Constructs a new AbstractTransformer with specified name, input data, input
+	 * type, and output type.
+	 *
+	 * @param name       The name of the transformer
+	 * @param input      The initial input data
+	 * @param inputType  The type of the input data
+	 * @param outputType The type of the output data
+	 */
+	public AbstractTransformer(PipelineNode<?> component, String name, T_IN input, DataType inputType,
+			DataType outputType) {
+		super(component, name, HasPriority.DEFAULT_PRIORITY_VALUE);
+		assert inputType.isCompatibleWith(input.getClass());
+		this.inputData = input;
+		this.inputDataSave = input;
+		this.inputType = inputType;
+		this.outputType = outputType;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public T_IN inputData() {
+		readLock.lock();
+		try {
+			return this.inputData;
+
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	/**
+	 * Sets the input data for this transformer.
+	 *
+	 * @param input The new input data
+	 * @return The set input data
+	 */
+	T_IN inputData(T_IN input) {
+		writeLock.lock();
+		try {
+			this.inputData = input;
+
+			return input;
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public DataType inputType() {
+		return this.inputType;
+	}
+
+	protected boolean isEmpty() {
+		var out = outputData();
+
+		return out == null || out == outputType().empty();
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	public T_OUT outputData() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return this.outputData;
 
 		} finally {
@@ -113,8 +157,8 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @return The set output data
 	 */
 	T_OUT outputData(T_OUT output) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
 			this.outputData = output;
 
 			return output;
@@ -125,27 +169,16 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	}
 
 	/**
-	 * Sets the input data for this transformer.
-	 *
-	 * @param input The new input data
-	 * @return The set input data
+	 * {@inheritDoc}
 	 */
-	T_IN inputData(T_IN input) {
-		try {
-			writeLock.lock();
-			this.inputData = input;
-
-			return input;
-
-		} finally {
-			writeLock.unlock();
-		}
+	@Override
+	public DataType outputType() {
+		return this.outputType;
 	}
 
 	protected final void restoreInputData() {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			this.inputData = this.inputDataSave;
 
 		} finally {
@@ -156,41 +189,10 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	/**
 	 * {@inheritDoc}
 	 */
-	public T_IN inputData() {
-		try {
-			readLock.lock();
-
-			return this.inputData;
-
-		} finally {
-			readLock.unlock();
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DataType inputType() {
-		return this.inputType;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public DataType outputType() {
-		return this.outputType;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String toString() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return ""
 					+ getClass().getSimpleName()
 					+ " [name=" + name()
@@ -204,5 +206,4 @@ public class AbstractTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			readLock.unlock();
 		}
 	}
-
 }

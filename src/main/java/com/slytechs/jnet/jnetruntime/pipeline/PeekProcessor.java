@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.util.SystemProperties.*;
+import static com.slytechs.jnet.jnetruntime.util.config.SystemProperties.*;
 
 import com.slytechs.jnet.jnetruntime.NotFound;
 import com.slytechs.jnet.jnetruntime.pipeline.DataProcessor.ProcessorFactory;
@@ -47,6 +47,14 @@ public class PeekProcessor<T>
 	private final boolean envEnable = boolValue(PROPERTY_PEEK_PROCESSOR_ENABLE, true);
 	private final boolean envBypass = boolValue(PROPERTY_PEEK_PROCESSOR_BYPASS, false);
 
+	public PeekProcessor(Class<T> dataClass) throws NotFound {
+		super(0, NAME, DataSupport.lookupClass(dataClass));
+	}
+
+	public PeekProcessor(DataType dataType) throws NotFound {
+		super(0, NAME, dataType);
+	}
+
 	/**
 	 * @param pipeline
 	 * @param priority
@@ -60,23 +68,15 @@ public class PeekProcessor<T>
 		bypass(envBypass);
 	}
 
-	public PeekProcessor(Class<T> dataClass) throws NotFound {
-		super(0, NAME, DataSupport.lookupClass(dataClass));
-	}
-
-	public PeekProcessor(DataType dataType) throws NotFound {
-		super(0, NAME, dataType);
+	@Override
+	public PeekProcessor<T> newProcessor(Pipeline<T, ?> parent, int priority) {
+		return new PeekProcessor<>(parent, priority);
 	}
 
 	public PeekProcessor<T> peek(T peekAction) {
 		addToOutputList(peekAction);
 
 		return this;
-	}
-
-	@Override
-	public PeekProcessor<T> newProcessor(Pipeline<T, ?> parent, int priority) {
-		return new PeekProcessor<>(parent, priority);
 	}
 
 }

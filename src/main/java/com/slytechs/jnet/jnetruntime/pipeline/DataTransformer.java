@@ -171,13 +171,6 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			}
 
 			/**
-			 * Gets the identifier for this entry point.
-			 *
-			 * @return The identifier
-			 */
-			String id();
-
-			/**
 			 * Gets the input data for this entry point.
 			 *
 			 * @return The input data
@@ -190,6 +183,13 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			 * @return The input data type
 			 */
 			DataType dataType();
+
+			/**
+			 * Gets the identifier for this entry point.
+			 *
+			 * @return The identifier
+			 */
+			String id();
 		}
 
 		/**
@@ -283,24 +283,19 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 				EndPoint<T> newEndPointInstance(OutputTransformer<T> output, String id);
 			}
 
+			default EndPoint<T> clear() {
+				data(null);
+				userOpaque(null);
+
+				return this;
+			}
+
 			/**
 			 * Sets the output data for this end point.
 			 *
 			 * @param data The output data
 			 */
-			void data(T data);
-
-			default EndPoint<T> clear() {
-				data(null);
-
-				return this;
-			}
-
-			default EndPoint<T> empty() {
-				data(dataType().empty());
-
-				return this;
-			}
+			EndPoint<T> data(T data);
 
 			/**
 			 * Gets the output data type for this end point.
@@ -323,6 +318,17 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 			 * @return This end point instance
 			 */
 			EndPoint<T> priority(int newPriority);
+
+			default EndPoint<T> resetAsEmpty() {
+				data(dataType().empty());
+				userOpaque(null);
+
+				return this;
+			}
+
+			Object userOpaque();
+
+			EndPoint<T> userOpaque(Object newOpaque);
 		}
 
 		/**
@@ -338,6 +344,10 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 		default EndPoint<T> createMutableEndPoint(String id) {
 			return createEndPoint(id, MutableEndPoint::new);
 		}
+
+		Object userOpaque();
+
+		void userOpaque(Object newOpaque);
 	}
 
 	/**
@@ -377,4 +387,5 @@ public interface DataTransformer<T_IN, T_OUT, T_BASE extends DataTransformer<T_I
 	 * @return The output data type
 	 */
 	DataType outputType();
+
 }

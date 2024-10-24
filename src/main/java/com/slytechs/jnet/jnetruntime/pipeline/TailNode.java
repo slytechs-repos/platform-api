@@ -57,9 +57,8 @@ public final class TailNode<T>
 		Objects.requireNonNull(outNode, "outNode");
 		Objects.requireNonNull(id, "id");
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			// Check for valid ID types
 			assert false ||
 					id instanceof String ||
@@ -89,24 +88,17 @@ public final class TailNode<T>
 		}
 	}
 
-	/**
-	 * Outputs to string.
-	 *
-	 * @return the string
-	 */
-	public String outputsToString() {
-		try {
-			readLock.lock();
-
-			return outputMap.values().stream()
-					.sorted()
-					.map(out -> (out.isEnabled() ? "%s=>%s" : "!%s=>%s")
-							.formatted(out.name(), out.outputsToString()))
-					.collect(Collectors.joining(", ", "OX[", "]"));
-
-		} finally {
-			readLock.unlock();
+	@Override
+	public final T inputData() {
+		if (isBypassed()) {
+			return null;
 		}
+
+		return outputData();
+	}
+
+	void linkAllUpstream() {
+
 	}
 
 	/**
@@ -123,17 +115,23 @@ public final class TailNode<T>
 						.formatted(e.name()));
 	}
 
-	void linkAllUpstream() {
+	/**
+	 * Outputs to string.
+	 *
+	 * @return the string
+	 */
+	public String outputsToString() {
+		readLock.lock();
+		try {
+			return outputMap.values().stream()
+					.sorted()
+					.map(out -> (out.isEnabled() ? "OX[\"%s\"] > %s" : "!OX[\\\"%s\\\"] > %s")
+							.formatted(out.name(), out.outputsToString()))
+					.collect(Collectors.joining("=>", "", ""));
 
-	}
-
-	@Override
-	public final T inputData() {
-		if (isBypassed()) {
-			return null;
+		} finally {
+			readLock.unlock();
 		}
-
-		return outputData();
 	}
 
 }

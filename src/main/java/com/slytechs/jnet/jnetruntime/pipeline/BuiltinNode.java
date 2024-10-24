@@ -65,6 +65,16 @@ abstract class BuiltinNode<T, T_BASE extends DataProcessor<T, T_BASE>>
 
 	/**
 	 * {@inheritDoc}
+	 * 
+	 * @return true, as this is a built-in node
+	 */
+	@Override
+	public boolean isBuiltin() {
+		return true;
+	}
+
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	protected final void onEnable(boolean newValue) {
@@ -75,16 +85,6 @@ abstract class BuiltinNode<T, T_BASE extends DataProcessor<T, T_BASE>>
 		} else {
 			pipeline.deactivateBuiltin(this);
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @return true, as this is a built-in node
-	 */
-	@Override
-	public boolean isBuiltin() {
-		return true;
 	}
 
 	/**

@@ -46,12 +46,11 @@ import java.lang.annotation.Target;
 public @interface ATransformer {
 
     /**
-     * Specifies the priority of the transformer in the pipeline.
-     * Lower values indicate higher priority.
+     * Specifies whether the transformer should be enabled by default.
      *
-     * @return the priority of the transformer
+     * @return true if the transformer should be enabled, false otherwise
      */
-    int priority() default 0;
+    boolean enable() default true;
 
     /**
      * Specifies the input type of the transformer.
@@ -61,6 +60,14 @@ public @interface ATransformer {
     Class<?> in();
 
     /**
+     * Specifies a custom name for the transformer.
+     * If not provided, the method name will typically be used.
+     *
+     * @return the custom name of the transformer
+     */
+    String name() default "";
+
+    /**
      * Specifies the output type of the transformer.
      *
      * @return the Class object representing the output type
@@ -68,17 +75,10 @@ public @interface ATransformer {
     Class<?> out();
 
     /**
-     * Specifies whether the transformer should be enabled by default.
+     * Specifies the priority of the transformer in the pipeline.
+     * Lower values indicate higher priority.
      *
-     * @return true if the transformer should be enabled, false otherwise
+     * @return the priority of the transformer
      */
-    boolean enable() default true;
-
-    /**
-     * Specifies a custom name for the transformer.
-     * If not provided, the method name will typically be used.
-     *
-     * @return the custom name of the transformer
-     */
-    String name() default "";
+    int priority() default 0;
 }

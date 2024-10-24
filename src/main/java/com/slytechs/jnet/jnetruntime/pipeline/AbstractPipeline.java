@@ -130,9 +130,8 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 
 		assert (processor instanceof BuiltinNode<?, ?>) == false;
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			var isAdded = activeProcessors.add(processor);
 			if (!isAdded)
 				throw new IllegalStateException(PROC_ACTIVE_ERROR_MSG.apply(processor.name(), name()));
@@ -223,9 +222,8 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		if (!(newProcessor instanceof AbstractProcessor<T, ?> processor))
 			throw new IllegalArgumentException(AP_ERROR_MSG.apply(newProcessor));
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			if (initializedProcessors.contains(processor))
 				throw new IllegalStateException(DUP_PROC_ERROR_MSG.apply(processor.name(), name()));
 
@@ -321,9 +319,8 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	void deactivateProcessor(AbstractProcessor<T, ?> processor) {
 		assert (processor instanceof BuiltinNode<?, ?>) == false;
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			var prev = processor.prevProcessor;
 			var next = processor.nextProcessor;
 			var curr = processor;
@@ -352,9 +349,8 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 		if (!processor.isEnabled())
 			return;
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			deactivateProcessor(processor);
 			activateProcessor(processor);
 
@@ -401,9 +397,8 @@ public class AbstractPipeline<T, T_PIPE extends Pipeline<T, T_PIPE>>
 	 */
 	private void unregisterProcessor(AbstractProcessor<T, ?> processor) {
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			deactivateProcessor(processor);
 			initializedProcessors.remove(processor);
 

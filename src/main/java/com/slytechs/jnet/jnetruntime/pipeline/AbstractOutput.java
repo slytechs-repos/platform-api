@@ -41,7 +41,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @param <T_BASE> The specific type of the transformer implementation
  * @author Mark Bednarczyk
  */
-public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
+public abstract class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_OUT, T_BASE>>
 		extends AbstractTransformer<T_IN, T_OUT, T_BASE>
 		implements OutputTransformer<T_OUT> {
 
@@ -54,6 +54,8 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 
 	/** The end point map. */
 	final Map<String, EndPoint<T_OUT>> endPointMap = new HashMap<>();
+
+	private Object userOpaque;
 
 	/**
 	 * Constructs a new AbstractOutput with the specified parameters.
@@ -87,15 +89,27 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		enable(true);
 	}
 
+	Registration addToOutputList(T_OUT data) {
+		writeLock.lock();
+		try {
+			outputList.add(data);
+
+			return () -> removeFromOutputList(data);
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public EndPoint<T_OUT> createEndPoint(String id) {
 		EndPoint<T_OUT> endpoint = new MultiEndPoint<T_OUT>(this, id);
-		try {
-			writeLock.lock();
 
+		writeLock.lock();
+		try {
 			endPointMap.put(id, endpoint);
 
 			return endpoint;
@@ -113,9 +127,8 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	public EndPoint<T_OUT> createEndPoint(String id, EndPointFactory<T_OUT> factory) {
 		EndPoint<T_OUT> endpoint = factory.newEndPointInstance(this, id);
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			endPointMap.put(id, endpoint);
 
 			return endpoint;
@@ -131,12 +144,12 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 	 * @return A string representation of the outputs
 	 */
 	public String outputsToString() {
+		readLock.lock();
 		try {
-			readLock.lock();
-
 			return endPointMap.values().stream()
 					.sorted()
 					.map(HasName::name)
+					.map("\"%s\""::formatted)
 					.collect(Collectors.joining(",", "O[", "]"));
 
 		} finally {
@@ -144,9 +157,19 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		}
 	}
 
-	private void removeFromOutputList(T_OUT data) {
+	void removeEndPoint(EndPoint<?> endPoint) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
+			endPointMap.remove(endPoint.id());
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	private void removeFromOutputList(T_OUT data) {
+		writeLock.lock();
+		try {
 			outputList.remove(data);
 
 		} finally {
@@ -154,27 +177,20 @@ public class AbstractOutput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_
 		}
 	}
 
-	Registration addToOutputList(T_OUT data) {
-		try {
-			writeLock.lock();
-			outputList.add(data);
-
-			return () -> removeFromOutputList(data);
-
-		} finally {
-			writeLock.unlock();
-		}
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer#userOpaque()
+	 */
+	@Override
+	public Object userOpaque() {
+		return this.userOpaque;
 	}
 
-	void removeEndPoint(EndPoint<?> endPoint) {
-		try {
-			writeLock.lock();
-
-			endPointMap.remove(endPoint.id());
-
-		} finally {
-			writeLock.unlock();
-		}
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.DataTransformer#userOpaque(java.lang.Object)
+	 */
+	@Override
+	public void userOpaque(Object newOpaque) {
+		this.userOpaque = newOpaque;
 	}
 
 }

@@ -67,21 +67,6 @@ import java.lang.annotation.Target;
 public @interface AProcessor {
 
 	/**
-	 * Specifies the priority of the processor in the pipeline. Lower values
-	 * indicate higher priority.
-	 *
-	 * @return the priority of the processor
-	 */
-	int priority() default 0;
-
-	/**
-	 * Specifies the data type that this processor handles.
-	 *
-	 * @return the Class object representing the data type
-	 */
-	Class<?> value();
-
-	/**
 	 * Specifies whether the processor should be enabled by default.
 	 *
 	 * @return true if the processor should be enabled, false otherwise
@@ -95,4 +80,19 @@ public @interface AProcessor {
 	 * @return the custom name of the processor
 	 */
 	String name() default "";
+
+	/**
+	 * Specifies the priority of the processor in the pipeline. Lower values
+	 * indicate higher priority.
+	 *
+	 * @return the priority of the processor
+	 */
+	int priority() default 0;
+
+	/**
+	 * Specifies the data type that this processor handles.
+	 *
+	 * @return the Class object representing the data type
+	 */
+	Class<?> value();
 }

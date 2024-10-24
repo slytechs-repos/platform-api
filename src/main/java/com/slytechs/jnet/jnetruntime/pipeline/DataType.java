@@ -51,22 +51,6 @@ public interface DataType extends HasId, HasName {
 	public class DataSupport<T> {
 
 		/**
-		 * Looks up a data class in currently registered data type registry and return a
-		 * data type.
-		 *
-		 * @param dataClass java class for that the data type describves
-		 * @return data type
-		 * @throws NotFound thrown if the data type for the specified class is not
-		 *                  registered
-		 */
-		static DataType lookupClass(Class<?> dataClass) throws NotFound {
-			return DataTypeRegistry.global()
-					.findType(dataClass)
-					.orElseThrow(() -> new NotFound("data class [%s] not found in global data type registry"
-							.formatted(dataClass.getSimpleName())));
-		}
-
-		/**
 		 * Creates the array wrapper.
 		 *
 		 * @param <T>       the generic type
@@ -87,6 +71,22 @@ public interface DataType extends HasId, HasName {
 					}
 				}
 			};
+		}
+
+		/**
+		 * Looks up a data class in currently registered data type registry and return a
+		 * data type.
+		 *
+		 * @param dataClass java class for that the data type describves
+		 * @return data type
+		 * @throws NotFound thrown if the data type for the specified class is not
+		 *                  registered
+		 */
+		static DataType lookupClass(Class<?> dataClass) throws NotFound {
+			return DataTypeRegistry.global()
+					.findType(dataClass)
+					.orElseThrow(() -> new NotFound("data class [%s] not found in global data type registry"
+							.formatted(dataClass.getSimpleName())));
 		}
 
 		/** The data type. */
@@ -164,6 +164,16 @@ public interface DataType extends HasId, HasName {
 			return empty;
 		}
 
+		/**
+		 * Creates a new array of the data type.
+		 *
+		 * @param size The size of the array
+		 * @return A new array of the data type
+		 */
+		public T[] newArray(int size) {
+			return PipelineUtils.newArray(dataClass, size);
+		}
+
 		public Registration registration() {
 			return registration;
 		}
@@ -192,16 +202,6 @@ public interface DataType extends HasId, HasName {
 			T[] array = list.toArray(size -> PipelineUtils.newArray(dataClass, size));
 			return wrapArray(array);
 		}
-
-		/**
-		 * Creates a new array of the data type.
-		 *
-		 * @param size The size of the array
-		 * @return A new array of the data type
-		 */
-		public T[] newArray(int size) {
-			return PipelineUtils.newArray(dataClass, size);
-		}
 	}
 
 	class DataTypeRegistry {
@@ -212,18 +212,6 @@ public interface DataType extends HasId, HasName {
 		}
 
 		private final Map<Class<?>, List<DataType>> registry = new HashMap<>();
-
-		public synchronized Registration register(DataType dataType, Class<?> dataClass) {
-			var list = registry.computeIfAbsent(dataClass, (key) -> new ArrayList<DataType>());
-			list.add(dataType);
-
-			return () -> {
-				var listValue = registry.get(dataClass);
-				if (listValue != null) {
-					listValue.remove(dataType);
-				}
-			};
-		}
 
 		public synchronized Optional<DataType> findType(Class<?> dataClass) throws IllegalStateException {
 			var list = registry.get(dataClass);
@@ -248,15 +236,27 @@ public interface DataType extends HasId, HasName {
 			return Collections.unmodifiableList(registry.get(dataClass));
 		}
 
-		public synchronized void unregister(DataType dataType) {
-			dataType.dataSupport()
-					.registration()
-					.unregister();
+		public synchronized Registration register(DataType dataType, Class<?> dataClass) {
+			var list = registry.computeIfAbsent(dataClass, (key) -> new ArrayList<DataType>());
+			list.add(dataType);
+
+			return () -> {
+				var listValue = registry.get(dataClass);
+				if (listValue != null) {
+					listValue.remove(dataType);
+				}
+			};
 		}
 
 		@Override
 		public synchronized String toString() {
 			return "DataTypeRegistry [registry=" + registry + "]";
+		}
+
+		public synchronized void unregister(DataType dataType) {
+			dataType.dataSupport()
+					.registration()
+					.unregister();
 		}
 	}
 
@@ -442,24 +442,6 @@ public interface DataType extends HasId, HasName {
 	}
 
 	/**
-	 * Checks if this DataType is compatible with the given class.
-	 *
-	 * @param dataClass The class to check compatibility with
-	 * @return true if compatible, false otherwise
-	 */
-	default boolean isCompatibleWith(Class<?> dataClass) {
-		return dataSupport().dataClass().isAssignableFrom(dataClass);
-	}
-
-	/**
-	 * Data support.
-	 *
-	 * @param <T> The type of data
-	 * @return The DataSupport for this DataType
-	 */
-	<T> DataSupport<T> dataSupport();
-
-	/**
 	 * Data class.
 	 *
 	 * @param <T> The type of data
@@ -471,10 +453,12 @@ public interface DataType extends HasId, HasName {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Data support.
+	 *
+	 * @param <T> The type of data
+	 * @return The DataSupport for this DataType
 	 */
-	@Override
-	String name();
+	<T> DataSupport<T> dataSupport();
 
 	/**
 	 * Empty.
@@ -486,4 +470,20 @@ public interface DataType extends HasId, HasName {
 	default <T> T empty() {
 		return (T) dataSupport().empty();
 	}
+
+	/**
+	 * Checks if this DataType is compatible with the given class.
+	 *
+	 * @param dataClass The class to check compatibility with
+	 * @return true if compatible, false otherwise
+	 */
+	default boolean isCompatibleWith(Class<?> dataClass) {
+		return dataSupport().dataClass().isAssignableFrom(dataClass);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	String name();
 }

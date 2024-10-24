@@ -121,22 +121,6 @@ final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcesso
 	}
 
 	/**
-	 * Creates a list of AnnotatedProcessor instances from a container object.
-	 *
-	 * @param <T>       The type of data processed by the processors
-	 * @param channel   The pipeline channel
-	 * @param container The container object with annotated methods
-	 * @param invoker   The method handle adaptor
-	 * @return A list of AnnotatedProcessor instances
-	 */
-	public static <T> List<AnnotatedProcessor<T>> list(
-			Pipeline<T, ?> channel,
-			Object container,
-			MethodHandleAdaptor<T> invoker) {
-		return list(channel, container, null, invoker);
-	}
-
-	/**
 	 * Creates a list of AnnotatedProcessor instances from a container object with a
 	 * specified data type.
 	 *
@@ -169,6 +153,22 @@ final class AnnotatedProcessor<T> extends AbstractProcessor<T, AnnotatedProcesso
 		Collections.sort(list, (p1, p2) -> p1.priority() - p2.priority());
 
 		return list;
+	}
+
+	/**
+	 * Creates a list of AnnotatedProcessor instances from a container object.
+	 *
+	 * @param <T>       The type of data processed by the processors
+	 * @param channel   The pipeline channel
+	 * @param container The container object with annotated methods
+	 * @param invoker   The method handle adaptor
+	 * @return A list of AnnotatedProcessor instances
+	 */
+	public static <T> List<AnnotatedProcessor<T>> list(
+			Pipeline<T, ?> channel,
+			Object container,
+			MethodHandleAdaptor<T> invoker) {
+		return list(channel, container, null, invoker);
 	}
 
 	/**

@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.ID;
+import static com.slytechs.jnet.jnetruntime.pipeline.PipelineUtils.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -129,9 +129,8 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 			EntryPointFactory<T_IN, T_ENTRY> factory) {
 		var sink = factory.newEntryPointInstance(this, id);
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			entryPointMap.put(id, (AbstractEntryPoint<T_IN>) sink);
 
 			return sink;
@@ -149,9 +148,8 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 			T_ARG1 arg1, Arg1<T_IN, T_ENTRY, T_ARG1> factory) {
 		var sink = factory.newEntryPointInstance1Arg(this, id, arg1);
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			entryPointMap.put(id, (AbstractEntryPoint<T_IN>) sink);
 			return sink;
 
@@ -173,9 +171,8 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 
 		var sink = factory.newEntryPointInstance2Args(this, id, arg1, arg2);
 
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			entryPointMap.put(id, (AbstractEntryPoint<T_IN>) sink);
 
 			return sink;
@@ -185,39 +182,16 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 		}
 	}
 
-	/**
-	 * Returns a string representation of the input entry points.
-	 *
-	 * @return A string representation of the input entry points
-	 */
-	public String toStringEntryPoints() {
+	@Override
+	public void linkDownstream(T_OUT newData) {
+		writeLock.lock();
 		try {
-			readLock.lock();
-
-			return entryPointMap.values().stream()
-					.sorted()
-					.map(t -> "%s(%s)".formatted(t.id(), ID(t.data())))
-					.collect(Collectors.joining(", ", "I[", "]"));
-
-		} finally {
-			readLock.unlock();
-		}
-	}
-
-	/**
-	 * Unregisters an entry point from this input transformer.
-	 *
-	 * @param entryPoint The entry point to unregister
-	 */
-	void unregister(EntryPoint<T_IN> entryPoint) {
-		try {
-			writeLock.lock();
-
-			this.entryPointMap.remove(entryPoint.id());
+			this.outputData(newData);
 
 		} finally {
 			writeLock.unlock();
 		}
+
 	}
 
 	/**
@@ -225,9 +199,8 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	 */
 	@Override
 	protected void onBypass(boolean newValue) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			if (newValue) {
 				inputData(inputType().empty());
 			} else {
@@ -249,9 +222,8 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 	 */
 	@Override
 	protected void onEnable(boolean newValue) {
+		writeLock.lock();
 		try {
-			writeLock.lock();
-
 			if (newValue) {
 				inputData(null);
 			} else {
@@ -268,17 +240,37 @@ public class AbstractInput<T_IN, T_OUT, T_BASE extends DataTransformer<T_IN, T_O
 		}
 	}
 
-	@Override
-	public void linkDownstream(T_OUT newData) {
+	/**
+	 * Returns a string representation of the input entry points.
+	 *
+	 * @return A string representation of the input entry points
+	 */
+	public String toStringEntryPoints() {
+		readLock.lock();
 		try {
-			writeLock.lock();
+			return entryPointMap.values().stream()
+					.sorted()
+					.map(t -> "%s(%s)".formatted(t.id(), ID(t.data())))
+					.collect(Collectors.joining(", ", "I[", "]"));
 
-			this.outputData(newData);
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	/**
+	 * Unregisters an entry point from this input transformer.
+	 *
+	 * @param entryPoint The entry point to unregister
+	 */
+	void unregister(EntryPoint<T_IN> entryPoint) {
+		writeLock.lock();
+		try {
+			this.entryPointMap.remove(entryPoint.id());
 
 		} finally {
 			writeLock.unlock();
 		}
-		
 	}
 
 }

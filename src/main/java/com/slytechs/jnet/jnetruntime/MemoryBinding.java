@@ -48,7 +48,7 @@ public abstract class MemoryBinding implements Cloneable, Binding {
 	 *
 	 * @return the memory segment
 	 */
-	public final MemorySegment address() {
+	public final MemorySegment memorySegment() {
 		if (address == null)
 			deriveAddressAndSessionFromBuffer();
 
