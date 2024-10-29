@@ -41,6 +41,34 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public interface DataType extends HasId, HasName {
 
+	public class DefaultDataType<T> implements DataType {
+
+		private final String name;
+		private final DataSupport<T> dataSupport;
+
+		public DefaultDataType(String name, Class<T> dataClass) {
+			this.name = name;
+			this.dataSupport = new DataSupport<>(this, dataClass);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.DataType#dataSupport()
+		 */
+		@Override
+		public <Q> DataSupport<Q> dataSupport() {
+			return (DataSupport<Q>) dataSupport;
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.pipeline.DataType#name()
+		 */
+		@Override
+		public String name() {
+			return name;
+		}
+
+	}
+
 	/**
 	 * Support class for DataType implementations. Provides utility methods for
 	 * handling data of a specific type.

@@ -1,6 +1,8 @@
 package com.slytechs.jnet.jnetruntime.util;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * A comprehensive implementation of Semantic Versioning 2.0.0 as defined by
@@ -76,6 +78,56 @@ public class Version implements Comparable<Version> {
 			+ "(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)"
 			+ "(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
 			+ "(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
+
+	private static final String SIMPLE_VERSION_PATTERN = "(\\d+\\.\\d+\\.\\d+)";
+
+	/**
+	 * Extracts a semantic version number from the provided input string.
+	 *
+	 * <p>
+	 * This method scans the input string for a substring that matches the Semantic
+	 * Versioning format, which follows the pattern <code>MAJOR.MINOR.PATCH</code>.
+	 * It also supports optional pre-release and build metadata identifiers as
+	 * defined by Semantic Versioning specifications.
+	 *
+	 * <p>
+	 * If a version number adhering to the semantic versioning pattern is found
+	 * within the input string, it is returned wrapped in an {@link Optional}. If no
+	 * valid version number is present, {@link Optional#empty()} is returned.
+	 *
+	 * <h3>Examples:</h3>
+	 *
+	 * <pre>{@code
+	 * // Example 1: Basic semantic version
+	 * String input1 = "libpcap version 1.10.4 (with TPACKET_V3)";
+	 * Optional<String> version1 = Version.extractFromString(input1);
+	 * // version1 contains "1.10.4"
+	 *
+	 * // Example 2: Semantic version with pre-release and build metadata
+	 * String input2 = "Release candidate version 2.1.3-rc.1+build.789";
+	 * Optional<String> version2 = Version.extractFromString(input2);
+	 * // version2 contains "2.1.3-rc.1+build.789"
+	 *
+	 * // Example 3: No version present
+	 * String input3 = "No version information available.";
+	 * Optional<String> version3 = Version.extractFromString(input3);
+	 * // version3 is empty
+	 * }</pre>
+	 *
+	 * @param str the input string from which to extract the semantic version number
+	 * @return an {@link Optional} containing the extracted version number if
+	 *         present, or {@link Optional#empty()} if no valid semantic version is
+	 *         found
+	 * @throws NullPointerException if the input string {@code str} is {@code null}
+	 * 
+	 * @see <a href="https://semver.org/">Semantic Versioning 2.0.0</a>
+	 */
+	public static Optional<String> extractFromString(String str) {
+		Pattern pattern = Pattern.compile(SIMPLE_VERSION_PATTERN);
+		var matcher = pattern.matcher(str);
+
+		return Optional.ofNullable(matcher.find() ? matcher.group(1) : null);
+	}
 
 	/**
 	 * Validates semantic version compatibility between an installed library and an

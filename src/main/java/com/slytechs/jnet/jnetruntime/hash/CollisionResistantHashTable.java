@@ -1,5 +1,7 @@
 package com.slytechs.jnet.jnetruntime.hash;
 
+import java.util.Arrays;
+
 /**
  * A collision-resistant hash table implementation that uses linear probing and
  * maintains collision counts for optimized lookups.
@@ -8,6 +10,28 @@ package com.slytechs.jnet.jnetruntime.hash;
  * @param <V> The type of values stored in the hash table
  */
 public class CollisionResistantHashTable<K, V> {
+
+	/**
+	 * Functional interface for consuming entries from a collision-resistant hash
+	 * table. Provides access to the key, value, hash key, and current index of each
+	 * entry.
+	 *
+	 * @param <K> The type of keys in the hash table
+	 * @param <V> The type of values in the hash table
+	 */
+	@FunctionalInterface
+	public interface EntryConsumer<K, V> {
+
+		/**
+		 * Performs the operation on the given entry components.
+		 *
+		 * @param key     The key of the entry
+		 * @param value   The value associated with the key
+		 * @param hashKey The 64-bit hash key of the entry
+		 * @param index   The current index position in the table
+		 */
+		void accept(K key, V value, long hashKey, int index);
+	}
 
 	private static class Entry<K, V> {
 		K key;
@@ -67,6 +91,11 @@ public class CollisionResistantHashTable<K, V> {
 		for (int i = 0; i < capacity; i++) {
 			table[i] = new Entry<>();
 		}
+	}
+
+	public void clear() {
+		Arrays.stream(table)
+				.forEach(Entry::markDeleted);;
 	}
 
 	/**
@@ -465,5 +494,27 @@ public class CollisionResistantHashTable<K, V> {
 		}
 
 		return -1;
+	}
+
+	/**
+	 * Executes the given action for each non-empty entry in the table. The action
+	 * receives the key, value, hashKey, and current index of each entry.
+	 *
+	 * Note: Do not modify the table during iteration as this may lead to
+	 * unpredictable results.
+	 *
+	 * @param action The action to be performed for each entry
+	 */
+	public void forEach(EntryConsumer<K, V> action) {
+		if (action == null) {
+			return;
+		}
+
+		for (int i = 0; i < tableSize; i++) {
+			Entry<K, V> entry = table[i];
+			if (!entry.isEmpty()) {
+				action.accept(entry.key, entry.value, entry.hashKey, i);
+			}
+		}
 	}
 }
