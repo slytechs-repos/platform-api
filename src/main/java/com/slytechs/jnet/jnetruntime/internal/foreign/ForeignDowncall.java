@@ -40,7 +40,7 @@ public class ForeignDowncall<E extends Throwable> {
 	private final Throwable cause;
 	
 	/** The exception factory. */
-	private final Function<String, E> exceptionFactory;
+	protected final Function<String, E> exceptionFactory;
 	
 	/** The symbol name. */
 	private final String symbolName;
