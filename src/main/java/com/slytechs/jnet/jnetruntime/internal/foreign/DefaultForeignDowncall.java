@@ -25,7 +25,7 @@ import java.lang.invoke.MethodHandle;
  *
  * @author Mark Bednarczyk
  */
-public class DefaultForeignDowncall extends ForeignDowncall<IllegalStateException> {
+public class DefaultForeignDowncall extends ForeignDowncall<ForeignIllegalStateException> {
 
 	/**
 	 * Instantiates a new default foreign downcall.
@@ -35,7 +35,7 @@ public class DefaultForeignDowncall extends ForeignDowncall<IllegalStateExceptio
 	 * @param handle        the handle
 	 */
 	public DefaultForeignDowncall(String symbolName, MemorySegment symbolAddress, MethodHandle handle) {
-		super(symbolName, symbolAddress, handle, IllegalStateException::new);
+		super(symbolName, symbolAddress, handle, ForeignIllegalStateException::new);
 	}
 
 	/**

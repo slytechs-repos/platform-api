@@ -17,27 +17,44 @@
  */
 package com.slytechs.jnet.jnetruntime.internal.foreign;
 
-import java.lang.invoke.MethodHandles;
+import java.lang.foreign.MemoryLayout;
+
+import static java.lang.foreign.MemoryLayout.*;
+import static java.lang.foreign.ValueLayout.*;
 
 /**
- * The Class DefaultForeignInitializer.
- *
  * @author Mark Bednarczyk
+ *
  */
-public class DefaultForeignInitializer
-		extends ForeignInitializer<DefaultForeignDowncall, ForeignIllegalStateException> {
+public final class NativeLayout {
 
-	/**
-	 * Instantiates a new default foreign initializer.
-	 *
-	 * @param clazz the clazz
-	 */
-	public DefaultForeignInitializer(Class<?> clazz) {
-		super(
-				clazz.getSimpleName(),
-				DefaultForeignDowncall::new,
-				DefaultForeignDowncall::new,
-				MethodHandles.lookup());
+	private static final long INT32_SIZE, LONG64_SIZE, ADDRESS_SIZE;
+
+	static {
+		NativeABI abi = NativeABI.current();
+
+		if (NativeABI.is32bit()) {
+			INT32_SIZE = 4;
+			LONG64_SIZE = 8;
+			ADDRESS_SIZE = 4;
+
+		} else {
+			INT32_SIZE = 8;
+			LONG64_SIZE = 8;
+			ADDRESS_SIZE = 8;
+		}
+
+	}
+
+	public static MemoryLayout PAD32(long numBytes) {
+		return sequenceLayout(INT32_SIZE - numBytes, JAVA_BYTE);
+	}
+
+	public static MemoryLayout PAD64(long numBytes) {
+		return sequenceLayout(LONG64_SIZE - numBytes, JAVA_BYTE);
+	}
+
+	private NativeLayout() {
 	}
 
 }

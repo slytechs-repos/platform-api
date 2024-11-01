@@ -15,29 +15,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.internal.foreign;
+package com.slytechs.jnet.jnetruntime.util;
 
-import java.lang.invoke.MethodHandles;
+import java.lang.foreign.MemorySegment;
 
 /**
- * The Class DefaultForeignInitializer.
- *
  * @author Mark Bednarczyk
+ *
  */
-public class DefaultForeignInitializer
-		extends ForeignInitializer<DefaultForeignDowncall, ForeignIllegalStateException> {
+public interface HasMemoryPointer {
 
-	/**
-	 * Instantiates a new default foreign initializer.
-	 *
-	 * @param clazz the clazz
-	 */
-	public DefaultForeignInitializer(Class<?> clazz) {
-		super(
-				clazz.getSimpleName(),
-				DefaultForeignDowncall::new,
-				DefaultForeignDowncall::new,
-				MethodHandles.lookup());
-	}
+	MemorySegment pointer();
 
 }

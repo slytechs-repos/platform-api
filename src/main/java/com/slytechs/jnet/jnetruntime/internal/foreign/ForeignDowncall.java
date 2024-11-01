@@ -20,10 +20,11 @@ package com.slytechs.jnet.jnetruntime.internal.foreign;
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
+
+import com.slytechs.jnet.jnetruntime.internal.foreign.ForeignException.ForeignExceptionFactory;
 
 /**
  * The Class ForeignDowncall.
@@ -31,20 +32,20 @@ import java.util.function.Supplier;
  * @param <E> the element type
  * @author Mark Bednarczyk
  */
-public class ForeignDowncall<E extends Throwable> {
+public class ForeignDowncall<E extends Throwable & ForeignException> {
 
 	/** The handle. */
 	private final MethodHandle handle;
-	
+
 	/** The cause. */
 	private final Throwable cause;
-	
+
 	/** The exception factory. */
-	protected final Function<String, E> exceptionFactory;
-	
+	protected final ForeignExceptionFactory<E> exceptionFactory;
+
 	/** The symbol name. */
 	private final String symbolName;
-	
+
 	/** The symbol address. */
 	private final MemorySegment symbolAddress;
 
@@ -70,7 +71,7 @@ public class ForeignDowncall<E extends Throwable> {
 	 * @param exceptionFactory the exception factory
 	 */
 	public ForeignDowncall(String symbolName, MemorySegment symbolAddress, MethodHandle handle,
-			Function<String, E> exceptionFactory) {
+			ForeignExceptionFactory<E> exceptionFactory) {
 		this.symbolName = symbolName;
 		this.symbolAddress = symbolAddress;
 		this.handle = Objects.requireNonNull(handle, "handle");
@@ -385,7 +386,7 @@ public class ForeignDowncall<E extends Throwable> {
 	 */
 	protected void validateInt(int value, IntFunction<String> errorFactory) throws E {
 		if (value < 0)
-			throw exceptionFactory.apply(errorFactory.apply(value));
+			throw exceptionFactory.newException(value, errorFactory.apply(value));
 	}
 
 	/**
@@ -397,7 +398,7 @@ public class ForeignDowncall<E extends Throwable> {
 	 */
 	protected void validateInt(int value, Supplier<String> errorFactory) throws E {
 		if (value < 0)
-			throw exceptionFactory.apply(errorFactory.get());
+			throw exceptionFactory.newException(value, errorFactory.get());
 	}
 
 	/**
@@ -409,7 +410,7 @@ public class ForeignDowncall<E extends Throwable> {
 	 */
 	protected void validateLong(long value, LongFunction<String> errorFactory) throws E {
 		if (value < 0)
-			throw exceptionFactory.apply(errorFactory.apply(value));
+			throw exceptionFactory.newException(value, errorFactory.apply(value));
 	}
 
 	/**
@@ -421,7 +422,7 @@ public class ForeignDowncall<E extends Throwable> {
 	 */
 	protected void validateLong(long value, Supplier<String> errorFactory) throws E {
 		if (value < 0)
-			throw exceptionFactory.apply(errorFactory.get());
+			throw exceptionFactory.newException(value, errorFactory.get());
 	}
 
 	/**
@@ -433,7 +434,7 @@ public class ForeignDowncall<E extends Throwable> {
 	 */
 	protected void validateObj(Object obj, Supplier<String> errorFactory) throws E {
 		if (obj == null || (obj instanceof MemorySegment addr) && ForeignUtils.isNullAddress(addr))
-			throw exceptionFactory.apply(errorFactory.get());
+			throw exceptionFactory.newException(errorFactory.get());
 	}
 
 	/**

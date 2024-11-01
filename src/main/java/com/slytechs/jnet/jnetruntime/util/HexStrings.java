@@ -96,7 +96,7 @@ public class HexStrings {
 	public static final char DEFAULT_CONTROL_CHAR = '.';
 
 	/** The Constant DEFAULT_HEXDUMP_PREFIX. */
-	public static final IntFunction<String> DEFAULT_HEXDUMP_PREFIX = i -> "%04X: ".formatted(i);
+	public static final IntFunction<String> DEFAULT_HEXDUMP_PREFIX = "%04X: "::formatted;
 
 	/**
 	 * Parses the array.

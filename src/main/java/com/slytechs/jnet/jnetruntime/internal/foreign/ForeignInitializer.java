@@ -35,9 +35,10 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.slytechs.jnet.jnetruntime.internal.foreign.ForeignException.ForeignExceptionFactory;
 
 /**
  * The Class ForeignInitializer.
@@ -46,7 +47,8 @@ import java.util.regex.Pattern;
  * @param <E> the element type
  * @author mark
  */
-public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwable> implements AutoCloseable {
+public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwable & ForeignException>
+		implements AutoCloseable {
 
 	/**
 	 * The Enum CType.
@@ -54,31 +56,31 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 	 * @author Mark Bednarczyk
 	 */
 	public enum CType {
-		
+
 		/** The c pointer. */
 		C_POINTER(ValueLayout.ADDRESS, MemorySegment.class),
-		
+
 		/** The c char. */
 		C_CHAR(ValueLayout.JAVA_BYTE, byte.class),
-		
+
 		/** The c short. */
 		C_SHORT(ValueLayout.JAVA_SHORT, short.class),
-		
+
 		/** The c int. */
 		C_INT(ValueLayout.JAVA_INT, int.class),
-		
+
 		/** The c long. */
 		C_LONG(ValueLayout.JAVA_LONG, long.class),
-		
+
 		/** The c float. */
 		C_FLOAT(ValueLayout.JAVA_FLOAT, float.class),
-		
+
 		/** The c double. */
 		C_DOUBLE(ValueLayout.JAVA_DOUBLE, double.class),
-		
+
 		/** The c va list. */
 		C_VA_LIST(ValueLayout.ADDRESS, MemorySegment.class),
-		
+
 		/** The c void. */
 		C_VOID(null, null),
 
@@ -86,7 +88,7 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 
 		/** The layout. */
 		private final MemoryLayout layout;
-		
+
 		/** The java type. */
 		private final Class<?> javaType;
 
@@ -102,7 +104,7 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 		}
 
 		/**
-		 * Gets the java type.
+		 * Gets the java type.(code, msg) -> exceptionFactory.apply(msg)
 		 *
 		 * @return the java type
 		 */
@@ -127,7 +129,7 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 	 * @author Mark Bednarczyk
 	 */
 	public interface DowncallSupplier<T extends ForeignDowncall<?>> {
-		
+
 		/**
 		 * New downcall.
 		 *
@@ -145,7 +147,7 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 	 * @author Mark Bednarczyk
 	 */
 	public interface MethodHandleLookup {
-		
+
 		/**
 		 * Lookup.
 		 *
@@ -167,7 +169,7 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 	 * @author Mark Bednarczyk
 	 */
 	public interface MissingSymbolsPolicy {
-		
+
 		/**
 		 * On missing symbols.
 		 *
@@ -344,10 +346,10 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 
 	/** The Constant PARSER. */
 	private static final SignatureParser PARSER = new SignatureParser();
-	
+
 	/** The Constant C_SYMBOLS. */
 	private static final SymbolLookup C_SYMBOLS = SymbolLookup.loaderLookup();
-	
+
 	/** The Constant C_LINKER. */
 	private static final Linker C_LINKER = Linker.nativeLinker();
 
@@ -362,10 +364,14 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 	 * @return the t
 	 */
 	@SuppressWarnings({ "unchecked",
-			"rawtypes" })
-	private static <T extends ForeignDowncall<E>, E extends Throwable> T defaultInstance(String symbolName,
+			"rawtypes"
+	})
+	private static <T extends ForeignDowncall<E>, E extends Throwable & ForeignException> T defaultInstance(
+			String symbolName,
 			MemorySegment symbolAddress, MethodHandle handle) {
-		Function<String, E> exceptionFactory = msg -> (E) new IllegalStateException(msg);
+		ForeignExceptionFactory<E> exceptionFactory = (int code, String msg) -> {
+			return (E) new ForeignIllegalStateException(code, msg);
+		};
 
 		return (T) new ForeignDowncall(symbolName, symbolAddress, handle, exceptionFactory);
 	}
@@ -380,8 +386,10 @@ public class ForeignInitializer<T extends ForeignDowncall<E>, E extends Throwabl
 	 * @return the t
 	 */
 	@SuppressWarnings({ "rawtypes",
-			"unchecked" })
-	private static <T extends ForeignDowncall<E>, E extends Throwable> T defaultInstance(String message,
+			"unchecked"
+	})
+	private static <T extends ForeignDowncall<E>, E extends Throwable & ForeignException> T defaultInstance(
+			String message,
 			Throwable cause) {
 		return (T) new ForeignDowncall(message, cause);
 	}
