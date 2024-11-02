@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.jnetruntime.util;
 
+import java.util.OptionalInt;
+
 /**
  * A {@code ScriptRegistration} associates a script source or network filter
  * expression with a {@link Registration} instance. It extends the functionality
@@ -31,42 +33,32 @@ package com.slytechs.jnet.jnetruntime.util;
  *
  * @author Mark Bednarczyk
  */
-public class ScriptRegistration implements Registration {
+public interface ScriptRegistration extends Registration {
 
-	private final String scriptSource;
-	private final Registration registration;
+	static ScriptRegistration newInstance(String script, int scriptId, Registration delegate) {
+		return new ScriptRegistration() {
 
-	/**
-	 * Constructs a new {@code ScriptRegistration} with the specified script source
-	 * and underlying {@link Registration}.
-	 *
-	 * @param scriptSource the script source code or network filter expression used
-	 *                     for registration
-	 * @param registration the underlying registration associated with this script
-	 */
-	public ScriptRegistration(String scriptSource, Registration registration) {
-		this.scriptSource = scriptSource;
-		this.registration = registration;
+			@Override
+			public void unregister() {
+				delegate.unregister();
+			}
+
+			@Override
+			public String getScriptSource() {
+				return script;
+			}
+
+			@Override
+			public OptionalInt scriptId() {
+				return OptionalInt.of(scriptId);
+			}
+		};
 	}
 
-	/**
-	 * Returns the script source code or network filter expression associated with
-	 * this registration.
-	 *
-	 * @return the script source code or network filter expression
-	 */
-	public String getScriptSource() {
-		return scriptSource;
+	String getScriptSource();
+
+	default OptionalInt scriptId() {
+		return OptionalInt.empty();
 	}
 
-	/**
-	 * Unregisters the underlying registration associated with this script. This
-	 * method delegates the unregistration to the underlying {@link Registration}.
-	 *
-	 * @see Registration#unregister()
-	 */
-	@Override
-	public void unregister() {
-		this.registration.unregister();
-	}
 }
