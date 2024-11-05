@@ -94,6 +94,15 @@ public class ForeignDowncall<E extends Throwable & ForeignException> {
 	}
 
 	/**
+	 * Address.
+	 *
+	 * @return the memory segment
+	 */
+	public MemorySegment address() {
+		return symbolAddress;
+	}
+
+	/**
 	 * Handle.
 	 *
 	 * @return the method handle
@@ -286,6 +295,50 @@ public class ForeignDowncall<E extends Throwable & ForeignException> {
 		return result;
 	}
 
+	public int invokeShort(IntFunction<String> messageFactory, Object... args) throws E {
+		short result;
+
+		try {
+			result = (short) handle().invokeWithArguments(args);
+		} catch (RuntimeException e) { // VarHandle could throw this
+			throw e;
+
+		} catch (Throwable e) { // VarHandle could throw this
+			throw new RuntimeException(e);
+		}
+
+		validateInt(result, messageFactory);
+
+		return result;
+	}
+
+	public short invokeShort(Object... args) {
+
+		try {
+			return (short) handle().invokeWithArguments(args);
+		} catch (Throwable e) { // VarHandle could throw this
+			throw new RuntimeException(e);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public short invokeShort(Supplier<String> messageFactory, Object... args) throws E {
+		short result;
+
+		try {
+			result = (short) handle().invokeWithArguments(args);
+		} catch (RuntimeException e) { // VarHandle could throw this
+			throw e;
+
+		} catch (Throwable e) { // VarHandle could throw this
+			throw (E) e;
+		}
+
+		validateInt(result, messageFactory);
+
+		return result;
+	}
+
 	/**
 	 * Invoke string.
 	 *
@@ -360,21 +413,33 @@ public class ForeignDowncall<E extends Throwable & ForeignException> {
 	}
 
 	/**
-	 * Address.
-	 *
-	 * @return the memory segment
-	 */
-	public MemorySegment address() {
-		return symbolAddress;
-	}
-
-	/**
 	 * Symbol name.
 	 *
 	 * @return the string
 	 */
 	public String symbolName() {
 		return symbolName;
+	}
+
+	/**
+	 * To string.
+	 *
+	 * @return the string
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		if (handle == null) {
+			return "ForeignDowncall"
+					+ " [symbolName=" + symbolName
+					+ ", cause=" + cause
+					+ "]";
+		} else {
+			return "ForeignDowncall"
+					+ " [symbolName=" + symbolName
+					+ ", symbolAddress=" + symbolAddress
+					+ "]";
+		}
 	}
 
 	/**
@@ -435,26 +500,5 @@ public class ForeignDowncall<E extends Throwable & ForeignException> {
 	protected void validateObj(Object obj, Supplier<String> errorFactory) throws E {
 		if (obj == null || (obj instanceof MemorySegment addr) && ForeignUtils.isNullAddress(addr))
 			throw exceptionFactory.newException(errorFactory.get());
-	}
-
-	/**
-	 * To string.
-	 *
-	 * @return the string
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		if (handle == null) {
-			return "ForeignDowncall"
-					+ " [symbolName=" + symbolName
-					+ ", cause=" + cause
-					+ "]";
-		} else {
-			return "ForeignDowncall"
-					+ " [symbolName=" + symbolName
-					+ ", symbolAddress=" + symbolAddress
-					+ "]";
-		}
 	}
 }

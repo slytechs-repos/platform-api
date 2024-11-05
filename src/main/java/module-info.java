@@ -26,6 +26,7 @@ module com.slytechs.jnet.jnetruntime {
 	exports com.slytechs.jnet.jnetruntime.hash;
 	exports com.slytechs.jnet.jnetruntime.util;
 	exports com.slytechs.jnet.jnetruntime.util.config;
+	exports com.slytechs.jnet.jnetruntime.function;
 	exports com.slytechs.jnet.jnetruntime.pipeline;
 
 	/* Private API */
