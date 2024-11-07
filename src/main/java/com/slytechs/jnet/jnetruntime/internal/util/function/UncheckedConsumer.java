@@ -17,48 +17,36 @@
  */
 package com.slytechs.jnet.jnetruntime.internal.util.function;
 
-/**
- * The Interface CheckedConsumer.
- *
- * @param <T> the generic type
- * @author Mark Bednarczyk
- */
-public interface CheckedConsumer<T, E extends Throwable> {
+import java.util.function.Consumer;
 
-	static <T, E extends Throwable> CheckedConsumer<T, E> of(CheckedConsumer<T, E> before) {
+/**
+ * @author Mark Bednarczyk
+ *
+ */
+public interface UncheckedConsumer<T> extends Consumer<T> {
+
+	static <T> UncheckedConsumer<T> of(UncheckedConsumer<T> before) {
 		return before;
 	}
 
-	static <T, E extends Exception> CheckedConsumer<T, E> ofThrowable(ThrowableConsumer<T> before,
-			Class<E> checkedClass) {
+	static <T> UncheckedConsumer<T> ofThrowable(ThrowableConsumer<T> before) {
 		return t -> {
 			try {
 				before.acceptOrThrow(t);
+
 			} catch (RuntimeException e) {
 				throw e;
 
 			} catch (Exception e) {
-				throw CheckedUtils.castAsCheckedOrThrowRuntime(e, checkedClass);
+				throw new RuntimeException(e);
 			}
 		};
 	}
 
-	static <T, E extends Throwable> CheckedConsumer<T, E> ofUnchecked(UncheckedConsumer<T> before) {
-		return t -> before.accept(t);
-	}
-
-	/**
-	 * Wrap a consumer for checked exceptions. Any checked exception will be
-	 * re-thrown as a unchecked exception and processing will stop.
-	 *
-	 * @param <T>             the generic type
-	 * @param checkedConsumer the checked consumer
-	 * @return the consumer
-	 */
-	default UncheckedConsumer<T> asUnchecked() {
+	static <T> UncheckedConsumer<T> ofChecked(CheckedConsumer<T, ?> before) {
 		return t -> {
 			try {
-				CheckedConsumer.this.acceptOrThrow(t);
+				before.acceptOrThrow(t);
 
 			} catch (RuntimeException e) {
 				throw e;
@@ -69,24 +57,28 @@ public interface CheckedConsumer<T, E extends Throwable> {
 		};
 	}
 
-	default ThrowableConsumer<T> asThrowable() {
+	default <E extends Throwable> CheckedConsumer<T, E> asChecked(Class<E> checkedClass) {
 		return t -> {
 			try {
-				CheckedConsumer.this.acceptOrThrow(t);
-			} catch (RuntimeException e) {
-				throw CheckedUtils.unwrapExceptionOrThrowRuntime(e);
+				UncheckedConsumer.this.accept(t);
 
-			} catch (Throwable e) {
-				throw (Exception) e;
+			} catch (RuntimeException e) {
+				throw CheckedUtils.unwrapCheckedOrThrowRuntime(e, checkedClass);
 			}
 		};
 	}
 
-	/**
-	 * Accept.
-	 *
-	 * @param t the t
-	 * @throws Exception the exception
-	 */
-	void acceptOrThrow(T t) throws E;
+	default ThrowableConsumer<T> asThrowable(Class<? extends Throwable> throwableClass) {
+		return t -> {
+			try {
+				UncheckedConsumer.this.accept(t);
+
+			} catch (RuntimeException e) {
+				throw CheckedUtils.unwrapExceptionOrThrowRuntime(e);
+			}
+		};
+	}
+
+	@Override
+	void accept(T t);
 }

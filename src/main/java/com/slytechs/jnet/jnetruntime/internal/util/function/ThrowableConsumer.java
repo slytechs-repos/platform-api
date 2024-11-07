@@ -23,27 +23,17 @@ package com.slytechs.jnet.jnetruntime.internal.util.function;
  * @param <T> the generic type
  * @author Mark Bednarczyk
  */
-public interface CheckedConsumer<T, E extends Throwable> {
+public interface ThrowableConsumer<T> {
 
-	static <T, E extends Throwable> CheckedConsumer<T, E> of(CheckedConsumer<T, E> before) {
-		return before;
+	static <T> ThrowableConsumer<T> of(ThrowableConsumer<T> before) {
+		return t -> before.acceptOrThrow(t);
 	}
 
-	static <T, E extends Exception> CheckedConsumer<T, E> ofThrowable(ThrowableConsumer<T> before,
-			Class<E> checkedClass) {
-		return t -> {
-			try {
-				before.acceptOrThrow(t);
-			} catch (RuntimeException e) {
-				throw e;
-
-			} catch (Exception e) {
-				throw CheckedUtils.castAsCheckedOrThrowRuntime(e, checkedClass);
-			}
-		};
+	static <T> CheckedConsumer<T, ?> ofChecked(CheckedConsumer<T, ?> before) {
+		return t -> before.acceptOrThrow(t);
 	}
 
-	static <T, E extends Throwable> CheckedConsumer<T, E> ofUnchecked(UncheckedConsumer<T> before) {
+	static <T> ThrowableConsumer<T> ofUnchecked(UncheckedConsumer<T> before) {
 		return t -> before.accept(t);
 	}
 
@@ -58,26 +48,27 @@ public interface CheckedConsumer<T, E extends Throwable> {
 	default UncheckedConsumer<T> asUnchecked() {
 		return t -> {
 			try {
-				CheckedConsumer.this.acceptOrThrow(t);
+				ThrowableConsumer.this.acceptOrThrow(t);
 
 			} catch (RuntimeException e) {
 				throw e;
 
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
 		};
 	}
 
-	default ThrowableConsumer<T> asThrowable() {
+	default <E extends Throwable> CheckedConsumer<T, E> asChecked(Class<E> checkedClass) {
 		return t -> {
 			try {
-				CheckedConsumer.this.acceptOrThrow(t);
-			} catch (RuntimeException e) {
-				throw CheckedUtils.unwrapExceptionOrThrowRuntime(e);
+				ThrowableConsumer.this.acceptOrThrow(t);
 
-			} catch (Throwable e) {
-				throw (Exception) e;
+			} catch (RuntimeException e) {
+				throw CheckedUtils.unwrapCheckedOrThrowRuntime(e, checkedClass);
+
+			} catch (Exception e) {
+				throw CheckedUtils.castAsCheckedOrThrowRuntime(e, checkedClass);
 			}
 		};
 	}
@@ -88,5 +79,5 @@ public interface CheckedConsumer<T, E extends Throwable> {
 	 * @param t the t
 	 * @throws Exception the exception
 	 */
-	void acceptOrThrow(T t) throws E;
+	void acceptOrThrow(T t) throws Exception;
 }

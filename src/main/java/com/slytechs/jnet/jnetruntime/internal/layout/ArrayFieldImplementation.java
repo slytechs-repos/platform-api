@@ -73,8 +73,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the byte array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getByteArray(byte[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getByteArray(byte[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public byte[] getByteArray(byte[] array, int offset, int length, Object data) {
@@ -90,8 +90,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the byte array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getByteArray(byte[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getByteArray(byte[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public byte[] getByteArray(byte[] array, int offset, int length, Object data, long... sequences) {
@@ -123,8 +123,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the int array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getIntArray(int[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getIntArray(int[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public int[] getIntArray(int[] array, int offset, int length, Object data) {
@@ -140,8 +140,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the int array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getIntArray(int[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getIntArray(int[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public int[] getIntArray(int[] array, int offset, int length, Object data, long... sequences) {
@@ -156,8 +156,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the long array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getLongArray(long[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getLongArray(long[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public long[] getLongArray(long[] array, int offset, int length, Object data) {
@@ -173,8 +173,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the long array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getLongArray(long[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getLongArray(long[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public long[] getLongArray(long[] array, int offset, int length, Object data, long... sequences) {
@@ -189,8 +189,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the short array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getShortArray(short[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getShortArray(short[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public short[] getShortArray(short[] array, int offset, int length, Object data) {
@@ -206,8 +206,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the short array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getShortArray(short[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#getShortArray(short[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public short[] getShortArray(short[] array, int offset, int length, Object data, long... sequences) {
@@ -233,8 +233,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the byte[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setByteArray(byte[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setByteArray(byte[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public byte[] setByteArray(byte[] array, int offset, int length, Object data) {
@@ -250,8 +250,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the byte[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setByteArray(byte[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setByteArray(byte[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public byte[] setByteArray(byte[] array, int offset, int length, Object data, long... sequences) {
@@ -266,8 +266,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the int[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setIntArray(int[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setIntArray(int[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public int[] setIntArray(int[] array, int offset, int length, Object data) {
@@ -283,8 +283,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the int[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setIntArray(int[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setIntArray(int[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public int[] setIntArray(int[] array, int offset, int length, Object data, long... sequences) {
@@ -299,8 +299,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the long[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setLongArray(long[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setLongArray(long[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public long[] setLongArray(long[] array, int offset, int length, Object data) {
@@ -316,8 +316,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the long[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setLongArray(long[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setLongArray(long[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public long[] setLongArray(long[] array, int offset, int length, Object data, long... sequences) {
@@ -332,8 +332,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param length the length
 	 * @param data   the data
 	 * @return the short[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setShortArray(short[], int, int,
-	 *      java.lang.Object)
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setShortArray(short[],
+	 *      int, int, java.lang.Object)
 	 */
 	@Override
 	public short[] setShortArray(short[] array, int offset, int length, Object data) {
@@ -349,8 +349,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the short[]
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setShortArray(short[], int, int,
-	 *      java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#setShortArray(short[],
+	 *      int, int, java.lang.Object, long[])
 	 */
 	@Override
 	public short[] setShortArray(short[] array, int offset, int length, Object data, long... sequences) {
@@ -374,7 +374,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the string
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.BinaryField#toString(java.lang.Object, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.BinaryField#toString(java.lang.Object,
+	 *      long[])
 	 */
 	@Override
 	public String toString(Object data, long... sequences) {
@@ -399,7 +400,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the byte array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#wrap(byte[], long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#wrap(byte[],
+	 *      long[])
 	 */
 	@Override
 	public ByteArray wrap(byte[] data, long... sequences) {
@@ -411,7 +413,6 @@ class ArrayFieldImplementation implements ArrayField {
 	 *
 	 * @param data the data
 	 * @return the byte array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#wrapConsumer(org.jnet.buffer.ByteArray)
 	 */
 	@Override
 	public ByteArray wrap(ByteArray data) {
@@ -424,7 +425,8 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the byte array
-	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#wrap(org.jnet.buffer.ByteArray, long[])
+	 * @see com.slytechs.jnet.jnetruntime.internal.layout.ArrayField#wrap(org.jnet.buffer.ByteArray,
+	 *      long[])
 	 */
 	@Override
 	public ByteArray wrap(ByteArray data, long... sequences) {
