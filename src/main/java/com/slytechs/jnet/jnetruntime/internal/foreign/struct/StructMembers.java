@@ -344,7 +344,7 @@ public final class StructMembers {
 		if (!(layout.select(p) instanceof ValueLayout value))
 			throw new IllegalArgumentException("only value layouts are allowed %s".formatted(path));
 
-		VarHandle varHandle = layout.varHandle(p);
+		VarHandle varHandle = layout.select(p).varHandle();
 		long bitOffset = layout.byteOffset(p) * 8;
 		long bitSize = value.byteSize() * 8;
 
@@ -373,7 +373,7 @@ public final class StructMembers {
 		if (!(layout.select(p) instanceof ValueLayout value))
 			throw new IllegalArgumentException("only value layouts are allowed %s".formatted(path));
 
-		VarHandle varHandle = layout.varHandle(p);
+		VarHandle varHandle = layout.select(p).varHandle();
 		long bitOffset = layout.byteOffset(p) * 8;
 		long bitSize = value.byteSize() * 8;
 

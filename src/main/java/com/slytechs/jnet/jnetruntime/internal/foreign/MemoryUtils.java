@@ -40,7 +40,7 @@ public final class MemoryUtils {
 	 * @return the var handle
 	 */
 	public static VarHandle varHandle(MemoryLayout LAYOUT, String path) {
-		return LAYOUT.varHandle(path(path));
+		return LAYOUT.select(path(path)).varHandle();
 	}
 
 	/**
