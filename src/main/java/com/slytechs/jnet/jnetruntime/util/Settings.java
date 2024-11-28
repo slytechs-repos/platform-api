@@ -20,6 +20,7 @@ package com.slytechs.jnet.jnetruntime.util;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,8 +28,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -79,6 +82,88 @@ public class Settings {
 		}
 	}
 
+	public static final class ByteProperty extends Property<Byte, ByteProperty> {
+
+		/**
+		 * @param base
+		 */
+		public ByteProperty(String name) {
+			super(name);
+		}
+
+		/**
+		 * @param base
+		 * @param value
+		 */
+		public ByteProperty(String name, byte value) {
+			super(name, value);
+		}
+
+		public byte getByte() {
+			return getValue();
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public ByteProperty parseValue(String newValue) {
+			return setValue(newValue == null ? null : Byte.parseByte(newValue));
+		}
+
+		public ByteProperty setByte(byte newValue) {
+			return setValue(newValue);
+		}
+
+		public Optional<Byte> toShortOptional() {
+			if (isPresent())
+				return Optional.of(getValue());
+
+			return Optional.empty();
+		}
+	}
+
+	public static final class DoubleProperty extends Property<Double, DoubleProperty> {
+
+		/**
+		 * @param base
+		 */
+		public DoubleProperty(String name) {
+			super(name);
+		}
+
+		/**
+		 * @param base
+		 * @param value
+		 */
+		public DoubleProperty(String name, double value) {
+			super(name, value);
+		}
+
+		public double getDouble() {
+			return getValue();
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public DoubleProperty parseValue(String newValue) {
+			return setValue(newValue == null ? null : Double.parseDouble(newValue));
+		}
+
+		public DoubleProperty setDouble(double newValue) {
+			return setValue(newValue);
+		}
+
+		public OptionalDouble toDoubleOptional() {
+			if (isPresent())
+				return OptionalDouble.of(getValue());
+
+			return OptionalDouble.empty();
+		}
+	}
+
 	private static final class EmptyProperty<T, T_BASE extends Property<T, T_BASE>> extends Property<T, T_BASE> {
 
 		private EmptyProperty(String name) {
@@ -117,6 +202,87 @@ public class Settings {
 			throw new UnsupportedOperationException("");
 		}
 
+	}
+
+	public static final class EnumProperty<E extends Enum<E>> extends Property<E, EnumProperty<E>> {
+
+		private final Class<E> enumType;
+
+		/**
+		 * @param base
+		 */
+		public EnumProperty(String name, Class<E> enumType) {
+			super(name);
+			this.enumType = enumType;
+		}
+
+		/**
+		 * @param base
+		 * @param value
+		 */
+		@SuppressWarnings("unchecked")
+		public EnumProperty(String name, E value) {
+			super(name, value);
+			this.enumType = (Class<E>) value.getClass();
+		}
+
+		public E getEnum() {
+			return getValue();
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public EnumProperty<E> parseValue(String newValue) {
+			return setValue(Enums.getEnumOrThrow(enumType, newValue, () -> new IllegalArgumentException(newValue)));
+		}
+
+		public EnumProperty<E> setEnum(E newValue) {
+			return super.setValue(newValue);
+		}
+
+	}
+
+	public static final class FloatProperty extends Property<Float, FloatProperty> {
+
+		/**
+		 * @param base
+		 */
+		public FloatProperty(String name) {
+			super(name);
+		}
+
+		/**
+		 * @param base
+		 * @param value
+		 */
+		public FloatProperty(String name, float value) {
+			super(name, value);
+		}
+
+		public float getFloat() {
+			return getValue();
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public FloatProperty parseValue(String newValue) {
+			return setValue(newValue == null ? null : Float.parseFloat(newValue));
+		}
+
+		public FloatProperty setFloat(float newValue) {
+			return setValue(newValue);
+		}
+
+		public Optional<Float> toFloatOptional() {
+			if (isPresent())
+				return Optional.of(getValue());
+
+			return Optional.empty();
+		}
 	}
 
 	public static final class IntProperty extends Property<Integer, IntProperty> {
@@ -162,19 +328,23 @@ public class Settings {
 
 	public static final class ListProperty<E> extends Property<List<E>, ListProperty<E>> {
 
+		private final Function<String, E> componentParser;
+
 		/**
 		 * @param base
 		 */
-		public ListProperty(String name) {
+		public ListProperty(String name, Function<String, E> componentParser) {
 			super(name);
+			this.componentParser = componentParser;
 		}
 
 		/**
 		 * @param base
 		 * @param value
 		 */
-		public ListProperty(String name, List<E> value) {
+		public ListProperty(String name, Function<String, E> componentParser, List<E> value) {
 			super(name, value);
+			this.componentParser = componentParser;
 		}
 
 		/**
@@ -182,7 +352,20 @@ public class Settings {
 		 */
 		@Override
 		public ListProperty<E> parseValue(String newValue) {
-			throw new UnsupportedOperationException("not implemented yet");
+			String[] array = newValue.split(",");
+			List<E> list = new ArrayList<>(array.length);
+
+			for (String element : array) {
+				E e = componentParser.apply(element);
+
+				list.add(e);
+			}
+
+			return setValue(list);
+		}
+
+		public List<E> getList() {
+			return getValue();
 		}
 
 	}
@@ -238,23 +421,30 @@ public class Settings {
 
 	public static sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 			permits EmptyProperty,
+			ByteProperty,
+			ShortProperty,
 			IntProperty,
 			LongProperty,
+			FloatProperty,
+			DoubleProperty,
 			StringProperty,
+			EnumProperty,
 			BooleanProperty,
+			UnsignedByteProperty,
+			UnsignedShortProperty,
 			UnsignedIntProperty,
 			ListProperty {
 
 		interface Action<T> {
 
-			static <T> Action<T> ofAction(BiConsumer<T, Object> before, Object excludeSource) {
+			static <T> Action<T> ofAction(BiConsumer<T, Object> before, Object source) {
 				return new Action<T>() {
 					/**
 					 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property.Action#canFireFromSource(java.lang.Object)
 					 */
 					@Override
-					public boolean canFireFromSource(Object source) {
-						return source == null || excludeSource != source;
+					public boolean canFireFromSource(Object src) {
+						return source == null || source != src;
 					}
 
 					/**
@@ -263,7 +453,7 @@ public class Settings {
 					 */
 					@Override
 					public void propertyChangeAction(String name, T oldValue, T newValue, Object src) {
-						before.accept(newValue, excludeSource);
+						before.accept(newValue, src);
 					}
 
 					@Override
@@ -301,6 +491,10 @@ public class Settings {
 				};
 			}
 
+			default boolean canFireFromSource(Object source) {
+				return true;
+			}
+
 			default void propertyChangeAction(String name, T newValue) {
 				propertyChangeAction(newValue);
 			}
@@ -314,10 +508,6 @@ public class Settings {
 			}
 
 			void propertyChangeAction(T newValue);
-
-			default boolean canFireFromSource(Object source) {
-				return true;
-			}
 		}
 
 		public static <U, P_BASE extends Property<U, P_BASE>> P_BASE empty(String name) {
@@ -342,7 +532,6 @@ public class Settings {
 			case Long lvalue -> new LongProperty(name, lvalue);
 			case String svalue -> new StringProperty(name, svalue);
 			case Boolean bvalue -> new BooleanProperty(name, bvalue);
-			case List<?> cvalue -> new ListProperty<>(name, cvalue);
 
 			default -> throw new IllegalArgumentException("unknown property type for value of " + value);
 			};
@@ -407,7 +596,7 @@ public class Settings {
 
 		public T_BASE clear() {
 			if (value != null)
-				support.fireValueChange(name(), this.value, null);
+				support.fireValueChange(name(), null, this.value, "<clear>");
 
 			this.value = null;
 
@@ -583,9 +772,9 @@ public class Settings {
 			if (newValue != null)
 				checkBounds(newValue);
 
-			support.fireValueChange(name(), this.value, newValue, source);
-
 			this.value = newValue;
+
+			support.fireValueChange(name(), this.value, newValue, source);
 
 			return us;
 		}
@@ -630,6 +819,47 @@ public class Settings {
 		}
 	}
 
+	public static final class ShortProperty extends Property<Short, ShortProperty> {
+
+		/**
+		 * @param base
+		 */
+		public ShortProperty(String name) {
+			super(name);
+		}
+
+		/**
+		 * @param base
+		 * @param value
+		 */
+		public ShortProperty(String name, short value) {
+			super(name, value);
+		}
+
+		public short getShort() {
+			return getValue();
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public ShortProperty parseValue(String newValue) {
+			return setValue(newValue == null ? null : Short.parseShort(newValue));
+		}
+
+		public ShortProperty setShort(short newValue) {
+			return setValue(newValue);
+		}
+
+		public Optional<Short> toShortOptional() {
+			if (isPresent())
+				return Optional.of(getValue());
+
+			return Optional.empty();
+		}
+	}
+
 	public static final class StringProperty extends Property<String, StringProperty> {
 
 		/**
@@ -668,6 +898,8 @@ public class Settings {
 	static class Support {
 		Map<String, List<Reference<Property.Action<?>>>> actions = new HashMap<>();
 
+		private boolean enableFireEvents = true;
+
 		public synchronized <T> Registration addAction(String name, Property.Action<T> action) {
 			List<Reference<Property.Action<?>>> list = actions.computeIfAbsent(name,
 					_ -> new ArrayList<Reference<Property.Action<?>>>());
@@ -679,6 +911,13 @@ public class Settings {
 		}
 
 		/**
+		 * @param b
+		 */
+		public void enableEventDispatching(boolean b) {
+			this.enableFireEvents = b;
+		}
+
+		/**
 		 * @param <T>
 		 * @param name
 		 * @param value
@@ -686,6 +925,9 @@ public class Settings {
 		 */
 		public synchronized <T> void fireValueChange(Action<T> action, String name, T oldValue, T newValue,
 				Object source) {
+
+			if (!enableFireEvents)
+				return;
 
 			action.propertyChangeAction(name, oldValue, newValue, source);
 		}
@@ -707,7 +949,7 @@ public class Settings {
 		 * @param object
 		 */
 		public synchronized <T> void fireValueChange(String name, T oldValue, T newValue, Object source) {
-			if (!actions.containsKey(name))
+			if (!actions.containsKey(name) || !enableFireEvents)
 				return;
 
 			boolean needsCleanup = false;
@@ -765,6 +1007,67 @@ public class Settings {
 
 	}
 
+	public static final class UnsignedByteProperty extends Property<Integer, UnsignedByteProperty> {
+
+		public static final int MIN_VALUE = 0;
+		public static final int MAX_VALUE = (1 << 8) - 1;
+
+		/**
+		 * @param base
+		 */
+		public UnsignedByteProperty(String name) {
+			super(name);
+		}
+
+		/**
+		 * @param base
+		 * @param unsignedValue
+		 */
+		public UnsignedByteProperty(String name, byte unsignedValue) {
+			super(name, Byte.toUnsignedInt(unsignedValue));
+		}
+
+		/**
+		 * @param base
+		 * @param unsignedValue
+		 */
+		public UnsignedByteProperty(String name, int unsignedValue) {
+			super(name, unsignedValue);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#checkBounds(java.lang.Object)
+		 */
+		@Override
+		protected void checkBounds(Integer unsignedValue) throws IllegalArgumentException {
+			if (unsignedValue < MIN_VALUE || unsignedValue > MAX_VALUE)
+				throw valueOutOfBoundsException(unsignedValue, MIN_VALUE, MAX_VALUE);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public UnsignedByteProperty parseValue(String newValue) {
+			return setValue(newValue == null ? null : Integer.parseInt(newValue));
+		}
+
+		public UnsignedByteProperty setUnsignedByte(byte newValue) {
+			return super.setValue(Byte.toUnsignedInt(newValue));
+		}
+
+		public UnsignedByteProperty setUnsignedByte(int newValue) {
+			return super.setValue(newValue);
+		}
+
+		public OptionalInt toOptionalUnsignedByte() {
+			if (isPresent())
+				return OptionalInt.of(getValue());
+
+			return OptionalInt.empty();
+		}
+	}
+
 	public static final class UnsignedIntProperty extends Property<Long, UnsignedIntProperty> {
 
 		public static final long MIN_VALUE = 0;
@@ -803,15 +1106,11 @@ public class Settings {
 		}
 
 		public UnsignedIntProperty setUnsignedInt(int newValue) {
-			return super.setValue((long) newValue);
+			return super.setValue(Integer.toUnsignedLong(newValue));
 		}
 
 		public UnsignedIntProperty setUnsignedInt(long newValue) {
 			return super.setValue(newValue);
-		}
-
-		public UnsignedIntProperty setUnsignedInt(String newValue) {
-			return super.setValue(Long.parseLong(newValue));
 		}
 
 		public OptionalLong toOptionalUnsignedInt() {
@@ -822,17 +1121,299 @@ public class Settings {
 		}
 	}
 
+	public static final class UnsignedShortProperty extends Property<Integer, UnsignedShortProperty> {
+
+		public static final int MIN_VALUE = 0;
+		public static final int MAX_VALUE = (1 << 16) - 1;
+
+		/**
+		 * @param base
+		 */
+		public UnsignedShortProperty(String name) {
+			super(name);
+		}
+
+		/**
+		 * @param base
+		 * @param unsignedValue
+		 */
+		public UnsignedShortProperty(String name, int unsignedValue) {
+			super(name, unsignedValue);
+		}
+
+		/**
+		 * @param base
+		 * @param unsignedValue
+		 */
+		public UnsignedShortProperty(String name, short unsignedValue) {
+			super(name, Short.toUnsignedInt(unsignedValue));
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#checkBounds(java.lang.Object)
+		 */
+		@Override
+		protected void checkBounds(Integer unsignedValue) throws IllegalArgumentException {
+			if (unsignedValue < MIN_VALUE || unsignedValue > MAX_VALUE)
+				throw valueOutOfBoundsException(unsignedValue, MIN_VALUE, MAX_VALUE);
+		}
+
+		/**
+		 * @see com.slytechs.jnet.jnetruntime.util.Settings.Property#parseValue(java.lang.String)
+		 */
+		@Override
+		public UnsignedShortProperty parseValue(String newValue) {
+			return setValue(newValue == null ? null : Integer.parseInt(newValue));
+		}
+
+		public UnsignedShortProperty setUnsignedShort(int newValue) {
+			return super.setValue(newValue);
+		}
+
+		public UnsignedShortProperty setUnsignedShort(short newValue) {
+			return super.setValue(Short.toUnsignedInt(newValue));
+		}
+
+		public OptionalInt toOptionalUnsignedShort() {
+			if (isPresent())
+				return OptionalInt.of(getValue());
+
+			return OptionalInt.empty();
+		}
+	}
+
+	/**
+	 * For testing and demonstation purposes.
+	 * 
+	 * @param __ ignored
+	 */
+	public static void main(String[] __) {
+		class MySettings extends Settings {
+
+			private final IntProperty x = ofInt("property.x", 10, Action.ofAction(this::setX, this))
+					.systemProperty();
+
+			private final EnumProperty<TimeUnit> e = ofEnum("property.e", TimeUnit.MICROSECONDS, Action.ofAction(
+					this::setTimeUnit, this));
+
+			private final ListProperty<TimeUnit> l = ofList("property.list", TimeUnit::valueOf, TimeUnit.MICROSECONDS);
+
+			MySettings(String name) {
+				super(name);
+
+				enableUpdates(true);
+				refreshAllProperties();
+			}
+
+			public int getX() {
+				return x.getInt();
+			}
+
+			public void setTimeUnit(TimeUnit unit, Object source) {
+				System.out.println(unit + ", source=" + source);
+			}
+
+			public MySettings setX(int newValue, Object source) {
+				if (source != this)
+					x.setValue(newValue, this);
+
+				System.out.println(name() + "::setX x=" + x.getInt() + ", source=" + source);
+
+				return this;
+			}
+
+			public void setY(int newValue) {
+				System.out.println(name() + "::setY x=" + newValue);
+			}
+
+		}
+
+		StringProperty property = Property.of("property.id", 11)
+				.on(newValue -> System.out.println("on:: property.id = " + newValue))
+				.setFormat("0x%08X")
+				.map(i -> String.valueOf(i))
+				.mapToFormattedString()
+
+		;
+
+		System.out.println("main:: " + property);
+
+		MySettings s1 = new MySettings("s1")
+//				.setX(20, null)
+		;
+
+		MySettings s2 = new MySettings("s2")
+				.setX(30, null);
+
+		System.out.println("---");
+		s1.merge(s2);
+
+		s2.clear();
+	}
+
+	private String name = getClass().getSimpleName();
+
+	private final Support support = new Support();
+
+	private final List<Property<?, ?>> properties = new ArrayList<>();
+
+	public Settings() {
+		support.enableFireEvents = false;
+	}
+
+	public Settings(String name) {
+		this.name = name;
+		support.enableFireEvents = false;
+	}
+
+	public void clear() {
+		for (var p : properties) {
+			p.clear();
+		}
+	}
+
+	public synchronized void enableUpdates(boolean b) {
+		support.enableEventDispatching(b);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T, P_BASE extends Property<T, P_BASE>> P_BASE findProperty(String name) {
+		for (var p : properties) {
+			if (p.name().equals(name))
+				return (P_BASE) p;
+		}
+
+		return null;
+	}
+
+	private void fireForProperty(Property<?, ?> property) {
+		support.fireValueChange(property.name(), null, property.getValue(), "<refresh>");
+	}
+
+	@SuppressWarnings("unchecked")
+	public void merge(Settings settingsToBeMerged) {
+		var ours = this.properties;
+
+		for (@SuppressWarnings("rawtypes")
+		Property our : ours) {
+			var their = settingsToBeMerged.findProperty(our.name());
+			if (their != null && their.isPresent()) {
+				Object value = their.getValue();
+
+				our.setValue(value, "<merge>");
+			}
+
+		}
+	}
+
+	public String name() {
+		return name;
+	}
+
 	public <T, P_BASE extends Property<T, P_BASE>> P_BASE of(String name, Function<String, P_BASE> factory) {
-		return Property.of(name, factory);
+		P_BASE p = findProperty(name);
+		if (p != null)
+			return p;
+
+		P_BASE property = Property.of(name, factory);
+		property.support = this.support;
+
+		properties.add(property);
+
+		return property;
 	}
 
 	public <T, P_BASE extends Property<T, P_BASE>> P_BASE of(String name, T defaultValue) {
-		return Property.of(name, defaultValue);
+		P_BASE p = findProperty(name);
+		if (p != null)
+			return p;
+
+		P_BASE property = Property.of(name, defaultValue);
+		property.support = this.support;
+
+		properties.add(property);
+
+		return property;
 	}
 
 	public <T, P_BASE extends Property<T, P_BASE>> P_BASE of(String name, T defaultValue,
 			BiFunction<String, T, P_BASE> factory) {
-		return Property.of(name, defaultValue, factory);
+		P_BASE p = findProperty(name);
+		if (p != null)
+			return p;
+
+		P_BASE property = Property.of(name, defaultValue, factory);
+		property.support = this.support;
+
+		properties.add(property);
+
+		return property;
+	}
+
+	public ByteProperty ofByte(String name) {
+		return of(name, ByteProperty::new);
+	}
+
+	public ByteProperty ofByte(String name, Action<Byte> action) {
+		return of(name, ByteProperty::new).on(action);
+	}
+
+	public ByteProperty ofByte(String name, byte defaultValue) {
+		return of(name, defaultValue, ByteProperty::new);
+	}
+
+	public ByteProperty ofByte(String name, byte defaultValue, Action<Byte> action) {
+		return of(name, defaultValue, ByteProperty::new).on(action);
+	}
+
+	public DoubleProperty ofDouble(String name) {
+		return of(name, DoubleProperty::new);
+	}
+
+	public DoubleProperty ofDouble(String name, Action<Double> action) {
+		return of(name, DoubleProperty::new).on(action);
+	}
+
+	public DoubleProperty ofDouble(String name, double defaultValue) {
+		return of(name, defaultValue, DoubleProperty::new);
+	}
+
+	public DoubleProperty ofDouble(String name, double defaultValue, Action<Double> action) {
+		return of(name, defaultValue, DoubleProperty::new).on(action);
+	}
+
+	public <E extends Enum<E>> EnumProperty<E> ofEnum(String name, Class<E> enumType) {
+		return of(name, n -> new EnumProperty<E>(name, enumType));
+	}
+
+	public <E extends Enum<E>> EnumProperty<E> ofEnum(String name, Class<E> enumType, Action<E> action) {
+		return of(name, n -> new EnumProperty<E>(name, enumType))
+				.on(action);
+	}
+
+	public <E extends Enum<E>> EnumProperty<E> ofEnum(String name, E defaultValue) {
+		return of(name, n -> new EnumProperty<E>(name, defaultValue));
+	}
+
+	public <E extends Enum<E>> EnumProperty<E> ofEnum(String name, E defaultValue, Action<E> action) {
+		return of(name, n -> new EnumProperty<E>(name, defaultValue))
+				.on(action);
+	}
+
+	public FloatProperty ofFloat(String name) {
+		return of(name, FloatProperty::new);
+	}
+
+	public FloatProperty ofFloat(String name, Action<Float> action) {
+		return of(name, FloatProperty::new).on(action);
+	}
+
+	public FloatProperty ofFloat(String name, float defaultValue) {
+		return of(name, defaultValue, FloatProperty::new);
+	}
+
+	public FloatProperty ofFloat(String name, float defaultValue, Action<Float> action) {
+		return of(name, defaultValue, FloatProperty::new).on(action);
 	}
 
 	public IntProperty ofInt(String name) {
@@ -851,4 +1432,99 @@ public class Settings {
 		return of(name, defaultValue, IntProperty::new).on(action);
 	}
 
+	public LongProperty ofLong(String name) {
+		return of(name, LongProperty::new);
+	}
+
+	public LongProperty ofLong(String name, Action<Long> action) {
+		return of(name, LongProperty::new).on(action);
+	}
+
+	public LongProperty ofLong(String name, long defaultValue) {
+		return of(name, defaultValue, LongProperty::new);
+	}
+
+	public LongProperty ofLong(String name, long defaultValue, Action<Long> action) {
+		return of(name, defaultValue, LongProperty::new).on(action);
+	}
+
+	public ShortProperty ofShort(String name) {
+		return of(name, ShortProperty::new);
+	}
+
+	public ShortProperty ofShort(String name, Action<Short> action) {
+		return of(name, ShortProperty::new).on(action);
+	}
+
+	public ShortProperty ofShort(String name, short defaultValue) {
+		return of(name, defaultValue, ShortProperty::new);
+	}
+
+	public ShortProperty ofShort(String name, short defaultValue, Action<Short> action) {
+		return of(name, defaultValue, ShortProperty::new).on(action);
+	}
+
+	public StringProperty ofString(String name) {
+		return of(name, StringProperty::new);
+	}
+
+	public StringProperty ofString(String name, Action<String> action) {
+		return of(name, StringProperty::new).on(action);
+	}
+
+	public StringProperty ofString(String name, String defaultValue) {
+		return of(name, defaultValue, StringProperty::new);
+	}
+
+	public StringProperty ofString(String name, String defaultValue, Action<String> action) {
+		return of(name, defaultValue, StringProperty::new).on(action);
+	}
+
+	public <E> ListProperty<E> ofList(String name, Function<String, E> parser) {
+		return of(name, n -> new ListProperty<E>(name, parser));
+	}
+
+	public <E> ListProperty<E> ofList(String name, Function<String, E> parser, Action<List<E>> action) {
+		return of(name, n -> new ListProperty<E>(name, parser)).on(action);
+	}
+
+	public <E> ListProperty<E> ofList(String name, Function<String, E> parser, List<E> defaultValue) {
+		return of(name, n -> new ListProperty<E>(name, parser, defaultValue));
+	}
+
+	public <E> ListProperty<E> ofList(String name, Function<String, E> parser, List<E> defaultValue,
+			Action<List<E>> action) {
+		return of(name, n -> new ListProperty<E>(name, parser, defaultValue));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E> ListProperty<E> ofList(String name, Function<String, E> parser, E... defaultValue) {
+		return of(name, n -> new ListProperty<E>(name, parser, Arrays.asList(defaultValue)));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E> ListProperty<E> ofList(String name, Function<String, E> parser,
+			Action<List<E>> action, E... defaultValue) {
+		return of(name, n -> new ListProperty<E>(name, parser, Arrays.asList(defaultValue)));
+	}
+
+	public synchronized void refreshAllProperties() {
+		if (support.enableFireEvents == false)
+			return;
+
+		properties.stream()
+				.filter(Property::isPresent)
+				.forEach(this::fireForProperty);
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		final int maxLen = 10;
+		return name()
+				+ " [properties=" + (properties != null ? properties.subList(0, Math.min(properties.size(),
+						maxLen)) : null) + "]";
+	}
 }
