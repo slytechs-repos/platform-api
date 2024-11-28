@@ -62,11 +62,12 @@ public class Settings {
 	public static void main(String[] __) {
 		class MySettings extends Settings {
 
-			private final IntProperty x = ofInt("property.x", 10, Action.ofAction(this::setX, this))
+			private final IntProperty x = ofInt("property.x", 10)
+					.on(Action.ofAction(this::setX, this))
 					.systemProperty();
 
-			private final EnumProperty<TimeUnit> e = ofEnum("property.e", TimeUnit.MICROSECONDS, Action.ofAction(
-					this::setTimeUnit, this));
+			private final EnumProperty<TimeUnit> e = ofEnum("property.e", TimeUnit.MICROSECONDS)
+					.on(Action.ofAction(this::setTimeUnit, this));
 
 			private final ListProperty<TimeUnit> l = ofList("property.list", TimeUnit::valueOf, TimeUnit.MICROSECONDS);
 
@@ -299,17 +300,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new byte property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new ByteProperty instance
-	 */
-	public ByteProperty ofByte(String name, Action<Byte> action) {
-		return of(name, ByteProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new byte property with the specified name and default value.
 	 *
 	 * @param name         the name of the property
@@ -318,19 +308,6 @@ public class Settings {
 	 */
 	public ByteProperty ofByte(String name, byte defaultValue) {
 		return of(name, defaultValue, ByteProperty::new);
-	}
-
-	/**
-	 * Creates a new byte property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new ByteProperty instance
-	 */
-	public ByteProperty ofByte(String name, byte defaultValue, Action<Byte> action) {
-		return of(name, defaultValue, ByteProperty::new).on(action);
 	}
 
 	/**
@@ -344,17 +321,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new double property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new DoubleProperty instance
-	 */
-	public DoubleProperty ofDouble(String name, Action<Double> action) {
-		return of(name, DoubleProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new double property with the specified name and default value.
 	 *
 	 * @param name         the name of the property
@@ -363,19 +329,6 @@ public class Settings {
 	 */
 	public DoubleProperty ofDouble(String name, double defaultValue) {
 		return of(name, defaultValue, DoubleProperty::new);
-	}
-
-	/**
-	 * Creates a new double property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new DoubleProperty instance
-	 */
-	public DoubleProperty ofDouble(String name, double defaultValue, Action<Double> action) {
-		return of(name, defaultValue, DoubleProperty::new).on(action);
 	}
 
 	/**
@@ -391,20 +344,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new enum property with the specified name, enum type, and action.
-	 *
-	 * @param <E>      the enum type
-	 * @param name     the name of the property
-	 * @param enumType the Class object of the enum type
-	 * @param action   the action to be performed when the property changes
-	 * @return a new EnumProperty instance
-	 */
-	public <E extends Enum<E>> EnumProperty<E> ofEnum(String name, Class<E> enumType, Action<E> action) {
-		return of(name, n -> new EnumProperty<E>(name, enumType))
-				.on(action);
-	}
-
-	/**
 	 * Creates a new enum property with the specified name and default value.
 	 *
 	 * @param <E>          the enum type
@@ -417,21 +356,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new enum property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param <E>          the enum type
-	 * @param name         the name of the property
-	 * @param defaultValue the default enum value
-	 * @param action       the action to be performed when the property changes
-	 * @return a new EnumProperty instance
-	 */
-	public <E extends Enum<E>> EnumProperty<E> ofEnum(String name, E defaultValue, Action<E> action) {
-		return of(name, n -> new EnumProperty<E>(name, defaultValue))
-				.on(action);
-	}
-
-	/**
 	 * Creates a new float property with the specified name.
 	 *
 	 * @param name the name of the property
@@ -439,17 +363,6 @@ public class Settings {
 	 */
 	public FloatProperty ofFloat(String name) {
 		return of(name, FloatProperty::new);
-	}
-
-	/**
-	 * Creates a new float property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new FloatProperty instance
-	 */
-	public FloatProperty ofFloat(String name, Action<Float> action) {
-		return of(name, FloatProperty::new).on(action);
 	}
 
 	/**
@@ -464,19 +377,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new float property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new FloatProperty instance
-	 */
-	public FloatProperty ofFloat(String name, float defaultValue, Action<Float> action) {
-		return of(name, defaultValue, FloatProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new integer property with the specified name.
 	 *
 	 * @param name the name of the property
@@ -484,17 +384,6 @@ public class Settings {
 	 */
 	public IntProperty ofInt(String name) {
 		return of(name, IntProperty::new);
-	}
-
-	/**
-	 * Creates a new integer property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new IntProperty instance
-	 */
-	public IntProperty ofInt(String name, Action<Integer> action) {
-		return of(name, IntProperty::new).on(action);
 	}
 
 	/**
@@ -509,19 +398,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new integer property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new IntProperty instance with the specified configuration
-	 */
-	public IntProperty ofInt(String name, int defaultValue, Action<Integer> action) {
-		return of(name, defaultValue, IntProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new long property with the specified name.
 	 *
 	 * @param name the name of the property
@@ -529,17 +405,6 @@ public class Settings {
 	 */
 	public LongProperty ofLong(String name) {
 		return of(name, LongProperty::new);
-	}
-
-	/**
-	 * Creates a new long property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new LongProperty instance
-	 */
-	public LongProperty ofLong(String name, Action<Long> action) {
-		return of(name, LongProperty::new).on(action);
 	}
 
 	/**
@@ -554,19 +419,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new long property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new LongProperty instance
-	 */
-	public LongProperty ofLong(String name, long defaultValue, Action<Long> action) {
-		return of(name, defaultValue, LongProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new short property with the specified name.
 	 *
 	 * @param name the name of the property
@@ -574,17 +426,6 @@ public class Settings {
 	 */
 	public ShortProperty ofShort(String name) {
 		return of(name, ShortProperty::new);
-	}
-
-	/**
-	 * Creates a new short property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new ShortProperty instance
-	 */
-	public ShortProperty ofShort(String name, Action<Short> action) {
-		return of(name, ShortProperty::new).on(action);
 	}
 
 	/**
@@ -599,19 +440,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new short property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new ShortProperty instance
-	 */
-	public ShortProperty ofShort(String name, short defaultValue, Action<Short> action) {
-		return of(name, defaultValue, ShortProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new string property with the specified name.
 	 *
 	 * @param name the name of the property
@@ -619,17 +447,6 @@ public class Settings {
 	 */
 	public StringProperty ofString(String name) {
 		return of(name, StringProperty::new);
-	}
-
-	/**
-	 * Creates a new string property with the specified name and action.
-	 *
-	 * @param name   the name of the property
-	 * @param action the action to be performed when the property changes
-	 * @return a new StringProperty instance
-	 */
-	public StringProperty ofString(String name, Action<String> action) {
-		return of(name, StringProperty::new).on(action);
 	}
 
 	/**
@@ -644,19 +461,6 @@ public class Settings {
 	}
 
 	/**
-	 * Creates a new string property with the specified name, default value, and
-	 * action.
-	 *
-	 * @param name         the name of the property
-	 * @param defaultValue the default value for the property
-	 * @param action       the action to be performed when the property changes
-	 * @return a new StringProperty instance
-	 */
-	public StringProperty ofString(String name, String defaultValue, Action<String> action) {
-		return of(name, defaultValue, StringProperty::new).on(action);
-	}
-
-	/**
 	 * Creates a new list property with the specified name and parser function.
 	 *
 	 * @param <E>    the type of elements in the list
@@ -666,20 +470,6 @@ public class Settings {
 	 */
 	public <E> ListProperty<E> ofList(String name, Function<String, E> parser) {
 		return of(name, n -> new ListProperty<E>(name, parser));
-	}
-
-	/**
-	 * Creates a new list property with the specified name, parser function, and
-	 * action.
-	 *
-	 * @param <E>    the type of elements in the list
-	 * @param name   the name of the property
-	 * @param parser the function to parse string values into list elements
-	 * @param action the action to be performed when the property changes
-	 * @return a new ListProperty instance
-	 */
-	public <E> ListProperty<E> ofList(String name, Function<String, E> parser, Action<List<E>> action) {
-		return of(name, n -> new ListProperty<E>(name, parser)).on(action);
 	}
 
 	/**
@@ -724,23 +514,6 @@ public class Settings {
 	 */
 	@SafeVarargs
 	public final <E> ListProperty<E> ofList(String name, Function<String, E> parser, E... defaultValue) {
-		return of(name, n -> new ListProperty<E>(name, parser, Arrays.asList(defaultValue)));
-	}
-
-	/**
-	 * Creates a new list property with the specified name, parser function, action,
-	 * and variable number of default values.
-	 *
-	 * @param <E>          the type of elements in the list
-	 * @param name         the name of the property
-	 * @param parser       the function to parse string values into list elements
-	 * @param action       the action to be performed when the property changes
-	 * @param defaultValue the default values as varargs
-	 * @return a new ListProperty instance
-	 */
-	@SafeVarargs
-	public final <E> ListProperty<E> ofList(String name, Function<String, E> parser,
-			Action<List<E>> action, E... defaultValue) {
 		return of(name, n -> new ListProperty<E>(name, parser, Arrays.asList(defaultValue)));
 	}
 

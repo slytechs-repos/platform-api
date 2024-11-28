@@ -556,6 +556,36 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	}
 
 	/**
+	 * Registers a simple action to be executed when this property's value changes,
+	 * with optional source filtering. This is a convenience method that creates an
+	 * Action from the provided BiConsumer.
+	 * 
+	 * <p>
+	 * The BiConsumer receives both the new value and the source of the change. If a
+	 * source object is provided, the action will only be executed for changes that
+	 * come from a different source.
+	 * </p>
+	 *
+	 * <p>
+	 * Example usage:
+	 * </p>
+	 * 
+	 * <pre>
+	 * property.on((newValue, source) -> System.out.println("Value changed to: " + newValue),
+	 * 		this); // Won't fire for changes from 'this'
+	 * </pre>
+	 *
+	 * @param before the action to execute, receiving the new value and change
+	 *               source
+	 * @param source optional source object for filtering changes, or null for no
+	 *               filtering
+	 * @return this property instance for method chaining
+	 */
+	public T_BASE on(BiConsumer<T, Object> before, Object source) {
+		return on(Action.ofAction(before, source));
+	}
+
+	/**
 	 * Returns an alternative property if this one is empty.
 	 *
 	 * @param supplier the supplier of the alternative property
