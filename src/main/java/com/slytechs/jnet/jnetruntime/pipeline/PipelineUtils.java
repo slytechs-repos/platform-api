@@ -29,7 +29,7 @@ import java.util.stream.IntStream;
 
 /**
  * Utility methods for looking up and computing pipeline elements. This class
- * provides various static methods to support the pipeline framework's
+ * provides various static methods to settingsSupport the pipeline framework's
  * reflection and annotation-based operations.
  *
  * @author Mark Bednarczyk

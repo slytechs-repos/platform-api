@@ -70,7 +70,7 @@ public interface DataType extends HasId, HasName {
 	}
 
 	/**
-	 * Support class for DataType implementations. Provides utility methods for
+	 * SettingsSupport class for DataType implementations. Provides utility methods for
 	 * handling data of a specific type.
 	 *
 	 * @param <T> The type of data supported
@@ -440,7 +440,7 @@ public interface DataType extends HasId, HasName {
 		/** The int string. */
 		INT_STRING(IntString.class, IntString::wrapOpaque, IntString::wrapArray);
 
-		/** The data support. */
+		/** The data settingsSupport. */
 		private final DataSupport<?> dataSupport;
 
 		/**
@@ -481,7 +481,7 @@ public interface DataType extends HasId, HasName {
 	}
 
 	/**
-	 * Data support.
+	 * Data settingsSupport.
 	 *
 	 * @param <T> The type of data
 	 * @return The DataSupport for this DataType

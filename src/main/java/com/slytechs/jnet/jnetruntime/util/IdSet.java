@@ -28,7 +28,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Represents a collection of port identifiers with support for various set
+ * Represents a collection of port identifiers with settingsSupport for various set
  * operations. This interface provides methods to create and manipulate
  * collections of port IDs and supports operations such as union, intersection,
  * difference, and symmetric difference.

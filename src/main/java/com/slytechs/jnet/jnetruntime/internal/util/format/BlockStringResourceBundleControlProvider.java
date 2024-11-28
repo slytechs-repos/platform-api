@@ -21,7 +21,7 @@ import java.util.ResourceBundle.Control;
 import java.util.spi.ResourceBundleControlProvider;
 
 /**
- * Provides support for java block strings terminated with triple-quotes """, in
+ * Provides settingsSupport for java block strings terminated with triple-quotes """, in
  * resource bundle properties files. As the resource file is read, the provided
  * input stream, detects and rewrites the stream as a series of \\\n terminated
  * lines in between the block quotes """. The triple block quotes themselves,

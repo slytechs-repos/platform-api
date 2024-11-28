@@ -47,7 +47,7 @@ class DataList<T> {
 	/** The type. */
 	private final DataType type;
 
-	/** The support. */
+	/** The settingsSupport. */
 	private final DataSupport<T> support;
 
 	/** The component type. */
@@ -133,7 +133,7 @@ class DataList<T> {
 	 */
 	public Registration addChangeListener(DataChangeListener<T> listener) {
 //		if (list.isEmpty())
-//			listener.onDataChange(support.empty());
+//			listener.onDataChange(settingsSupport.empty());
 		return changeListeners.addListener(listener);
 	}
 

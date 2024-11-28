@@ -48,7 +48,7 @@ import com.slytechs.jnet.jnetruntime.util.HasName;
  * Key features of the pipeline include:
  * </p>
  * <ul>
- * <li>Support for multiple input sources</li>
+ * <li>SettingsSupport for multiple input sources</li>
  * <li>Configurable processing stages with priority-based ordering</li>
  * <li>Multiple output handlers for flexible data distribution</li>
  * <li>Bypass functionality for conditional processing</li>

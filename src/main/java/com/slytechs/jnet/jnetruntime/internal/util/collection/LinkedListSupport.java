@@ -76,7 +76,7 @@ public class LinkedListSupport<T, E extends LinkedListSupport.LinkedEntry<T, E>>
 	 * @param <E>      the element type
 	 * @param capacity the capacity
 	 * @param e        the e
-	 * @return the linked list support
+	 * @return the linked list settingsSupport
 	 */
 	public static <T, E extends LinkedListSupport.LinkedEntry<T, E>> LinkedListSupport<T, E> allocateToCapacity(
 			long capacity,
@@ -102,14 +102,14 @@ public class LinkedListSupport<T, E extends LinkedListSupport.LinkedEntry<T, E>>
 	private String emptyListMessage = "empty linked list";
 
 	/**
-	 * Instantiates a new linked list support.
+	 * Instantiates a new linked list settingsSupport.
 	 */
 	public LinkedListSupport() {
 		this.maxCapacity = Integer.MAX_VALUE;
 	}
 
 	/**
-	 * Instantiates a new linked list support.
+	 * Instantiates a new linked list settingsSupport.
 	 *
 	 * @param maxCapacity the max capacity
 	 */
@@ -121,7 +121,7 @@ public class LinkedListSupport<T, E extends LinkedListSupport.LinkedEntry<T, E>>
 	 * Using empty list message.
 	 *
 	 * @param newMessage the new message
-	 * @return the linked list support
+	 * @return the linked list settingsSupport
 	 */
 	public final LinkedListSupport<T, E> usingEmptyListMessage(String newMessage) {
 		this.emptyListMessage = newMessage;

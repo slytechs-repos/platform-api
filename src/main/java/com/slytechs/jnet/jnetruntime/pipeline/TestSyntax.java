@@ -50,7 +50,7 @@ public class TestSyntax {
 
 		;
 
-		/** The data support. */
+		/** The data settingsSupport. */
 		private final DataSupport<?> dataSupport;
 
 		/**
@@ -77,10 +77,10 @@ public class TestSyntax {
 		}
 
 		/**
-		 * Data support.
+		 * Data settingsSupport.
 		 *
 		 * @param <T> the generic type
-		 * @return the data support
+		 * @return the data settingsSupport
 		 * @see com.slytechs.jnet.jnetruntime.pipeline.DataType#dataSupport()
 		 */
 		@SuppressWarnings("unchecked")

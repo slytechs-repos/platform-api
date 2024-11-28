@@ -37,7 +37,7 @@ import java.util.function.Consumer;
  * {@link #remove(int)})</li>
  * <li>Implementation of both {@link List} and {@link Deque} interfaces,
  * providing a wide range of operations</li>
- * <li>Support for null elements</li>
+ * <li>SettingsSupport for null elements</li>
  * <li>Fail-fast iterators which throw {@link ConcurrentModificationException}
  * if the list is structurally modified during iteration</li>
  * </ul>
