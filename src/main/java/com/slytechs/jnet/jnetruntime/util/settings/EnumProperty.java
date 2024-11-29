@@ -75,6 +75,10 @@ public final class EnumProperty<E extends Enum<E>> extends Property<E, EnumPrope
 	public EnumProperty(String name, Class<E> enumType) {
 		super(name);
 		this.enumType = enumType;
+
+		super.setDeserializer((newValue) -> Enums.getEnumOrThrow(
+				enumType,
+				newValue, () -> new IllegalArgumentException(newValue)));
 	}
 
 	/**
@@ -89,6 +93,9 @@ public final class EnumProperty<E extends Enum<E>> extends Property<E, EnumPrope
 	public EnumProperty(String name, E value) {
 		super(name, value);
 		this.enumType = (Class<E>) value.getClass();
+		super.setDeserializer((newValue) -> Enums.getEnumOrThrow(
+				enumType,
+				newValue, () -> new IllegalArgumentException(newValue)));
 	}
 
 	/**
@@ -104,6 +111,9 @@ public final class EnumProperty<E extends Enum<E>> extends Property<E, EnumPrope
 	EnumProperty(SettingsSupport support, String name, Class<E> enumType) {
 		super(support, name);
 		this.enumType = enumType;
+		super.setDeserializer((newValue) -> Enums.getEnumOrThrow(
+				enumType,
+				newValue, () -> new IllegalArgumentException(newValue)));
 	}
 
 	/**
@@ -120,6 +130,9 @@ public final class EnumProperty<E extends Enum<E>> extends Property<E, EnumPrope
 	EnumProperty(SettingsSupport support, String name, E value) {
 		super(support, name, value);
 		this.enumType = (Class<E>) value.getClass();
+		super.setDeserializer((newValue) -> Enums.getEnumOrThrow(
+				enumType,
+				newValue, () -> new IllegalArgumentException(newValue)));
 	}
 
 	/**
@@ -132,23 +145,6 @@ public final class EnumProperty<E extends Enum<E>> extends Property<E, EnumPrope
 	 */
 	public E getEnum() {
 		return getValue();
-	}
-
-	/**
-	 * Parses a string value and sets the property's value accordingly. The string
-	 * value is converted to an enum value using the {@link Enums#getEnumOrThrow}
-	 * utility method. The parsing is case-sensitive and must match an enum constant
-	 * name exactly.
-	 *
-	 * @param newValue the string value to parse, may be null
-	 * @return this EnumProperty instance for method chaining
-	 * @throws IllegalArgumentException if the string does not match any enum
-	 *                                  constant in the enum type E
-	 * @see Enums#getEnumOrThrow
-	 */
-	@Override
-	public EnumProperty<E> parseValue(String newValue) {
-		return setValue(Enums.getEnumOrThrow(enumType, newValue, () -> new IllegalArgumentException(newValue)));
 	}
 
 	/**

@@ -144,7 +144,7 @@ public final class UnsignedIntProperty extends Property<Long, UnsignedIntPropert
 	 *                                  range
 	 */
 	@Override
-	public UnsignedIntProperty parseValue(String newValue) {
+	public UnsignedIntProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Long.parseLong(newValue));
 	}
 

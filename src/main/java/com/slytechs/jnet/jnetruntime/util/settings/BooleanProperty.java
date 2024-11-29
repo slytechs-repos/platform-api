@@ -69,6 +69,31 @@ public final class BooleanProperty extends Property<Boolean, BooleanProperty> {
 	}
 
 	/**
+	 * Creates a new BooleanProperty with the specified name and no initial value.
+	 * The property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	BooleanProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new BooleanProperty with the specified name and initial value. The
+	 * property will be initialized with the provided boolean value.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 * @param value   the initial boolean value for this property
+	 */
+	BooleanProperty(SettingsSupport support, String name, boolean value) {
+		super(support, name, value);
+	}
+
+	/**
 	 * Retrieves the current boolean value of this property. This is a convenience
 	 * method that provides direct access to the boolean value without requiring
 	 * casting from the generic type.
@@ -92,7 +117,7 @@ public final class BooleanProperty extends Property<Boolean, BooleanProperty> {
 	 * @see Boolean#parseBoolean(String)
 	 */
 	@Override
-	public BooleanProperty parseValue(String newValue) {
+	public BooleanProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Boolean.parseBoolean(newValue));
 	}
 

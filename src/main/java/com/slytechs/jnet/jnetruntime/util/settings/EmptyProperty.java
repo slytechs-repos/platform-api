@@ -42,10 +42,10 @@ final class EmptyProperty<T, T_BASE extends Property<T, T_BASE>> extends Propert
 	}
 
 	/**
-	 * @see com.slytechs.jnet.jnetruntime.util.settings.Property#parseValue(java.lang.String)
+	 * @see com.slytechs.jnet.jnetruntime.util.settings.Property#deserializeValue(java.lang.String)
 	 */
 	@Override
-	public T_BASE parseValue(String newValue) {
+	public T_BASE deserializeValue(String newValue) {
 		throw new UnsupportedOperationException("not implemented yet");
 	}
 

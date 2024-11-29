@@ -17,17 +17,23 @@
  */
 package com.slytechs.jnet.jnetruntime.util.settings;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import com.slytechs.jnet.jnetruntime.util.Registration;
 import com.slytechs.jnet.jnetruntime.util.settings.Property.Action;
+import com.slytechs.jnet.jnetruntime.util.settings.Property.Deserializer;
 import com.slytechs.jnet.jnetruntime.util.settings.Property.PropertyFactory;
 import com.slytechs.jnet.jnetruntime.util.settings.Property.PropertyFactoryWithValue;
+import com.slytechs.jnet.jnetruntime.util.settings.Property.Serializer;
 
 /**
  * A flexible and extensible settings management system that provides type-safe
@@ -77,19 +83,20 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	public static void main(String[] __) {
 
 		class MySettings extends Settings<MySettings> {
+			private static final String BASENAME = "ports";
 
-			private final IntProperty x = newProperty("property.x", 10, IntProperty::new)
+			private final IntProperty x = newProperty("delay", 10, IntProperty::new)
 					.on(Action.withSource(this::setX_withSource, this).andThen(this::setY_simpleSetter))
 					.loadSystemProperty();
 
-			private final EnumProperty<TimeUnit> e = newProperty("property.e", TimeUnit.MICROSECONDS, EnumProperty::new)
+			private final EnumProperty<TimeUnit> e = newProperty("timeunit", TimeUnit.MICROSECONDS, EnumProperty::new)
 					.on(Action.withSource(this::setTimeUnit, this));
 
-			private final ListProperty<TimeUnit> l = newListProperty("property.list", TimeUnit::valueOf,
+			private final ListProperty<TimeUnit> l = newListProperty("ids", TimeUnit::valueOf,
 					TimeUnit.MICROSECONDS);
 
 			MySettings(String name) {
-				super(name);
+				super(BASENAME, name);
 
 				super.onClear(settings -> System.out.println("clear:: " + settings));
 				super.onReset(settings -> System.out.println("reset:: " + settings));
@@ -113,9 +120,6 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 			}
 
 			public MySettings setX_withSource(int newValue, Object source) {
-				if ("<clear>".equals(source))
-					return this;;
-
 				if (source != this)
 					x.setValue(newValue, this);
 
@@ -161,14 +165,17 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	@SuppressWarnings("unchecked")
 	private final T_BASE us = (T_BASE) this;
 	private final SettingsSupport settingsSupport = new SettingsSupport();
-	private final List<Property<?, ?>> properties = new ArrayList<>();
+	final List<Property<?, ?>> properties = new ArrayList<>();
 	private final List<CleanSettingsNotification<T_BASE>> clearActions = new ArrayList<>();
 	private final List<ResetSettingsNotification<T_BASE>> resetActions = new ArrayList<>();
+
+	private final String baseName;
 
 	/**
 	 * Creates a new Settings instance with updates disabled by default.
 	 */
-	public Settings() {
+	public Settings(String baseName) {
+		this.baseName = baseName.endsWith(".") ? baseName : baseName + ".";
 		settingsSupport.enableFireEvents = false;
 	}
 
@@ -179,9 +186,92 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @param name the name of this settings instance, used for identification and
 	 *             logging
 	 */
-	public Settings(String name) {
+	public Settings(String baseName, String name) {
+		this.baseName = baseName.endsWith(".") ? baseName : baseName + ".";
 		this.name = name;
 		settingsSupport.enableFireEvents = false;
+	}
+
+	protected String createPropertyName(String name) {
+		return baseName + name;
+	}
+
+	/**
+	 * Reads and loads property values from a Java properties format input stream.
+	 * The stream may contain multiple sections of properties, each identified by a
+	 * header in the format "# [section_name]". Properties are loaded from the
+	 * section matching this settings instance's name (from {@link #name()}).
+	 * 
+	 * <p>
+	 * Example properties file format:
+	 * </p>
+	 * 
+	 * <pre>
+	* # Properties without a section header go to default section
+	* global.property=value
+	* 
+	* # [network]
+	* port=8080
+	* host=localhost
+	* 
+	* # [security]
+	* ssl.enabled=true
+	* keystore.path=/path/to/keystore
+	 * </pre>
+	 * 
+	 * <p>
+	 * Properties without a section header are stored in a default section and will
+	 * be loaded if no matching section is found for the settings name. This is
+	 * useful for single-section files that don't have an explicit header.
+	 * </p>
+	 *
+	 * @param input the input stream containing the property values in Java
+	 *              properties format
+	 * @return this settings instance for method chaining
+	 * @throws IOException if an I/O error occurs while reading from the stream
+	 * @see #name()
+	 * @see #writeSettings(OutputStream)
+	 */
+	public T_BASE readSettings(InputStream input) throws IOException {
+		var reader = new SettingsReader(input);
+		reader.read(this);
+		return us;
+	}
+
+	/**
+	 * Writes the current property values to an output stream in Java properties
+	 * format, within a section identified by this settings instance's name. The
+	 * output can be read back using {@link #readSettings(InputStream)}.
+	 * 
+	 * <p>
+	 * The properties are written with a section header in the format "#
+	 * [section_name]" where section_name is obtained from {@link #name()}. Multiple
+	 * settings can be written to the same file by calling writeSettings on
+	 * different settings instances with the same output stream, creating a
+	 * multi-section properties file.
+	 * </p>
+	 * 
+	 * <p>
+	 * Example usage for writing multiple sections:
+	 * </p>
+	 * 
+	 * <pre>
+	 * try (var output = new FileOutputStream("config.properties")) {
+	 * 	networkSettings.writeSettings(output); // Writes [network] section
+	 * 	securitySettings.writeSettings(output); // Appends [security] section
+	 * }
+	 * </pre>
+	 *
+	 * @param output the output stream to write the property values to
+	 * @return this settings instance for method chaining
+	 * @throws IOException if an I/O error occurs while writing to the stream
+	 * @see #name()
+	 * @see #readSettings(InputStream)
+	 */
+	public T_BASE writeSettings(OutputStream output) throws IOException {
+		var writer = new SettingsWriter(output);
+		writer.write(this);
+		return us;
 	}
 
 	/**
@@ -319,6 +409,14 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 */
 	public String name() {
 		return name;
+	}
+
+	public BooleanProperty newBooleanProperty(String name) {
+		return newProperty(name, BooleanProperty::new);
+	}
+
+	public BooleanProperty newBooleanProperty(String name, boolean defaultValue) {
+		return newProperty(name, defaultValue, BooleanProperty::new);
 	}
 
 	/**
@@ -486,6 +584,27 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 		return newProperty(name, (s, n) -> new ListProperty<E>(s, n, parser, defaultValue));
 	}
 
+	public <E> ObjectProperty<E> newObjectProperty(String name, Deserializer<E> deserializer,
+			Serializer<E> serializer) {
+		return newProperty(name, (s, n) -> new ObjectProperty<E>(s, n, deserializer, serializer));
+	}
+
+	public <E> ObjectProperty<E> newObjectProperty(String name, Deserializer<E> deserializer,
+			Serializer<E> serializer, E value) {
+		return newProperty(name, (s, n) -> new ObjectProperty<E>(s, n, deserializer, serializer, value));
+	}
+
+	public <E> ArrayProperty<E> newArrayProperty(String name, Deserializer<E> deserializer,
+			Serializer<E> serializer, IntFunction<E[]> arrayFactory) {
+		return newProperty(name, (s, n) -> new ArrayProperty<E>(s, n, deserializer, serializer, arrayFactory));
+	}
+
+	@SuppressWarnings("unchecked")
+	public <E> ArrayProperty<E> newArrayProperty(String name, Deserializer<E> deserializer,
+			Serializer<E> serializer, IntFunction<E[]> arrayFactory, E... value) {
+		return newProperty(name, (s, n) -> new ArrayProperty<E>(s, n, deserializer, serializer, arrayFactory, value));
+	}
+
 	/**
 	 * Creates a new long property with the specified name.
 	 *
@@ -519,6 +638,8 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return the existing or newly created property
 	 */
 	public <T, P_BASE extends Property<T, P_BASE>> P_BASE newProperty(String name, PropertyFactory<P_BASE> factory) {
+		name = createPropertyName(name);
+
 		P_BASE p = findProperty(name);
 		if (p != null)
 			return p;
@@ -538,6 +659,8 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return the existing or newly created property
 	 */
 	public <T, P_BASE extends Property<T, P_BASE>> P_BASE newProperty(String name, T defaultValue) {
+		name = createPropertyName(name);
+
 		P_BASE p = findProperty(name);
 		if (p != null)
 			return p;
@@ -562,6 +685,8 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	public <T, P_BASE extends Property<T, P_BASE>> P_BASE newProperty(String name,
 			T defaultValue,
 			PropertyFactoryWithValue<T, P_BASE> factory) {
+		name = createPropertyName(name);
+
 		P_BASE p = findProperty(name);
 		if (p != null)
 			return p;

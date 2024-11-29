@@ -129,7 +129,7 @@ public final class ShortProperty extends Property<Short, ShortProperty> {
 	 * @see Short#parseShort(String)
 	 */
 	@Override
-	public ShortProperty parseValue(String newValue) {
+	public ShortProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Short.parseShort(newValue));
 	}
 

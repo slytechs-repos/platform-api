@@ -24,16 +24,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * Represents a collection of port identifiers with settingsSupport for various set
- * operations. This interface provides methods to create and manipulate
+ * Represents a collection of port identifiers with settingsSupport for various
+ * set operations. This interface provides methods to create and manipulate
  * collections of port IDs and supports operations such as union, intersection,
  * difference, and symmetric difference.
  */
 public interface IdSet<T_BASE extends IdSet<T_BASE>> extends Iterable<Integer> {
+
+	static <T extends IdSet<T>> T deserialize(String line, Function<int[], T> factory) {
+		int[] ids = Arrays.stream(line.split(","))
+				.map(String::trim)
+				.mapToInt(Integer::parseInt)
+				.toArray();
+
+		return factory.apply(ids);
+	}
+
+	static String serialize(IdSet<?> ids) {
+		return ids.stream()
+				.mapToObj(Integer::toString)
+				.collect(Collectors.joining(","));
+	}
+
 	int[] EMPTY_ARRAY = {};
 
 	default int at(int index) {

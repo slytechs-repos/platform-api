@@ -134,7 +134,7 @@ public final class LongProperty extends Property<Long, LongProperty> {
 	 * @see Long#parseLong(String)
 	 */
 	@Override
-	public LongProperty parseValue(String newValue) {
+	public LongProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Long.parseLong(newValue));
 	}
 

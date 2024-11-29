@@ -153,7 +153,7 @@ public final class UnsignedShortProperty extends Property<Integer, UnsignedShort
 	 *                                  range
 	 */
 	@Override
-	public UnsignedShortProperty parseValue(String newValue) {
+	public UnsignedShortProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Integer.parseInt(newValue));
 	}
 

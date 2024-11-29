@@ -120,7 +120,7 @@ public final class StringProperty extends Property<String, StringProperty> {
 	 * @return this StringProperty instance for method chaining
 	 */
 	@Override
-	public StringProperty parseValue(String newValue) {
+	public StringProperty deserializeValue(String newValue) {
 		return setValue(newValue);
 	}
 

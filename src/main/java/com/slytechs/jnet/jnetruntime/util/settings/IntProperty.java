@@ -134,7 +134,7 @@ public final class IntProperty extends Property<Integer, IntProperty> {
 	 * @see Integer#parseInt(String)
 	 */
 	@Override
-	public IntProperty parseValue(String newValue) {
+	public IntProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Integer.parseInt(newValue));
 	}
 

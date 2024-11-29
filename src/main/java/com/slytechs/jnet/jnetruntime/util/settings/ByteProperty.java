@@ -124,7 +124,7 @@ public final class ByteProperty extends Property<Byte, ByteProperty> {
 	 * @see Byte#parseByte(String)
 	 */
 	@Override
-	public ByteProperty parseValue(String newValue) {
+	public ByteProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Byte.parseByte(newValue));
 	}
 

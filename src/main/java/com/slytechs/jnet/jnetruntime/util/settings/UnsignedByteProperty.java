@@ -151,7 +151,7 @@ public final class UnsignedByteProperty extends Property<Integer, UnsignedBytePr
 	 *                                  range
 	 */
 	@Override
-	public UnsignedByteProperty parseValue(String newValue) {
+	public UnsignedByteProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Integer.parseInt(newValue));
 	}
 

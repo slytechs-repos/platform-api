@@ -130,7 +130,7 @@ public final class DoubleProperty extends Property<Double, DoubleProperty> {
 	 * @see Double#parseDouble(String)
 	 */
 	@Override
-	public DoubleProperty parseValue(String newValue) {
+	public DoubleProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Double.parseDouble(newValue));
 	}
 

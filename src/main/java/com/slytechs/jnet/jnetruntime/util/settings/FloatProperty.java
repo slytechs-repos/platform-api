@@ -129,7 +129,7 @@ public final class FloatProperty extends Property<Float, FloatProperty> {
 	 * @see Float#parseFloat(String)
 	 */
 	@Override
-	public FloatProperty parseValue(String newValue) {
+	public FloatProperty deserializeValue(String newValue) {
 		return setValue(newValue == null ? null : Float.parseFloat(newValue));
 	}
 

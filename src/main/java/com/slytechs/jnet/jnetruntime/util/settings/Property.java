@@ -90,7 +90,17 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 		UnsignedByteProperty,
 		UnsignedShortProperty,
 		UnsignedIntProperty,
-		ListProperty {
+		ListProperty,
+		ArrayProperty,
+		ObjectProperty {
+
+	public interface Serializer<T> {
+		String serializeObject(T object);
+	}
+
+	public interface Deserializer<T> {
+		T deserializeObject(String serializedObject);
+	}
 
 	/**
 	 * Interface defining actions that can be performed when property values change.
@@ -383,6 +393,9 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	private final List<ClearAction<T>> clearActions = new ArrayList<>(1);
 	private final List<ResetAction<T>> resetActions = new ArrayList<>(1);
 
+	private Serializer<T> serializer = String::valueOf;
+	private Deserializer<T> deserializer;
+
 	/**
 	 * Creates a new Property with the specified name and no initial value.
 	 *
@@ -435,6 +448,29 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 		this.initialValue = value;
 	}
 
+	protected void setSerializer(Serializer<T> newSerializer) {
+		this.serializer = newSerializer;
+	}
+
+	protected void setDeserializer(Deserializer<T> newDeserializer) {
+		this.deserializer = newDeserializer;
+	}
+
+	protected Serializer<T> getSerializer() {
+		return serializer;
+	}
+
+	protected IllegalStateException noDeserializerException() {
+		return new IllegalStateException("property deserializer is not set [%s]".formatted(name()));
+	}
+
+	protected Deserializer<T> getDeserializer() {
+		if (deserializer == null)
+			throw noDeserializerException();
+
+		return deserializer;
+	}
+
 	/**
 	 * Validates that a value is within acceptable bounds for this property type.
 	 * Base implementation performs no validation. Subclasses should override this
@@ -484,7 +520,7 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	public T_BASE getSystemProperty(T defaultValue) {
 		String newValue = System.getProperty(name());
 		if (newValue != null)
-			return parseValue(newValue);
+			return deserializeValue(newValue);
 		else if (isEmpty())
 			return setValue(defaultValue);
 
@@ -571,7 +607,7 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	public T_BASE loadSystemProperty() {
 		String newValue = System.getProperty(name());
 		if (newValue != null)
-			return parseValue(newValue);
+			return deserializeValue(newValue);
 		return us;
 	}
 
@@ -649,6 +685,10 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 */
 	public T_BASE on(BiConsumer<T, Object> before, Object source) {
 		return on(Action.withSource(before, source));
+	}
+
+	public <R> T_BASE on(Function<T, R> before, Object source) {
+		return on((T t) -> before.apply(t));
 	}
 
 	/**
@@ -784,13 +824,26 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	}
 
 	/**
-	 * Parses a string value and sets the property's value accordingly. Must be
-	 * implemented by concrete subclasses to provide type-specific parsing.
+	 * Parse/deserializes a string value and sets the property's value accordingly.
+	 * Must be implemented by concrete subclasses to provide type-specific parsing.
 	 *
 	 * @param newValue the string value to parse
 	 * @return this property instance for method chaining
 	 */
-	public abstract T_BASE parseValue(String newValue);
+	public T_BASE deserializeValue(String newValue) {
+		T deserializedValue = getDeserializer().deserializeObject(newValue);
+
+		setValue(deserializedValue);
+
+		return us;
+	}
+
+	public String serializeValue() {
+		if (isEmpty())
+			throw noValueException();
+
+		return getSerializer().serializeObject(getValue());
+	}
 
 	/**
 	 * Registers a clear action and returns a Registration object that can be used

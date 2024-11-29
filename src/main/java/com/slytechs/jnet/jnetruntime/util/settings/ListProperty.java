@@ -138,7 +138,7 @@ public final class ListProperty<E> extends Property<List<E>, ListProperty<E>> {
 	 *                              while parsing any element
 	 */
 	@Override
-	public ListProperty<E> parseValue(String newValue) {
+	public ListProperty<E> deserializeValue(String newValue) {
 		String[] array = newValue.split(",");
 		List<E> list = new ArrayList<>(array.length);
 
