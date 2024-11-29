@@ -75,6 +75,31 @@ public final class StringProperty extends Property<String, StringProperty> {
 	}
 
 	/**
+	 * Creates a new StringProperty with the specified name and no initial value.
+	 * The property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	StringProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new StringProperty with the specified name and initial value. The
+	 * property will be initialized with the provided string value.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 * @param value   the initial string value for this property
+	 */
+	StringProperty(SettingsSupport support, String name, String value) {
+		super(support, name, value);
+	}
+
+	/**
 	 * Retrieves the current string value of this property. This is a convenience
 	 * method that provides direct access to the string value without requiring
 	 * casting from the generic type.

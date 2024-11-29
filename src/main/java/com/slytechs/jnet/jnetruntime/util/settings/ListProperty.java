@@ -93,6 +93,39 @@ public final class ListProperty<E> extends Property<List<E>, ListProperty<E>> {
 	}
 
 	/**
+	 * Creates a new ListProperty with the specified name and component parser. The
+	 * property will be created in an unset state.
+	 *
+	 * @param support         the settings support instance for handling property
+	 *                        change notifications
+	 * @param name            the name of the property, used for identification
+	 * @param componentParser the function used to parse individual elements from
+	 *                        their string representation. This function should
+	 *                        convert a string to an element of type E or throw an
+	 *                        appropriate exception if parsing fails
+	 */
+	ListProperty(SettingsSupport support, String name, Function<String, E> componentParser) {
+		super(support, name);
+		this.componentParser = componentParser;
+	}
+
+	/**
+	 * Creates a new ListProperty with the specified name, component parser, and
+	 * initial list value. The property will be initialized with the provided list.
+	 *
+	 * @param support         the settings support instance for handling property
+	 *                        change notifications
+	 * @param name            the name of the property, used for identification
+	 * @param componentParser the function used to parse individual elements from
+	 *                        their string representation
+	 * @param value           the initial list value for this property
+	 */
+	ListProperty(SettingsSupport support, String name, Function<String, E> componentParser, List<E> value) {
+		super(support, name, value);
+		this.componentParser = componentParser;
+	}
+
+	/**
 	 * Parses a comma-separated string value and sets the property's value
 	 * accordingly. The string is split on commas, and each element is parsed using
 	 * the component parser function provided at construction. The resulting list

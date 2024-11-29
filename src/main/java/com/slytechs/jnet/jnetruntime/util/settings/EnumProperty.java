@@ -92,6 +92,37 @@ public final class EnumProperty<E extends Enum<E>> extends Property<E, EnumPrope
 	}
 
 	/**
+	 * Creates a new EnumProperty with the specified name and enum type. The
+	 * property will be created in an unset state, but will use the provided enum
+	 * class for type safety and value parsing.
+	 *
+	 * @param support  the settings support instance for handling property change
+	 *                 notifications
+	 * @param name     the name of the property, used for identification
+	 * @param enumType the Class object representing the enum type E
+	 */
+	EnumProperty(SettingsSupport support, String name, Class<E> enumType) {
+		super(support, name);
+		this.enumType = enumType;
+	}
+
+	/**
+	 * Creates a new EnumProperty with the specified name and initial enum value.
+	 * The enum type is automatically determined from the provided value.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 * @param value   the initial enum value for this property, also used to
+	 *                determine the enum type
+	 */
+	@SuppressWarnings("unchecked")
+	EnumProperty(SettingsSupport support, String name, E value) {
+		super(support, name, value);
+		this.enumType = (Class<E>) value.getClass();
+	}
+
+	/**
 	 * Retrieves the current enum value of this property. This is a convenience
 	 * method that provides direct access to the enum value without requiring
 	 * casting from the generic type.

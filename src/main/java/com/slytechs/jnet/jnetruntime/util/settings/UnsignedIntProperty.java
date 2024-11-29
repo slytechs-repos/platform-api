@@ -91,6 +91,33 @@ public final class UnsignedIntProperty extends Property<Long, UnsignedIntPropert
 	}
 
 	/**
+	 * Creates a new UnsignedIntProperty with the specified name and no initial
+	 * value. The property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	UnsignedIntProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new UnsignedIntProperty with the specified name and unsigned long
+	 * value.
+	 *
+	 * @param support       the settings support instance for handling property
+	 *                      change notifications
+	 * @param name          the name of the property, used for identification
+	 * @param unsignedValue the initial unsigned value (must be between 0 and
+	 *                      2^32-1)
+	 * @throws IllegalArgumentException if the value is outside the valid range
+	 */
+	UnsignedIntProperty(SettingsSupport support, String name, long unsignedValue) {
+		super(support, name, unsignedValue);
+	}
+
+	/**
 	 * Validates that a value is within the acceptable range for an unsigned
 	 * integer.
 	 * 

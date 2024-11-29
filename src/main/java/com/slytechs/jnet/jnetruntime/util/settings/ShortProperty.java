@@ -78,6 +78,31 @@ public final class ShortProperty extends Property<Short, ShortProperty> {
 	}
 
 	/**
+	 * Creates a new ShortProperty with the specified name and no initial value. The
+	 * property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	ShortProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new ShortProperty with the specified name and initial value. The
+	 * property will be initialized with the provided short value.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 * @param value   the initial short value for this property
+	 */
+	ShortProperty(SettingsSupport support, String name, short value) {
+		super(support, name, value);
+	}
+
+	/**
 	 * Retrieves the current short value of this property. This is a convenience
 	 * method that provides direct access to the short value without requiring
 	 * unboxing from the generic type.

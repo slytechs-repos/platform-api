@@ -80,6 +80,31 @@ public final class DoubleProperty extends Property<Double, DoubleProperty> {
 	}
 
 	/**
+	 * Creates a new DoubleProperty with the specified name and no initial value.
+	 * The property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	public DoubleProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new DoubleProperty with the specified name and initial value. The
+	 * property will be initialized with the provided double value.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 * @param value   the initial double value for this property
+	 */
+	public DoubleProperty(SettingsSupport support, String name, double value) {
+		super(support, name, value);
+	}
+
+	/**
 	 * Retrieves the current double value of this property. This is a convenience
 	 * method that provides direct access to the double value without requiring
 	 * casting from the generic type.

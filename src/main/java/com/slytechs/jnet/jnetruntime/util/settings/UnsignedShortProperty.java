@@ -101,6 +101,33 @@ public final class UnsignedShortProperty extends Property<Integer, UnsignedShort
 	}
 
 	/**
+	 * Creates a new UnsignedShortProperty with the specified name and no initial
+	 * value. The property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	UnsignedShortProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new UnsignedShortProperty with the specified name and unsigned
+	 * integer value.
+	 *
+	 * @param support       the settings support instance for handling property
+	 *                      change notifications
+	 * @param name          the name of the property, used for identification
+	 * @param unsignedValue the initial unsigned value (must be between 0 and
+	 *                      65,535)
+	 * @throws IllegalArgumentException if the value is outside the valid range
+	 */
+	UnsignedShortProperty(SettingsSupport support, String name, int unsignedValue) {
+		super(support, name, unsignedValue);
+	}
+
+	/**
 	 * Validates that a value is within the acceptable range for an unsigned short.
 	 * 
 	 * @param unsignedValue the value to validate

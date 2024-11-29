@@ -83,6 +83,31 @@ public final class IntProperty extends Property<Integer, IntProperty> {
 	}
 
 	/**
+	 * Creates a new IntProperty with the specified name and no initial value. The
+	 * property will be created in an unset state.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 */
+	IntProperty(SettingsSupport support, String name) {
+		super(support, name);
+	}
+
+	/**
+	 * Creates a new IntProperty with the specified name and initial value. The
+	 * property will be initialized with the provided integer value.
+	 *
+	 * @param support the settings support instance for handling property change
+	 *                notifications
+	 * @param name    the name of the property, used for identification
+	 * @param value   the initial integer value for this property
+	 */
+	IntProperty(SettingsSupport support, String name, int value) {
+		super(support, name, value);
+	}
+
+	/**
 	 * Retrieves the current integer value of this property. This is a convenience
 	 * method that provides direct access to the integer value without requiring
 	 * unboxing from the generic type.

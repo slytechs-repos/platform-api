@@ -17,11 +17,12 @@
  */
 package com.slytechs.jnet.jnetruntime.util.settings;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -100,16 +101,45 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	interface Action<T> {
 
 		/**
+		 * Wraps an action to enable method chaining with {@code andThen()} when using
+		 * method references or lambda expressions. This method exists purely for
+		 * syntactical convenience, as method references cannot directly use
+		 * {@code andThen()} without being wrapped first.
+		 * 
+		 * <p>
+		 * Example usage with method reference:
+		 * </p>
+		 * 
+		 * <pre>
+		 * // Without wrapper - cannot chain directly on method reference
+		 * property.on(this::handleChange); // Can't do this::handleChange.andThen(...)
+		 * 
+		 * // With wrapper - enables chaining
+		 * property.on(Action.of(this::handleChange)
+		 * 		.andThen(otherAction));
+		 * </pre>
+		 *
+		 * @param <T>    the type of value handled by this action
+		 * @param action the action to wrap
+		 * @return the same action, wrapped to enable method chaining
+		 */
+		static <T> Property.Action<T> of(Action<T> action) {
+			return action;
+		}
+
+		/**
 		 * Creates an Action that executes the given BiConsumer when property values
 		 * change, with optional source filtering.
 		 *
 		 * @param <T>    the type of value handled by this action
-		 * @param before the action to execute on property change
+		 * @param action the action to execute on property change
 		 * @param source the source object to filter changes (may be null for no
 		 *               filtering)
 		 * @return a new Action instance
 		 */
-		static <T> Property.Action<T> ofAction(BiConsumer<T, Object> before, Object source) {
+		static <T> Property.Action<T> withSource(BiConsumer<T, Object> action, Object source) {
+			Objects.requireNonNull(action);
+
 			return new Property.Action<T>() {
 				@Override
 				public boolean canFireFromSource(Object src) {
@@ -118,7 +148,11 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 
 				@Override
 				public void propertyChangeAction(String name, T oldValue, T newValue, Object src) {
-					before.accept(newValue, src);
+					try {
+						action.accept(newValue, src);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
 				}
 
 				@Override
@@ -131,10 +165,10 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 		/**
 		 * Chains this action with another action to be executed after this one.
 		 *
-		 * @param after the action to execute after this one
+		 * @param afterAction the action to execute after this one
 		 * @return a new Action that executes both actions in sequence
 		 */
-		default Property.Action<T> andThen(Property.Action<T> after) {
+		default Property.Action<T> andThen(Property.Action<T> afterAction) {
 			Property.Action<T> before = this;
 			return new Property.Action<T>() {
 				@Override
@@ -144,8 +178,13 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 
 				@Override
 				public void propertyChangeAction(String name, T oldValue, T newValue, Object src) {
-					before.propertyChangeAction(name, oldValue, newValue, src);
-					after.propertyChangeAction(name, oldValue, newValue, src);
+
+					try {
+						before.propertyChangeAction(name, oldValue, newValue, src);
+						afterAction.propertyChangeAction(name, oldValue, newValue, src);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
 				}
 
 				@Override
@@ -210,6 +249,52 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	}
 
 	/**
+	 * Interface defining actions that are triggered when a property is cleared. The
+	 * action receives the property name and its previous value before clearing.
+	 * This interface is specifically used with the Property.onClear() listener
+	 * registration method.
+	 *
+	 * @param <T> the type of the value being cleared from the property
+	 * @see Property#onClear(ClearAction)
+	 */
+	interface ClearAction<T> {
+		/**
+		 * Called when a property is cleared.
+		 *
+		 * @param name     the name of the property that was cleared
+		 * @param oldValue the value that was cleared from the property
+		 */
+		void onPropertyClear(String name, T oldValue);
+	}
+
+	public interface PropertyFactory<T_BASE extends Property<?, T_BASE>> {
+		T_BASE newInstance(SettingsSupport support, String name);
+	}
+
+	public interface PropertyFactoryWithValue<T, T_BASE extends Property<T, T_BASE>> {
+		T_BASE newInstance(SettingsSupport support, String name, T value);
+	}
+
+	/**
+	 * Interface defining actions that are triggered when a property is cleared. The
+	 * action receives the property name and its previous value before clearing.
+	 * This interface is specifically used with the Property.onClear() listener
+	 * registration method.
+	 *
+	 * @param <T> the type of the value being cleared from the property
+	 * @see Property#onReset(ResetAction)
+	 */
+	interface ResetAction<T> {
+		/**
+		 * Called when a property is reset.
+		 *
+		 * @param name     the name of the property that was cleared
+		 * @param oldValue the value that was cleared from the property
+		 */
+		void onPropertyReset(String name, T oldValue, T newValue);
+	}
+
+	/**
 	 * Creates an empty property with the specified name.
 	 *
 	 * @param <U>      the type of value the property would hold
@@ -232,9 +317,9 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @param factory  the factory function to create the property
 	 * @return a new property instance
 	 */
-	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE of(String name,
-			Function<String, T_BASE> factory) {
-		return factory.apply(name);
+	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE of(SettingsSupport support, String name,
+			PropertyFactory<T_BASE> factory) {
+		return factory.newInstance(support, name);
 	}
 
 	/**
@@ -248,7 +333,7 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @return a new property instance of the appropriate type
 	 * @throws IllegalArgumentException if the value type is not supported
 	 */
-	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE of(String name, T value) {
+	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE of(SettingsSupport support, String name, T value) {
 		@SuppressWarnings("unchecked")
 		T_BASE property = (T_BASE) switch (value) {
 		case null -> new EmptyProperty<>(name);
@@ -273,65 +358,13 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @param factory  the factory function to create the property
 	 * @return a new property instance
 	 */
-	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE of(String name, T value,
-			BiFunction<String, T, T_BASE> factory) {
-		return factory.apply(name, value);
-	}
-
-	/**
-	 * Creates a property that is initialized from a system property if available.
-	 *
-	 * @param <T>      the type of value the property will hold
-	 * @param <T_BASE> the specific property type
-	 * @param name     the name for the property (also used as system property name)
-	 * @param factory  the factory function to create the property
-	 * @return a new property instance initialized from system property if available
-	 */
-	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE ofSystem(String name,
-			Function<String, T_BASE> factory) {
-		var property = factory.apply(name)
-				.systemProperty();
-		return property;
-	}
-
-	/**
-	 * Creates a property with a default value that is initialized from a system
-	 * property if available.
-	 *
-	 * @param <T>          the type of value the property will hold
-	 * @param <T_BASE>     the specific property type
-	 * @param name         the name for the property (also used as system property
-	 *                     name)
-	 * @param defaultValue the default value if no system property is found
-	 * @return a new property instance
-	 */
-	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE ofSystem(String name, T defaultValue) {
-		T_BASE property = Property.<T, T_BASE>of(name, defaultValue)
-				.systemProperty();
-		return property;
-	}
-
-	/**
-	 * Creates a property using a factory function and initializes it from a system
-	 * property if available.
-	 *
-	 * @param <T>          the type of value the property will hold
-	 * @param <T_BASE>     the specific property type
-	 * @param name         the name for the property (also used as system property
-	 *                     name)
-	 * @param defaultValue the default value if no system property is found
-	 * @param factory      the factory function to create the property
-	 * @return a new property instance
-	 */
-	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE ofSystem(String name, T defaultValue,
-			BiFunction<String, T, T_BASE> factory) {
-		T_BASE property = factory.apply(name, defaultValue)
-				.systemProperty();
-		return property;
+	public static <T, T_BASE extends Property<T, T_BASE>> T_BASE of(SettingsSupport support, String name, T value,
+			PropertyFactoryWithValue<T, T_BASE> factory) {
+		return factory.newInstance(support, name, value);
 	}
 
 	/** Support class for managing property change notifications */
-	SettingsSupport settingsSupport = new SettingsSupport();
+	private final SettingsSupport settingsSupport;
 
 	/** Reference to this property instance cast to its specific type */
 	@SuppressWarnings("unchecked")
@@ -339,12 +372,42 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 
 	/** The current value of the property */
 	private T value;
+	private final T initialValue;
 
 	/** Format string for value representation */
 	private String formatString = "%s";
 
 	/** The name of the property */
 	private final String name;
+
+	private final List<ClearAction<T>> clearActions = new ArrayList<>(1);
+	private final List<ResetAction<T>> resetActions = new ArrayList<>(1);
+
+	/**
+	 * Creates a new Property with the specified name and no initial value.
+	 *
+	 * @param name the name of the property (must not be null)
+	 * @throws NullPointerException if name is null
+	 */
+	protected Property(SettingsSupport settingsSupport, String name) {
+		this.settingsSupport = Objects.requireNonNull(settingsSupport);
+		this.name = Objects.requireNonNull(name);
+		this.initialValue = null;
+	}
+
+	/**
+	 * Creates a new Property with the specified name and initial value.
+	 *
+	 * @param name  the name of the property (must not be null)
+	 * @param value the initial value for the property
+	 * @throws NullPointerException if name is null
+	 */
+	protected Property(SettingsSupport settingsSupport, String name, T value) {
+		this.settingsSupport = Objects.requireNonNull(settingsSupport);
+		this.name = Objects.requireNonNull(name);
+		this.value = value;
+		this.initialValue = value;
+	}
 
 	/**
 	 * Creates a new Property with the specified name and no initial value.
@@ -353,8 +416,9 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @throws NullPointerException if name is null
 	 */
 	protected Property(String name) {
-		Objects.requireNonNull(name);
-		this.name = name;
+		this.settingsSupport = new SettingsSupport();
+		this.name = Objects.requireNonNull(name);
+		this.initialValue = null;
 	}
 
 	/**
@@ -365,9 +429,10 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @throws NullPointerException if name is null
 	 */
 	protected Property(String name, T value) {
-		Objects.requireNonNull(name);
-		this.name = name;
+		this.settingsSupport = new SettingsSupport();
+		this.name = Objects.requireNonNull(name);
 		this.value = value;
+		this.initialValue = value;
 	}
 
 	/**
@@ -389,10 +454,13 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @return this property instance for method chaining
 	 */
 	public T_BASE clear() {
-		if (value != null)
-			settingsSupport.fireValueChange(name(), null, this.value, "<clear>");
+
+		T oldValue = this.value;
 
 		this.value = null;
+
+		if (oldValue != null)
+			clearActions.forEach(a -> a.onPropertyClear(name, oldValue));
 
 		return us;
 	}
@@ -478,6 +546,36 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	}
 
 	/**
+	 * Attempts to load this property's value from system properties. This method
+	 * checks if a system property exists with the same name as this property and if
+	 * found, parses and sets its value as this property's value. If the system
+	 * property exists, it will override any current value of this property.
+	 * 
+	 * <p>
+	 * The system property can be set using the JVM argument format:
+	 * {@code -Dproperty.name=value}
+	 * </p>
+	 * 
+	 * <p>
+	 * Example usage:
+	 * </p>
+	 * 
+	 * <pre>
+	 * IntProperty port = new IntProperty("server.port", 8080);
+	 * port.loadSystemProperty(); // Will load value from -Dserver.port if defined
+	 * </pre>
+	 *
+	 * @return this property instance for method chaining
+	 * @see System#getProperty(String)
+	 */
+	public T_BASE loadSystemProperty() {
+		String newValue = System.getProperty(name());
+		if (newValue != null)
+			return parseValue(newValue);
+		return us;
+	}
+
+	/**
 	 * Maps this property's value to a new property of a different type using the
 	 * provided transformation function.
 	 *
@@ -490,7 +588,7 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	public <U, P_BASE extends Property<U, P_BASE>> P_BASE map(Function<? super T, ? extends U> action) {
 		if (isPresent()) {
 			U mappedValue = action.apply(value);
-			return Property.of(name(), mappedValue);
+			return Property.of(this.settingsSupport, name(), mappedValue);
 		}
 		return empty(name());
 	}
@@ -524,38 +622,6 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	}
 
 	/**
-	 * Registers an action to be executed when this property's value changes.
-	 *
-	 * @param action the action to execute on value changes
-	 * @return this property instance for method chaining
-	 */
-	public T_BASE on(Property.Action<T> action) {
-		if (isPresent())
-			settingsSupport.fireValueChange(action, name, value, value, null);
-
-		settingsSupport.addAction(name(), action);
-		return us;
-	}
-
-	/**
-	 * Registers an action to be executed when this property's value changes and
-	 * provides registration tracking through a consumer.
-	 *
-	 * @param action       the action to execute on value changes
-	 * @param registration consumer to receive the registration object
-	 * @return this property instance for method chaining
-	 */
-	public T_BASE on(Property.Action<T> action, Consumer<Registration> registration) {
-		if (isPresent())
-			settingsSupport.fireValueChange(action, name, value, value, null);
-
-		var reg = settingsSupport.addAction(name(), action);
-		registration.accept(reg);
-
-		return us;
-	}
-
-	/**
 	 * Registers a simple action to be executed when this property's value changes,
 	 * with optional source filtering. This is a convenience method that creates an
 	 * Action from the provided BiConsumer.
@@ -582,7 +648,58 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 * @return this property instance for method chaining
 	 */
 	public T_BASE on(BiConsumer<T, Object> before, Object source) {
-		return on(Action.ofAction(before, source));
+		return on(Action.withSource(before, source));
+	}
+
+	/**
+	 * Registers an action to be executed when this property's value changes.
+	 *
+	 * @param action the action to execute on value changes
+	 * @return this property instance for method chaining
+	 */
+	public T_BASE on(Property.Action<T> action) {
+		settingsSupport.addAction(name(), action);
+		return us;
+	}
+
+	/**
+	 * Registers an action to be executed when this property's value changes and
+	 * provides registration tracking through a consumer.
+	 *
+	 * @param action       the action to execute on value changes
+	 * @param registration consumer to receive the registration object
+	 * @return this property instance for method chaining
+	 */
+	public T_BASE on(Property.Action<T> action, Consumer<Registration> registration) {
+
+		var reg = settingsSupport.addAction(name(), action);
+		registration.accept(reg);
+
+		return us;
+	}
+
+	/**
+	 * Registers an action to be executed when this property is cleared. This
+	 * notification is triggered before the property value is cleared.
+	 *
+	 * @param action the action to execute when property is cleared
+	 * @return this property instance for method chaining
+	 */
+	public T_BASE onClear(Property.ClearAction<T> action) {
+		clearActions.add(action);
+		return us;
+	}
+
+	/**
+	 * Registers an action to be executed when this property is reset to its default
+	 * value. This notification is triggered before the property is reset.
+	 *
+	 * @param action the action to execute when property is reset
+	 * @return this property instance for method chaining
+	 */
+	public T_BASE onReset(Property.ResetAction<T> action) {
+		resetActions.add(action);
+		return us;
 	}
 
 	/**
@@ -676,6 +793,46 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	public abstract T_BASE parseValue(String newValue);
 
 	/**
+	 * Registers a clear action and returns a Registration object that can be used
+	 * to unregister the action later.
+	 * 
+	 * @param action the action to register for clear notifications
+	 * @return a Registration object that can be used to remove this action
+	 */
+	public Registration registerClearAction(Property.ClearAction<T> action) {
+		clearActions.add(action);
+		return () -> clearActions.remove(action);
+	}
+
+	/**
+	 * Registers a reset action and returns a Registration object that can be used
+	 * to unregister the action later.
+	 *
+	 * @param action the action to register for reset notifications
+	 * @return a Registration object that can be used to remove this action
+	 */
+	public Registration registerResetAction(Property.ResetAction<T> action) {
+		resetActions.add(action);
+		return () -> resetActions.remove(action);
+	}
+
+	/**
+	 * Resets the current value of the property, setting it to its initial value, if
+	 * it was set. Fires a property change event if the property had a value.
+	 *
+	 * @return this property instance for method chaining
+	 */
+	public T_BASE reset() {
+		T oldValue = this.value;
+		this.value = initialValue;
+
+		if (oldValue != initialValue)
+			resetActions.forEach(a -> a.onPropertyReset(name, oldValue, initialValue));
+
+		return us;
+	}
+
+	/**
 	 * Sets the format string used for value representation.
 	 *
 	 * @param formatString the new format string to use
@@ -726,18 +883,6 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 			return Stream.empty();
 		else
 			return Stream.of(value);
-	}
-
-	/**
-	 * Attempts to load this property's value from system properties.
-	 *
-	 * @return this property instance for method chaining
-	 */
-	public T_BASE systemProperty() {
-		String newValue = System.getProperty(name());
-		if (newValue != null)
-			return parseValue(newValue);
-		return us;
 	}
 
 	/**
