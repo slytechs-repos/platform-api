@@ -19,6 +19,8 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
@@ -30,15 +32,25 @@ import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
 public abstract class Processor<T>
 		implements DoublyLinkedElement<Processor<T>>, Comparable<Processor<T>> {
 
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "[" + name + "]";
+	}
+
 	public interface ProcessorMapper<T> {
 		T createMappedProcessor(Supplier<T> sink);
 	}
 
-	boolean enabledState = true;
+	boolean enabledState;
 
-	Lock readLock;
+	protected ReadWriteLock rwLock = new ReentrantReadWriteLock();
+	protected Lock readLock = rwLock.readLock();
+	protected Lock writeLock = rwLock.writeLock();
 
-	Pipeline<T> pipeline;
+	protected Pipeline<T> pipeline;
 
 	private Processor<T> nextProcessor;
 
@@ -50,7 +62,7 @@ public abstract class Processor<T>
 
 	private final T inlineData;
 
-	T outputData;
+	protected T outputData;
 	private int priority;
 
 	@SuppressWarnings("unchecked")
@@ -67,6 +79,36 @@ public abstract class Processor<T>
 		this.name = Objects.requireNonNull(name, "name");
 		this.id = name;
 		this.inlineData = inlineData;
+	}
+
+	protected Processor(int priority, String name, ProcessorMapper<T> mapper) {
+		this.priority = priority;
+		this.name = Objects.requireNonNull(name, "name");
+		this.id = name;
+		this.inlineData = mapper.createMappedProcessor(this::getOutput);
+	}
+
+	void setRwLock(ReadWriteLock rwLock) {
+		this.rwLock = rwLock;
+		this.readLock = rwLock.readLock();
+		this.writeLock = rwLock.writeLock();
+	}
+
+	void reset() {
+		setRwLock(new ReentrantReadWriteLock());
+		this.pipeline = null;
+		this.enabledState = false;
+	}
+
+	void initialize(Pipeline<T> newPipeline) {
+		this.pipeline = newPipeline;
+		this.enabledState = true;
+
+		this.setRwLock(newPipeline.rwLock);
+	}
+
+	public DataType<T> dataType() {
+		return pipeline.dataType();
 	}
 
 	/**
@@ -94,6 +136,25 @@ public abstract class Processor<T>
 
 	public T getOutput() {
 		return outputData;
+	}
+
+	void relink() {
+		var newOutput = nextElement().getInput();
+
+		setOutput(newOutput);
+	}
+
+	void setOutput(T newOutput) {
+		var oldOutput = this.outputData;
+		if (oldOutput == newOutput)
+			return; // No change
+
+		this.outputData = newOutput;
+
+		// Propagate change upstream
+		var prevProcessor = prevElement();
+		if (prevProcessor != null)
+			prevProcessor.setOutput(this.getInput());
 	}
 
 	public Object id() {

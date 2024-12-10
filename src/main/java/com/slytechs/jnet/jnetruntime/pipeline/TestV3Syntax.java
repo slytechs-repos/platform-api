@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
+import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -30,9 +31,16 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class TestV3Syntax {
 
-	static class StringPipeline extends Pipeline<Consumer<String>> {
+	static class StringPipeline extends Pipeline<Consumer<StringBuilder>> {
 
-		static Consumer<String> wrapDataArray(Consumer<String>[] dataArray) {
+		static Consumer<StringBuilder> wrapper(Consumer<StringBuilder>[] dataArray) {
+			return str -> {
+				for (var e : dataArray)
+					e.accept(str);
+			};
+		}
+
+		static Consumer<String> wrapDataString(Consumer<String>[] dataArray) {
 			return str -> {
 				for (var e : dataArray)
 					e.accept(str);
@@ -42,58 +50,37 @@ public class TestV3Syntax {
 		/**
 		 * @param dataType
 		 */
-		protected StringPipeline(String name) {
-			super("String pipeline", StringPipeline::wrapDataArray);
+		public StringPipeline(String name) {
+			super("String pipeline", new RawDataType<>(e -> {}, StringPipeline::wrapper));
 
-			head().<LongConsumer>addInputTransformer("long", sink -> {
-				return num -> sink.get().accept(Long.toString(num));
+			head().<LongConsumer>addInput("long", sink -> {
+				return num -> sink.get().accept(new StringBuilder(Long.toString(num)));
 			});
 
-			head().<IntConsumer>addInputTransformer("integer", sink -> {
-				return num -> sink.get().accept(Integer.toString(num));
+			head().<IntConsumer>addInput("integer", sink -> {
+				return num -> sink.get().accept(new StringBuilder(Integer.toString(num)));
 			});
 
-			this.addProcessor("toUppercase", sink -> {
-				return str -> sink.get().accept(str.toUpperCase());
+			this.addProcessor(10, "ToUppercase", sink -> {
+				return str -> sink.get().accept(str.append("-ToUppercase"));
 			});
 
-			this.addProcessor("ToLowercase", sink -> {
-				return str -> sink.get().accept(str.toLowerCase());
+			this.addProcessor(20, "ToLowercase", sink -> {
+				return str -> sink.get().accept(str.append("-ToLowercase"));
 			});
-		}
 
-	}
+			tail().addOutput(0, "ToString", new GenericDataType<Consumer<String>>() {},
+					(Supplier<Consumer<String>> sink) -> {
+						return str -> sink.get().accept(str.toString());
+					});
 
-	static class ToUppercase extends Processor<Consumer<String>> {
+			tail().addOutput(0, new GenericDataType<>(e -> {}) {}, (
+					Supplier<Consumer<String>> sink) -> {
+				return str -> sink.get().accept(str.toString());
+			});
 
-		public ToUppercase(int priority) {
-			super(priority, "ToUppercase", String::toUpperCase);
-		}
-
-	}
-
-	static class ToLowercase extends Processor<Consumer<String>> {
-
-		public ToLowercase(int priority) {
-			super(priority, "ToUppercase", String::toLowerCase);
-		}
-
-	}
-
-	static class LongToString
-			extends InputTransformer<LongConsumer, Consumer<String>>
-			implements LongConsumer {
-
-		public LongToString(String name) {
-			super("long");
-		}
-
-		/**
-		 * @see java.util.function.LongConsumer#accept(long)
-		 */
-		@Override
-		public void accept(long value) {
-			getOutput().accept(Long.toString(value));
+			System.out.println("Lookup:: " + tail().getOutput(new GenericDataType<Consumer<String>>() {})
+					.dataType());
 		}
 
 	}
@@ -108,12 +95,10 @@ public class TestV3Syntax {
 
 		pipeline.onNewRegistration(registrations::add);
 
-		pipeline.addProcessor(new ToUppercase(0));
-		pipeline.addProcessor(new ToLowercase(1));
+		pipeline.inputConnector("integer", IntConsumer.class).accept(10);;
+		pipeline.outputConnect(new GenericDataType<Consumer<String>>() {}, System.out::println);
 
-		pipeline.head().<LongConsumer>addInputTransformer("long", outputSupplier -> {
-			return (long num) -> outputSupplier.get().accept(Long.toString(num));
-		});
+		System.out.println(pipeline);
 	}
 
 }

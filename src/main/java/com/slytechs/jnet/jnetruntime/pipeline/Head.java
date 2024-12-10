@@ -17,50 +17,104 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.slytechs.jnet.jnetruntime.pipeline.InputTransformer.InputMapper;
+import com.slytechs.jnet.jnetruntime.util.Named;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public class Head<T> {
+public class Head<T> extends Processor<T> {
 
-	private final Pipeline<T> pipeline;
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "[IN "
+				+ inputsById.values().stream()
+						.map(InputTransformer::toString)
+						.collect(Collectors.joining(" OR "))
+				+ "]";
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Processor#getOutput()
+	 */
+	@Override
+	public T getOutput() {
+		if (outputData == null)
+			throw new IllegalStateException("no output for pipeline");
+
+		return outputData;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Processor#getInput()
+	 */
+	@Override
+	public final T getInput() {
+		return getOutput();
+	}
+
+	private final Map<Object, InputTransformer<?, T>> inputsById = new HashMap<>();
 
 	Head(Pipeline<T> pipeline) {
-		this.pipeline = pipeline;
+		super(-1, "head");
+
+		super.initialize(pipeline);
 	}
 
-	public Registration registerInputTransformer(InputTransformer<?, T> newInput) {
-		return null;
+	public Registration registerInput(InputTransformer<?, T> newInput) {
+
+		var id = newInput.id();
+		newInput.head = this;
+
+		inputsById.put(id, newInput);
+
+		return () -> inputsById.remove(id);
 	}
 
-	public Registration registerInputTransformer(InputTransformer.InputFactory<?, T, ?> newInputFactory) {
-		return null;
+	private static final class DefaultInputTransformer<IN, OUT> extends InputTransformer<IN, OUT> {
+
+		/**
+		 * @param id
+		 * @param mapper
+		 */
+		public DefaultInputTransformer(Object id, InputMapper<IN, OUT> mapper) {
+			super(id, mapper);
+
+			String name = Named.toName(id);
+			setName(name);
+		}
+
 	}
 
-	public <IN> Registration addInputTransformer(String name, InputMapper<IN, T> mapper) {
+	public <IN> Registration addInput(String name, InputMapper<IN, T> mapper) {
 
-		var input = new InputTransformer<IN, T>(name, mapper) {};
+		var input = new DefaultInputTransformer<IN, T>(name, mapper);
 
-		return registerInputTransformer(input);
+		return registerInput(input);
 	}
 
-	public T getOutput() {
-		return null;
-	}
+	@SuppressWarnings("unchecked")
+	public <IN> IN connector(Object id) {
+		readLock.lock();
 
-	public <IN> IN getInputTransformer(String name) {
-		return null;
-	}
+		try {
+			var p = inputsById.get(id);
+			if (p == null)
+				throw pipeline.inputNotFoundException(id);
 
-	public <IN> IN getInputTransformer(DataType inType) {
-		return null;
-	}
-
-	public <IN> IN getInputTransformer(Class<IN> dataClass) {
-		return null;
+			return (IN) p.getInput();
+		} finally {
+			readLock.unlock();
+		}
 	}
 
 }

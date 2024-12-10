@@ -35,8 +35,8 @@ public interface Id {
 		if (this instanceof Enum<?> hasEnum)
 			return (T) hasEnum.name();
 
-		else if (this instanceof HasName hasName)
-			return (T) hasName.name();
+		else if (this instanceof Named named)
+			return (T) named.name();
 
 		return (T) toString();
 	}

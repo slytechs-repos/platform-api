@@ -17,19 +17,14 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.*;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 /**
- * The Interface ADataHandler.
+ * 
  *
- * @author Mark Bednarczyk
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
  */
-@Retention(RUNTIME)
-@Target(METHOD)
-public @interface ADataHandler {
+public interface Transformer<IN, OUT> {
+	
+	String name();
 
 }

@@ -20,50 +20,87 @@ package com.slytechs.jnet.jnetruntime.util;
 import java.util.Comparator;
 
 /**
- * Defines an interface for objects that have a priority value, typically used
- * to prioritize protocol processing.
+ * Interface for objects that can be assigned and ordered by priority values.
+ * Implementing classes can be prioritized in processing queues, scheduling
+ * systems, or any scenario requiring relative importance ordering.
  * 
  * <p>
- * The priority system is based on numerical values where lower positive numbers
- * indicate higher priority. A value of {@code 0} represents the highest
- * possible priority.
+ * The priority system uses an integer-based scale where:
+ * <ul>
+ * <li>Lower numerical values indicate higher priority
+ * <li>0 represents the highest possible priority ({@link #MIN_PRIORITY_VALUE})
+ * <li>{@code Integer.MAX_VALUE - 1} is the lowest priority
+ * ({@link #MAX_PRIORITY_VALUE})
+ * <li>The default priority is 0 ({@link #DEFAULT_PRIORITY_VALUE})
+ * </ul>
  * </p>
  * 
  * <p>
- * When two or more objects have the same priority value, their relative
- * precedence is undefined.
+ * Example usage for sorting prioritizable objects:
+ * 
+ * <pre>
+ * List&lt;Prioritizable&gt; items = ...;
+ * // Sort from highest to lowest priority
+ * items.sort((a, b) -> Prioritizable.compareHighToLow(a, b));
+ * // Or sort from lowest to highest priority
+ * items.sort((a, b) -> Prioritizable.compareLowToHigh(a, b));
+ * </pre>
+ * </p>
+ * 
+ * <p>
+ * Important notes:
+ * <ul>
+ * <li>Objects with equal priority values have undefined relative ordering
+ * <li>Priority values outside the valid range will cause
+ * {@link IllegalArgumentException}
+ * <li>Implementations should ensure thread-safety if used in concurrent
+ * contexts
+ * </ul>
  * </p>
  *
  * @author Mark Bednarczyk
+ * @see #priority()
+ * @see #isValidPriority(int)
+ * @see #checkPriorityValue(int)
  */
-public interface HasPriority {
+public interface Prioritizable {
 
-	/** The default priority value. */
+	/**
+	 * The default priority value (0). This is the highest priority level.
+	 */
 	int DEFAULT_PRIORITY_VALUE = 0;
 
-	/** The minimum allowed priority value. */
+	/**
+	 * The minimum allowed priority value (0). Represents highest priority.
+	 */
 	int MIN_PRIORITY_VALUE = 0;
 
-	/** The maximum allowed priority value. */
+	/**
+	 * The maximum allowed priority value (Integer.MAX_VALUE - 1). Represents lowest
+	 * priority.
+	 */
 	int MAX_PRIORITY_VALUE = (Integer.MAX_VALUE - 1);
 
 	/**
-	 * Comparator that sorts HasPriority objects from highest to lowest priority.
+	 * Comparator for sorting Prioritizable objects from highest to lowest priority.
+	 * Lower numerical values are considered higher priority.
 	 */
-	Comparator<? extends HasPriority> HIGH_LOW_COMPARATOR = HasPriority::compareHighToLow;
+	Comparator<? extends Prioritizable> HIGH_LOW_COMPARATOR = Prioritizable::compareHighToLow;
 
 	/**
-	 * Comparator that sorts HasPriority objects from lowest to highest priority.
+	 * Comparator for sorting Prioritizable objects from lowest to highest priority.
+	 * Higher numerical values are considered lower priority.
 	 */
-	Comparator<? extends HasPriority> LOW_HIGH_COMPARATOR = HasPriority::compareLowToHigh;
+	Comparator<? extends Prioritizable> LOW_HIGH_COMPARATOR = Prioritizable::compareLowToHigh;
 
 	/**
-	 * Validates the given priority value.
+	 * Validates that a priority value is within the allowed range.
 	 *
-	 * @param value the priority value to check
-	 * @throws IllegalArgumentException if the value is outside the valid range
-	 *                                  [{@code MIN_PRIORITY_VALUE},
-	 *                                  {@code MAX_PRIORITY_VALUE}]
+	 * @param value the priority value to validate
+	 * @throws IllegalArgumentException if value is less than
+	 *                                  {@link #MIN_PRIORITY_VALUE} or greater than
+	 *                                  {@link #MAX_PRIORITY_VALUE}
+	 * @see #isValidPriority(int)
 	 */
 	static void checkPriorityValue(int value) throws IllegalArgumentException {
 		if (value < MIN_PRIORITY_VALUE || value > MAX_PRIORITY_VALUE)
@@ -71,46 +108,51 @@ public interface HasPriority {
 	}
 
 	/**
-	 * Compares two HasPriority objects from higher priority (lower values) to lower
-	 * priority (higher values).
+	 * Compares two Prioritizable objects in descending priority order (highest to
+	 * lowest). A negative return value indicates {@code a} has higher priority than
+	 * {@code b}.
 	 *
-	 * @param a the first HasPriority object
-	 * @param b the second HasPriority object
-	 * @return a negative integer, zero, or a positive integer as the first argument
-	 *         has higher, equal to, or lower priority than the second
+	 * @param a the first Prioritizable object
+	 * @param b the second Prioritizable object
+	 * @return negative if a has higher priority, positive if lower, zero if equal
+	 * @see #HIGH_LOW_COMPARATOR
 	 */
-	static int compareHighToLow(HasPriority a, HasPriority b) {
+	static int compareHighToLow(Prioritizable a, Prioritizable b) {
 		return a.priority() - b.priority();
 	}
 
 	/**
-	 * Compares two HasPriority objects from lower priority (higher values) to
-	 * higher priority (lower values).
+	 * Compares two Prioritizable objects in ascending priority order (lowest to
+	 * highest). A negative return value indicates {@code a} has lower priority than
+	 * {@code b}.
 	 *
-	 * @param a the first HasPriority object
-	 * @param b the second HasPriority object
-	 * @return a negative integer, zero, or a positive integer as the first argument
-	 *         has lower, equal to, or higher priority than the second
+	 * @param a the first Prioritizable object
+	 * @param b the second Prioritizable object
+	 * @return negative if a has lower priority, positive if higher, zero if equal
+	 * @see #LOW_HIGH_COMPARATOR
 	 */
-	static int compareLowToHigh(HasPriority a, HasPriority b) {
+	static int compareLowToHigh(Prioritizable a, Prioritizable b) {
 		return b.priority() - a.priority();
 	}
 
 	/**
-	 * Checks if the given value is within the valid priority range.
+	 * Tests if a priority value is within the valid range.
 	 *
-	 * @param value the priority value to check
-	 * @return true if the value is within the valid range, false otherwise
+	 * @param value the priority value to test
+	 * @return true if the value is between {@link #MIN_PRIORITY_VALUE} and
+	 *         {@link #MAX_PRIORITY_VALUE} inclusive, false otherwise
+	 * @see #checkPriorityValue(int)
 	 */
 	static boolean isValidPriority(int value) {
 		return value >= MIN_PRIORITY_VALUE && value <= MAX_PRIORITY_VALUE;
 	}
 
 	/**
-	 * Returns the priority value of this object.
+	 * Gets the priority value for this object.
 	 *
-	 * @return the priority value, between {@code MIN_PRIORITY_VALUE} and
-	 *         {@code MAX_PRIORITY_VALUE}, inclusive
+	 * @return an integer between {@link #MIN_PRIORITY_VALUE} and
+	 *         {@link #MAX_PRIORITY_VALUE} inclusive, where lower numbers indicate
+	 *         higher priority
 	 */
 	int priority();
 }

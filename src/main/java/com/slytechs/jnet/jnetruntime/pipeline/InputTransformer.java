@@ -23,7 +23,16 @@ import java.util.function.Supplier;
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public abstract class InputTransformer<IN, T> {
+public abstract class InputTransformer<IN, T>
+		implements Transformer<IN, T> {
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "<<" + name + ">>";
+	}
 
 	public interface InputMapper<IN, T> {
 
@@ -34,7 +43,7 @@ public abstract class InputTransformer<IN, T> {
 		T_BASE newInputTransformer(String name);
 	}
 
-	private IN input;
+	IN input;
 	private String name;
 	private Object id;
 	Head<T> head;
@@ -48,7 +57,7 @@ public abstract class InputTransformer<IN, T> {
 	public InputTransformer(String name, InputMapper<IN, T> mapper) {
 		this.name = name;
 		this.id = name;
-		this.input = mapper.createMappedInput(head::getOutput);
+		this.input = mapper.createMappedInput(this::getOutput);
 	}
 
 	public InputTransformer(Object id) {
@@ -60,7 +69,7 @@ public abstract class InputTransformer<IN, T> {
 	public InputTransformer(Object id, InputMapper<IN, T> mapper) {
 		this.name = getClass().getSimpleName();
 		this.id = id;
-		this.input = mapper.createMappedInput(head::getOutput);
+		this.input = mapper.createMappedInput(this::getOutput);
 	}
 
 	public final void setName(String newName) {
@@ -71,6 +80,7 @@ public abstract class InputTransformer<IN, T> {
 		this.id = id;
 	}
 
+	@Override
 	public final String name() {
 		return name;
 	}
@@ -84,6 +94,8 @@ public abstract class InputTransformer<IN, T> {
 	}
 
 	public final T getOutput() {
+		assert head != null : "head not connected to pipe";
+
 		return head.getOutput();
 	}
 

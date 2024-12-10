@@ -19,77 +19,142 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.function.Supplier;
 
+import com.slytechs.jnet.jnetruntime.util.Enableable;
+import com.slytechs.jnet.jnetruntime.util.Named;
+import com.slytechs.jnet.jnetruntime.util.Prioritizable;
+import com.slytechs.jnet.jnetruntime.util.Registration;
+
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public abstract class OutputTransformer<OUT, T> {
+public abstract class OutputTransformer<IN, OUT>
+		implements Transformer<IN, OUT>, Comparable<Prioritizable>, Prioritizable, Enableable {
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "<<" + name() + ">>";
+	}
 
 	public interface OutputFactory<IN, T, T_BASE extends OutputTransformer<IN, T>> {
 		T_BASE newOutputTransformer(int priority, String name);
 	}
 
-	public interface OutputMapper<OUT, T> {
+	public interface OutputMapper<IN, OUT> {
 
-		T createMappedOutput(Supplier<OUT> sink);
+		IN createMappedOutput(Supplier<OUT> sink);
 	}
 
-	private final T input;
+	private final IN input;
+
 	private OUT output;
+
 	private int priority;
+
+	Tail<IN> tail;
+
 	private String name;
 	private Object id;
+	private boolean enabled;
 
-	public OutputTransformer(int priority, String name) {
+	private final DataType<OUT> dataType;
+
+	public OutputTransformer(int priority, Object id, DataType<OUT> dataType) {
 		this.priority = priority;
-		this.name = name;
-		this.id = name;
-		this.input = (T) this;
+		this.name = Named.toName(id);
+		this.id = id;
+		this.dataType = dataType;
+		this.input = (IN) this;
+		this.output = dataType.empty();
 	}
 
-	public OutputTransformer(int priority, String name, OutputMapper<OUT, T> sink) {
+	public OutputTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
 		this.priority = priority;
-		this.name = name;
-		this.id = name;
+		this.name = Named.toName(id);
+		this.id = id;
+		this.dataType = dataType;
 		this.input = sink.createMappedOutput(this::getOutput);
+		this.output = dataType.empty();
 	}
 
-	public OutputTransformer(int priority, Object id) {
-		this.priority = priority;
-		this.name = getClass().getSimpleName();
-		this.id = name;
-		this.input = (T) this;
+	/**
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Prioritizable o) {
+		if (this.priority == o.priority())
+			return 0;
+
+		return this.priority < o.priority()
+				? -1
+				: 1;
 	}
 
-	public OutputTransformer(int priority, Object id, OutputMapper<OUT, T> sink) {
-		this.priority = priority;
-		this.name = getClass().getSimpleName();
-		this.id = name;
-		this.input = sink.createMappedOutput(this::getOutput);
+	public DataType<OUT> dataType() {
+		return dataType;
+	}
+
+	public Registration connect(OUT out) {
+		output = out;
+
+		return () -> {
+			if (output == out)
+				output = null;
+		};
+	}
+
+	public final IN getInput() {
+		return input;
 	}
 
 	public final OUT getOutput() {
 		return output;
 	}
 
-	public final void setName(String newName) {
-		this.name = newName;
+	public final Object id() {
+		return id;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.util.Enableable#isEnabled()
+	 */
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	@Override
+	public final String name() {
+		return this.name;
+	}
+
+	@Override
+	public final int priority() {
+		return this.priority;
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.util.Enableable#setEnable(boolean)
+	 */
+	@Override
+	public void setEnable(boolean newState) {
+		if (this.enabled == newState)
+			return;
+
+		this.enabled = newState;
+
+		onEnableChange(newState);
 	}
 
 	public final void setId(Object id) {
 		this.id = id;
 	}
 
-	public final int priority() {
-		return this.priority;
-	}
-
-	public final String name() {
-		return this.name;
-	}
-
-	public final Object id() {
-		return id;
+	public final void setName(String newName) {
+		this.name = newName;
 	}
 
 }

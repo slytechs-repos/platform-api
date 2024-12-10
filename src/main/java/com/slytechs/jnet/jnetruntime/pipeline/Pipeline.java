@@ -27,6 +27,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.Processor.ProcessorMapper;
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
@@ -38,122 +39,54 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public abstract class Pipeline<T> {
 
-	public interface DataReducer<T> {
+	private static class DefaultProcessor<T> extends Processor<T> {
 
-		static <T> DataReducer<T> of(DataReducer<T> reducer, T empty) {
-
-			return new DataReducer<T>() {
-
-				@Override
-				public T empty() {
-					return empty;
-				}
-
-				@Override
-				public T reduceArray(T[] array) {
-					return reducer.reduceArray(array);
-				}
-			};
+		/**
+		 * @param priority
+		 * @param name
+		 * @param inlineData
+		 */
+		protected DefaultProcessor(int priority, String name, ProcessorMapper<T> mapper) {
+			super(priority, name, mapper);
 		}
 
-		@SuppressWarnings("unchecked")
-		default T empty() {
-			return reduceArray((T[]) new Object[0]);
-		}
-
-		default T optimizeArray(T[] array) {
-			if ((array == null) || (array.length == 0) || (array.length == 1) && (array[0] == null))
-				return empty();
-
-			if (array.length == 1)
-				return array[0];
-
-			return reduceArray(array);
-		}
-
-		T reduceArray(T[] array);
 	}
 
+	final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
 	private final Lock readLock;
 	private final Lock writeLock;
 
-	private final Map<String, Processor<T>> processorsByName = new HashMap<>();
 	private final Map<Object, Processor<T>> processorsById = new HashMap<>();
 	private final Queue<Processor<T>> activeProcessors = new DoublyLinkedPriorityQueue<Processor<T>>();
 
-	private final Head<T> head = new Head<>(this);
-	private final Tail<T> tail = new Tail<>(this);
-	private final DataReducer<T> dataReducer;
+	private final Head<T> head;
+	private final Tail<T> tail;
+	private final DataType<T> dataType;
 	private String name;
-
-	protected Pipeline(String name, DataReducer<T> reducer) {
-		this.dataReducer = reducer;
-		this.name = Objects.requireNonNull(name, "name");
-		var rwLock = new ReentrantReadWriteLock();
-		this.readLock = rwLock.readLock();
-		this.writeLock = rwLock.writeLock();
-	}
-
-	public String name() {
-		return name;
-	}
-
-	void setEnableProcessor(Processor<T> processor, boolean newState) {
-		if (newState == processor.isEnabled())
-			return;
-
-		writeLock.lock();
-		try {
-
-			processor.enabledState = newState;
-
-			if (newState == true) {
-				activeProcessors.offer(processor);
-				relinkProcessor(processor);
-				relinkProcessor(processor.prevElement());
-
-			} else {
-
-				var prev = processor.prevElement();
-				activeProcessors.remove(processor);
-				relinkProcessor(prev);
-			}
-
-		} finally {
-			writeLock.unlock();
-		}
-	}
-
-	final T reduceDataArray(T[] dataArray) {
-		return dataReducer.optimizeArray(dataArray);
-	}
-
-	public Pipeline<T> onNewRegistration(Consumer<Registration> action) {
-		return onNewProcessor((r, p) -> action.accept(r));
-	}
 
 	private final List<BiConsumer<Registration, Processor<T>>> registrationListeners = new ArrayList<>();
 
-	public Pipeline<T> onNewProcessor(BiConsumer<Registration, Processor<T>> action) {
-		registrationListeners.add(action);
+	protected Pipeline(String name, DataType<T> reducer) {
+		this.dataType = reducer;
+		this.name = Objects.requireNonNull(name, "name");
+		this.readLock = rwLock.readLock();
+		this.writeLock = rwLock.writeLock();
 
-		return this;
+		this.head = new Head<>(this);
+		this.tail = new Tail<>(this);
+
+		activeProcessors.offer(head);
+		activeProcessors.offer(tail);
 	}
 
-	public Head<T> head() {
-		return head;
+	public final Registration addProcessor(int priority, String name, ProcessorMapper<T> mapper) {
+
+		var processor = new DefaultProcessor<T>(priority, name, mapper);
+
+		return addProcessor(processor);
 	}
 
-	public Tail<T> tail() {
-		return tail;
-	}
-	
-	public void addProcessor(String name, ProcessorMapper<T> unary) {
-		
-	}
-	
-
-	public Registration addProcessor(Processor<T> newProcessor) {
+	public final Registration addProcessor(Processor<T> newProcessor) {
 		String name = newProcessor.name();
 		Object id = newProcessor.id();
 
@@ -162,22 +95,19 @@ public abstract class Pipeline<T> {
 			if (processorsById.containsKey(id))
 				throw new IllegalArgumentException("processor already registered [%s]".formatted(name));
 
-			if (newProcessor.pipeline != null)
+			if (newProcessor.isEnabled())
 				throw new IllegalStateException("processor already initialized [%s]".formatted(name));
 
 			// Initialize new processor
-			newProcessor.pipeline = this;
-			newProcessor.readLock = this.readLock;
+			newProcessor.initialize(this);
 
 			// Fast lookup
-			processorsByName.put(name, newProcessor);
 			processorsById.put(id, newProcessor);
 
 			// doubly linked list of processors (priority sorted)
 			activeProcessors.offer(newProcessor);
 
-			relinkProcessor(newProcessor);
-			relinkProcessor(newProcessor.prevElement());
+			newProcessor.relink();
 
 			Registration reg = () -> removeProcessor(newProcessor);
 
@@ -191,41 +121,8 @@ public abstract class Pipeline<T> {
 
 	}
 
-	private void removeProcessor(Processor<T> processor) {
-		String name = processor.name();
-		Object id = processor.id();
-
-		Processor<T> prevProcessor = processor.prevElement();
-
-		activeProcessors.remove(processor);
-
-		processorsByName.remove(name);
-		processorsById.remove(id);
-
-		// Reset processor
-		processor.pipeline = null;
-		processor.readLock = null;
-
-		relinkProcessor(prevProcessor);
-	}
-
-	private void relinkProcessor(Processor<T> processor) {
-		processor.outputData = processor.nextElement().getInput();
-
-	}
-
-	public Processor<T> getProcessor(String name) {
-		readLock.lock();
-
-		try {
-			var p = processorsByName.get(name);
-			if (p == null)
-				throw new IllegalArgumentException("processor not found [name=%s]".formatted(name));
-
-			return p;
-		} finally {
-			readLock.unlock();
-		}
+	public final DataType<T> dataType() {
+		return dataType;
 	}
 
 	public Processor<T> getProcessor(Object id) {
@@ -234,11 +131,117 @@ public abstract class Pipeline<T> {
 		try {
 			var p = processorsById.get(id);
 			if (p == null)
-				throw new IllegalArgumentException("processor not found [id=%s]".formatted(id));
+				throw processorNotFoundException(id);
 
 			return p;
 		} finally {
 			readLock.unlock();
 		}
+	}
+
+	public final Head<T> head() {
+		return head;
+	}
+
+	IllegalArgumentException inputNotFoundException(Object id) {
+		return new IllegalArgumentException("input not found [id=%s]".formatted(id));
+	}
+
+	public String name() {
+		return name;
+	}
+
+	public Pipeline<T> onNewProcessor(BiConsumer<Registration, Processor<T>> action) {
+		registrationListeners.add(action);
+
+		return this;
+	}
+
+	public Pipeline<T> onNewRegistration(Consumer<Registration> action) {
+		return onNewProcessor((r, p) -> action.accept(r));
+	}
+
+	/**
+	 * @param id
+	 * @return
+	 */
+	IllegalArgumentException outputTransformerNotFound(Object id) {
+		return new IllegalArgumentException("output not found [id=%s]".formatted(id));
+	}
+
+	IllegalArgumentException processorNotFoundException(Object id) {
+		return new IllegalArgumentException("processor not found [id=%s]".formatted(id));
+	}
+
+	IllegalArgumentException duplicateOutputException(Object id) {
+		return new IllegalArgumentException("duplicate output transformer [id=%s]".formatted(id));
+	}
+
+	private void removeProcessor(Processor<T> processor) {
+		Object id = processor.id();
+
+		Processor<T> prevProcessor = processor.prevElement();
+
+		activeProcessors.remove(processor);
+
+		processorsById.remove(id);
+
+		// Reset processor
+		processor.reset();
+
+		prevProcessor.relink();
+	}
+
+	void setEnableProcessor(Processor<T> processor, boolean newState) {
+		if (newState == processor.isEnabled())
+			return;
+
+		writeLock.lock();
+		try {
+
+			processor.enabledState = newState;
+
+			if (newState == true) {
+				activeProcessors.offer(processor);
+				processor.relink();
+
+			} else {
+
+				var prevProcessor = processor.prevElement();
+				activeProcessors.remove(processor);
+				prevProcessor.relink();
+			}
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	public final Tail<T> tail() {
+		return tail;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return name() + " ["
+				+ activeProcessors.stream()
+						.map(Processor::toString)
+						.collect(Collectors.joining(" > "))
+				+ "]";
+	}
+
+	public <IN> IN inputConnector(Object id) {
+		return head.connector(id);
+	}
+
+	public <IN> IN inputConnector(Object id, Class<IN> inClass) {
+		return head.connector(id);
+	}
+
+	public <OUT> Registration outputConnect(Object id, T sink) {
+		return tail().getOutput(id).connect(sink);
 	}
 }
