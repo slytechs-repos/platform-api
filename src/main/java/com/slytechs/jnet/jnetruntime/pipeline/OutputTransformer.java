@@ -39,10 +39,6 @@ public abstract class OutputTransformer<IN, OUT>
 		return "<<" + name() + ">>";
 	}
 
-	public interface OutputFactory<IN, T, T_BASE extends OutputTransformer<IN, T>> {
-		T_BASE newOutputTransformer(int priority, String name);
-	}
-
 	public interface OutputMapper<IN, OUT> {
 
 		IN createMappedOutput(Supplier<OUT> sink);

@@ -19,9 +19,7 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
-import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
-import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -33,33 +31,18 @@ public class TestV3Syntax {
 
 	static class StringPipeline extends Pipeline<Consumer<StringBuilder>> {
 
-		static Consumer<StringBuilder> wrapper(Consumer<StringBuilder>[] dataArray) {
-			return str -> {
-				for (var e : dataArray)
-					e.accept(str);
-			};
-		}
-
-		static Consumer<String> wrapDataString(Consumer<String>[] dataArray) {
-			return str -> {
-				for (var e : dataArray)
-					e.accept(str);
-			};
-		}
-
-		/**
-		 * @param dataType
-		 */
 		public StringPipeline(String name) {
-			super("String pipeline", new RawDataType<>(e -> {}, StringPipeline::wrapper));
+			super("String pipeline", new GenericDataType<>() {});
 
-			head().<LongConsumer>addInput("long", sink -> {
+			var longInput = new InputTransformer<LongConsumer, Consumer<StringBuilder>>("FromLong", sink -> {
 				return num -> sink.get().accept(new StringBuilder(Long.toString(num)));
-			});
+			}) {};
 
-			head().<IntConsumer>addInput("integer", sink -> {
-				return num -> sink.get().accept(new StringBuilder(Integer.toString(num)));
-			});
+			head().registerInput(longInput);
+
+//			head().<IntConsumer>addInput("integer", sink -> {
+//				return num -> sink.get().accept(new StringBuilder(Integer.toString(num)));
+//			});
 
 			this.addProcessor(10, "ToUppercase", sink -> {
 				return str -> sink.get().accept(str.append("-ToUppercase"));
@@ -69,18 +52,18 @@ public class TestV3Syntax {
 				return str -> sink.get().accept(str.append("-ToLowercase"));
 			});
 
-			tail().addOutput(0, "ToString", new GenericDataType<Consumer<String>>() {},
-					(Supplier<Consumer<String>> sink) -> {
-						return str -> sink.get().accept(str.toString());
-					});
+			tail().addOutput(0, "ToString", new GenericDataType<Consumer<String>>("ToString") {}, output -> {
+				return str -> output.get().accept(str.toString());
+			});
 
-			tail().addOutput(0, new GenericDataType<>(e -> {}) {}, (
-					Supplier<Consumer<String>> sink) -> {
+			tail().addOutput(0, new GenericDataType<Consumer<String>>() {}, sink -> {
 				return str -> sink.get().accept(str.toString());
 			});
 
-			System.out.println("Lookup:: " + tail().getOutput(new GenericDataType<Consumer<String>>() {})
-					.dataType());
+		}
+
+		private void recoverFromProcessingError(Consumer<StringBuilder> stringBuilder, ProcessingError error) {
+
 		}
 
 	}
@@ -95,8 +78,8 @@ public class TestV3Syntax {
 
 		pipeline.onNewRegistration(registrations::add);
 
-		pipeline.inputConnector("integer", IntConsumer.class).accept(10);;
-		pipeline.outputConnect(new GenericDataType<Consumer<String>>() {}, System.out::println);
+		pipeline.<Consumer<String>>out("ToString", System.out::println);
+		pipeline.in("FromLong", LongConsumer.class).accept(10);;
 
 		System.out.println(pipeline);
 	}

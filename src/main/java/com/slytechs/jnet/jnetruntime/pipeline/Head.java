@@ -19,10 +19,11 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
 import com.slytechs.jnet.jnetruntime.pipeline.InputTransformer.InputMapper;
-import com.slytechs.jnet.jnetruntime.util.Named;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -31,16 +32,115 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class Head<T> extends Processor<T> {
 
+	record InputKey<IN>(Object id, DataType<IN> dataType) {
+
+		public InputKey(Object id) {
+			this(id, (id instanceof DataType dt) ? dt : null);
+		}
+
+		/**
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(id);
+		}
+
+		/**
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+
+			@SuppressWarnings("unchecked")
+			InputKey<IN> other = (InputKey<IN>) obj;
+			return Objects.equals(id, other.id)
+					&& (dataType == null || other.dataType == null)
+							? true
+							: Objects.equals(dataType, other.dataType);
+		}
+
+	}
+
+	private final Map<InputKey<?>, InputTransformer<?, T>> inputsById = new HashMap<>();
+
+	private final T inlineWithUncaughProcessorErrorHandling;
+
+	Head(Pipeline<T> pipeline) {
+		super(-1, "head");
+
+		super.initializePipeline(pipeline);
+
+		this.inlineWithUncaughProcessorErrorHandling = FunctionalProxies.createThrowableSupplier(
+				dataType().dataClass(),
+				this::getOutput,
+				this::handleUncaughtProcessingError);
+	}
+
+	private void handleUncaughtProcessingError(Throwable e) {
+		e.printStackTrace();
+	}
+
+	public <IN> Registration addInput(String name, InputMapper<IN, T> mapper) {
+
+		var input = new DefaultInputTransformer<IN, T>(name, mapper);
+
+		return registerInput(input);
+	}
+
+	public <IN> IN connector(Object id) {
+		readLock.lock();
+
+		try {
+			InputTransformer<IN, T> p = getInputTransformer(id, null);
+			if (p == null)
+				throw pipeline.inputNotFoundException(id);
+
+			return p.getInput();
+		} finally {
+			readLock.unlock();
+		}
+	}
+
 	/**
-	 * @see java.lang.Object#toString()
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Processor#getInput()
 	 */
 	@Override
-	public String toString() {
-		return "[IN "
-				+ inputsById.values().stream()
-						.map(InputTransformer::toString)
-						.collect(Collectors.joining(" OR "))
-				+ "]";
+	public final T getInput() {
+		return inlineWithUncaughProcessorErrorHandling;
+	}
+
+	public <IN> InputTransformer<IN, T> getInputTransformer(DataType<IN> dataType) {
+		return getInputTransformer(dataType, dataType);
+	}
+
+	private <IN> InputTransformer<IN, T> getInputTransformer(InputKey<IN> key) {
+		readLock.lock();
+
+		try {
+			@SuppressWarnings("unchecked")
+			InputTransformer<IN, T> p = (InputTransformer<IN, T>) inputsById.get(key);
+			if (p == null)
+				throw pipeline.inputNotFoundException(key);
+
+			return p;
+		} finally {
+			readLock.unlock();
+		}
+	}
+
+	public <IN> InputTransformer<IN, T> getInputTransformer(Object id) {
+		return getInputTransformer(new InputKey<IN>(id));
+	}
+
+	public <IN> InputTransformer<IN, T> getInputTransformer(Object id, DataType<IN> dataType) {
+		return getInputTransformer(new InputKey<IN>(id, dataType));
 	}
 
 	/**
@@ -54,67 +154,48 @@ public class Head<T> extends Processor<T> {
 		return outputData;
 	}
 
-	/**
-	 * @see com.slytechs.jnet.jnetruntime.pipeline.Processor#getInput()
-	 */
-	@Override
-	public final T getInput() {
-		return getOutput();
-	}
-
-	private final Map<Object, InputTransformer<?, T>> inputsById = new HashMap<>();
-
-	Head(Pipeline<T> pipeline) {
-		super(-1, "head");
-
-		super.initialize(pipeline);
-	}
-
 	public Registration registerInput(InputTransformer<?, T> newInput) {
 
-		var id = newInput.id();
-		newInput.head = this;
-
-		inputsById.put(id, newInput);
-
-		return () -> inputsById.remove(id);
-	}
-
-	private static final class DefaultInputTransformer<IN, OUT> extends InputTransformer<IN, OUT> {
-
-		/**
-		 * @param id
-		 * @param mapper
-		 */
-		public DefaultInputTransformer(Object id, InputMapper<IN, OUT> mapper) {
-			super(id, mapper);
-
-			String name = Named.toName(id);
-			setName(name);
-		}
-
-	}
-
-	public <IN> Registration addInput(String name, InputMapper<IN, T> mapper) {
-
-		var input = new DefaultInputTransformer<IN, T>(name, mapper);
-
-		return registerInput(input);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <IN> IN connector(Object id) {
-		readLock.lock();
+		writeLock.lock();
 
 		try {
-			var p = inputsById.get(id);
-			if (p == null)
-				throw pipeline.inputNotFoundException(id);
+			var id = newInput.id();
+			var dt = newInput.dataType();
+			var key = new InputKey<>(id, dt);
 
-			return (IN) p.getInput();
+			newInput.initializeHead(this);
+
+			inputsById.put(key, newInput);
+
+			return () -> removeInput(key, newInput);
 		} finally {
-			readLock.unlock();
+			writeLock.unlock();
 		}
+	}
+
+	private void removeInput(InputKey<?> key, InputTransformer<?, T> input) {
+		writeLock.lock();
+
+		try {
+
+			input.clearHead();
+			inputsById.remove(key);
+
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return " IN["
+				+ inputsById.values().stream()
+						.map(InputTransformer::toString)
+						.collect(Collectors.joining(" || "))
+				+ "]";
 	}
 
 }

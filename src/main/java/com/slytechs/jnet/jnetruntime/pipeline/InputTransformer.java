@@ -19,6 +19,8 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.function.Supplier;
 
+import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
+
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
@@ -35,7 +37,6 @@ public abstract class InputTransformer<IN, T>
 	}
 
 	public interface InputMapper<IN, T> {
-
 		IN createMappedInput(Supplier<T> sink);
 	}
 
@@ -47,29 +48,84 @@ public abstract class InputTransformer<IN, T>
 	private String name;
 	private Object id;
 	Head<T> head;
+	private final DataType<IN> dataType;
+	private final IN inline;
 
-	public InputTransformer(String name) {
+	@SuppressWarnings("unchecked")
+	protected InputTransformer(String name) {
+		this.dataType = GenericDataType.from(this);
 		this.name = name;
 		this.id = name;
-		this.input = (IN) this;
+		this.inline = (IN) this;
 	}
 
-	public InputTransformer(String name, InputMapper<IN, T> mapper) {
+	@SuppressWarnings("unchecked")
+	protected InputTransformer(String name, DataType<IN> dataType) {
 		this.name = name;
 		this.id = name;
-		this.input = mapper.createMappedInput(this::getOutput);
+		this.inline = (IN) this;
+		this.dataType = dataType;
 	}
 
-	public InputTransformer(Object id) {
-		this.name = getClass().getSimpleName();
-		this.id = id;
-		this.input = (IN) this;
+	protected InputTransformer(String name, InputMapper<IN, T> mapper) {
+		this.dataType = GenericDataType.from(this);
+		this.name = name;
+		this.id = name;
+		this.inline = mapper.createMappedInput(this::getOutput);
 	}
 
-	public InputTransformer(Object id, InputMapper<IN, T> mapper) {
-		this.name = getClass().getSimpleName();
+	@SuppressWarnings("unchecked")
+	protected InputTransformer(Object id) {
+		this.dataType = GenericDataType.from(this);
+		this.name = dataType.name();
 		this.id = id;
-		this.input = mapper.createMappedInput(this::getOutput);
+		this.inline = (IN) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected InputTransformer(Object id, DataType<IN> dataType) {
+		this.dataType = dataType;
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = (IN) this;
+	}
+
+	protected InputTransformer(Object id, InputMapper<IN, T> mapper) {
+		this.dataType = GenericDataType.from(this);
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = mapper.createMappedInput(this::getOutput);
+	}
+
+	void initializeHead(Head<T> head) {
+		assert this.head == null : "input already connected to Head";
+
+		this.head = head;
+
+		/*
+		 * Inject a functional interface proxy of type <IN> to read-lock on every
+		 * forwarding call to the inline transformer
+		 * 
+		 * [user-dispatcher]->[read-lock-proxy]->[inline-transformer]->[pipe-processors]
+		 * 
+		 * The read-lock is for structural changes to the pipeline itself, not the data
+		 * being processed. Any changes such as enable/disable/change on inputs,
+		 * processors or outputs, will acquire a write-lock before making any changes to
+		 * the pipeline structure or state. This allows timers and other threads to
+		 * manipulate the state of the pipeline itself in a thread safe and coherent
+		 * manner.
+		 */
+		var readLock = head.readLock;
+		this.input = FunctionalProxies.createLockable(dataType.dataClass(), inline, readLock);
+	}
+
+	void clearHead() {
+		this.head = null;
+		this.input = null;
+	}
+
+	public final DataType<IN> dataType() {
+		return dataType;
 	}
 
 	public final void setName(String newName) {
@@ -93,10 +149,14 @@ public abstract class InputTransformer<IN, T>
 		return input;
 	}
 
-	public final T getOutput() {
-		assert head != null : "head not connected to pipe";
+	public final IN getInputPerma() {
+		return getInput();
+	}
 
-		return head.getOutput();
+	public final T getOutput() {
+		assert head != null : "input not connected to pipeline";
+
+		return head.getInput();
 	}
 
 }

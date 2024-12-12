@@ -17,7 +17,6 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.lang.reflect.Array;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -87,13 +86,17 @@ public record RawDataType<T>(
 				FunctionalProxies.createArrayAllocator(dataClass));
 	}
 
-	@SuppressWarnings("unchecked")
 	public RawDataType(String name, Class<T> dataClass, T empty, Function<T[], T> arrayWrapper) {
-		this(name, dataClass, empty, arrayWrapper, size -> (T[]) Array.newInstance(dataClass(empty), size));
+		this(name, dataClass, empty, arrayWrapper, FunctionalProxies.createArrayAllocator(dataClass));
 	}
 
 	public RawDataType(Class<T> dataClass, T empty, Function<T[], T> arrayWrapper) {
 		this(dataClass.getSimpleName(), dataClass, empty, arrayWrapper);
+	}
+
+	public RawDataType(Class<T> dataClass, T empty, IntFunction<T[]> arrayAllocator) {
+		this(dataClass.getSimpleName(), dataClass, empty, FunctionalProxies.createArrayWrapper(
+				dataClass), arrayAllocator);
 	}
 
 	public RawDataType(Class<T> dataClass, T empty, Function<T[], T> arrayWrapper,

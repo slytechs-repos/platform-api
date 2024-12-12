@@ -37,7 +37,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public abstract class Pipeline<T> {
+public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 
 	private static class DefaultProcessor<T> extends Processor<T> {
 
@@ -65,12 +65,16 @@ public abstract class Pipeline<T> {
 	private String name;
 
 	private final List<BiConsumer<Registration, Processor<T>>> registrationListeners = new ArrayList<>();
+	private final PipelineEventSupport eventSupport;
+	private final PipelineErrorSupport errorSupport;
 
 	protected Pipeline(String name, DataType<T> reducer) {
 		this.dataType = reducer;
 		this.name = Objects.requireNonNull(name, "name");
 		this.readLock = rwLock.readLock();
 		this.writeLock = rwLock.writeLock();
+		this.eventSupport = new PipelineEventSupport(this);
+		this.errorSupport = new PipelineErrorSupport(eventSupport);
 
 		this.head = new Head<>(this);
 		this.tail = new Tail<>(this);
@@ -79,14 +83,57 @@ public abstract class Pipeline<T> {
 		activeProcessors.offer(tail);
 	}
 
-	public final Registration addProcessor(int priority, String name, ProcessorMapper<T> mapper) {
+	@Override
+	public ErrorPolicy getDefaultErrorPolicy() {
+		return errorSupport.getDefaultErrorPolicy();
+	}
+
+	@Override
+	public void handleProcessingError(ProcessingError error) {
+		errorSupport.handleProcessingError(error);
+	}
+
+	public void setDefaultErrorPolicy(ErrorPolicy policy) {
+		errorSupport.setDefaultErrorPolicy(policy);
+	}
+
+	public Registration addErrorHandler(ProcessingErrorHandler handler) {
+		return errorSupport.addErrorHandler(handler);
+	}
+
+	public Registration addPipelineListener(PipelineListener listener) {
+		return eventSupport.addListener(listener);
+	}
+
+	protected void fireProcessorChanged(Processor<?> processor, ProcessorEventType type) {
+		eventSupport.fireProcessorChanged(processor, type);
+	}
+
+	protected void fireAttributeChanged(String name, Object oldValue, Object newValue) {
+		eventSupport.fireAttributeChanged(name, oldValue, newValue);
+	}
+
+	protected void fireError(Throwable error, ErrorSeverity severity) {
+		eventSupport.fireError(error, severity);
+	}
+
+	public final Processor<T> addProcessor(int priority, String name, ProcessorMapper<T> mapper) {
 
 		var processor = new DefaultProcessor<T>(priority, name, mapper);
 
-		return addProcessor(processor);
+		var _ = registerProcessor(processor);
+
+		return processor;
 	}
 
-	public final Registration addProcessor(Processor<T> newProcessor) {
+	public final Processor<T> addProcessor(Processor<T> newProcessor) {
+
+		var _ = registerProcessor(newProcessor);
+
+		return newProcessor;
+	}
+
+	public final Registration registerProcessor(Processor<T> newProcessor) {
 		String name = newProcessor.name();
 		Object id = newProcessor.id();
 
@@ -99,7 +146,7 @@ public abstract class Pipeline<T> {
 				throw new IllegalStateException("processor already initialized [%s]".formatted(name));
 
 			// Initialize new processor
-			newProcessor.initialize(this);
+			newProcessor.initializePipeline(this);
 
 			// Fast lookup
 			processorsById.put(id, newProcessor);
@@ -109,11 +156,18 @@ public abstract class Pipeline<T> {
 
 			newProcessor.relink();
 
-			Registration reg = () -> removeProcessor(newProcessor);
+			Registration reg = () -> {
+				removeProcessor(newProcessor);
+				fireProcessorChanged(newProcessor, ProcessorEventType.REMOVED);
+			};
 
 			registrationListeners.forEach(l -> l.accept(reg, newProcessor));
 
 			return reg;
+
+		} catch (Exception e) {
+			fireError(e, ErrorSeverity.ERROR);
+			throw e;
 
 		} finally {
 			writeLock.unlock();
@@ -233,15 +287,19 @@ public abstract class Pipeline<T> {
 				+ "]";
 	}
 
-	public <IN> IN inputConnector(Object id) {
+	public <IN> IN in(Object id) {
 		return head.connector(id);
 	}
 
-	public <IN> IN inputConnector(Object id, Class<IN> inClass) {
+	public <IN> IN in(Object id, Class<IN> inClass) {
 		return head.connector(id);
 	}
 
-	public <OUT> Registration outputConnect(Object id, T sink) {
-		return tail().getOutput(id).connect(sink);
+	public <OUT> OutputTransformer<T, OUT> out(Object id) {
+		return tail().getOutputTransformer(id);
+	}
+
+	public <OUT> Registration out(Object id, OUT sink) {
+		return tail().getOutputTransformer(id).connect(sink);
 	}
 }

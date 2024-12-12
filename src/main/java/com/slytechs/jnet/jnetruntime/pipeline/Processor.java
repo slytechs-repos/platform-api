@@ -64,6 +64,7 @@ public abstract class Processor<T>
 
 	protected T outputData;
 	private int priority;
+	private ProcessorErrorSupport errorSupport;
 
 	@SuppressWarnings("unchecked")
 	protected Processor(int priority, String name) {
@@ -88,7 +89,7 @@ public abstract class Processor<T>
 		this.inlineData = mapper.createMappedProcessor(this::getOutput);
 	}
 
-	void setRwLock(ReadWriteLock rwLock) {
+	private void setRwLock(ReadWriteLock rwLock) {
 		this.rwLock = rwLock;
 		this.readLock = rwLock.readLock();
 		this.writeLock = rwLock.writeLock();
@@ -98,11 +99,13 @@ public abstract class Processor<T>
 		setRwLock(new ReentrantReadWriteLock());
 		this.pipeline = null;
 		this.enabledState = false;
+		this.errorSupport = null;
 	}
 
-	void initialize(Pipeline<T> newPipeline) {
+	void initializePipeline(Pipeline<T> newPipeline) {
 		this.pipeline = newPipeline;
 		this.enabledState = true;
+		this.errorSupport = new ProcessorErrorSupport(this, newPipeline);
 
 		this.setRwLock(newPipeline.rwLock);
 	}
@@ -136,6 +139,18 @@ public abstract class Processor<T>
 
 	public T getOutput() {
 		return outputData;
+	}
+
+	public void setErrorPolicy(ErrorPolicy policy) {
+		errorSupport.setErrorPolicy(policy);
+	}
+
+	public ErrorPolicy getErrorPolicy() {
+		return errorSupport.getErrorPolicy();
+	}
+
+	protected void handleError(Throwable error, T data) {
+		errorSupport.handleError(error, data);
 	}
 
 	void relink() {
@@ -221,6 +236,13 @@ public abstract class Processor<T>
 		this.id = Objects.requireNonNull(id, "id");
 
 		return this;
+	}
+
+	/**
+	 * @param procError
+	 */
+	protected void retryOnProcessingError(ProcessingError procError) {
+
 	}
 
 }

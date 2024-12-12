@@ -33,16 +33,34 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class Tail<IN> extends Processor<IN> {
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "[OUT "
-				+ activeTransformers.stream()
-						.map(OutputTransformer::toString)
-						.collect(Collectors.joining(" OR "))
-				+ "]";
+	private static class DefaultDataTransformer<IN, OUT> extends OutputTransformer<IN, OUT> {
+
+		public DefaultDataTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
+			super(priority, id, dataType, sink);
+		}
+
+	}
+
+	private final Map<Object, OutputTransformer<IN, ?>> transformersById = new HashMap<>();
+
+	private final List<OutputTransformer<IN, ?>> activeTransformers = new ArrayList<>();
+
+	Tail(Pipeline<IN> pipeline) {
+		super(Integer.MAX_VALUE, "tail", (IN) null);
+		super.pipeline = pipeline;
+
+		setOutput(dataType().empty());
+	}
+	public <OUT> Registration addOutput(int priority, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
+		return addOutput(priority, dataType, dataType, sink);
+	}
+
+	public <OUT> Registration addOutput(int priority, Object id, DataType<OUT> dataType,
+			OutputMapper<IN, OUT> sink) {
+
+		OutputTransformer<IN, OUT> output = new DefaultDataTransformer<IN, OUT>(priority, id, dataType, sink);
+
+		return registerOutput(output);
 	}
 
 	/**
@@ -51,6 +69,37 @@ public class Tail<IN> extends Processor<IN> {
 	@Override
 	public IN getInput() {
 		return getOutput();
+	}
+
+	@SuppressWarnings("unchecked")
+	public <OUT> OutputTransformer<IN, OUT> getOutputTransformer(Object id) {
+		if (!transformersById.containsKey(id))
+			throw pipeline.outputTransformerNotFound(id);
+
+		return (OutputTransformer<IN, OUT>) transformersById.get(id);
+	}
+
+	public Registration registerOutput(OutputTransformer<IN, ?> newOutput) {
+		Object id = newOutput.id();
+
+		if (transformersById.containsKey(id))
+			throw pipeline.duplicateOutputException(id);
+
+		newOutput.tail = this;
+
+		transformersById.put(id, newOutput);
+		activeTransformers.add(newOutput);
+
+		Collections.sort(activeTransformers);
+
+		relink();
+
+		return () -> {
+			transformersById.remove(id);
+			activeTransformers.remove(newOutput);
+
+			relink();
+		};
 	}
 
 	/**
@@ -83,65 +132,16 @@ public class Tail<IN> extends Processor<IN> {
 		setOutput(newOutput);
 	}
 
-	private final Map<Object, OutputTransformer<IN, ?>> transformersById = new HashMap<>();
-	private final List<OutputTransformer<IN, ?>> activeTransformers = new ArrayList<>();
-
-	Tail(Pipeline<IN> pipeline) {
-		super(Integer.MAX_VALUE, "tail", (IN) null);
-		super.pipeline = pipeline;
-
-		setOutput(dataType().empty());
-	}
-
-	public Registration registerOutput(OutputTransformer<IN, ?> newOutput) {
-		Object id = newOutput.id();
-
-		if (transformersById.containsKey(id))
-			throw pipeline.duplicateOutputException(id);
-
-		newOutput.tail = this;
-
-		transformersById.put(id, newOutput);
-		activeTransformers.add(newOutput);
-
-		Collections.sort(activeTransformers);
-
-		relink();
-
-		return () -> {
-			transformersById.remove(id);
-			activeTransformers.remove(newOutput);
-
-			relink();
-		};
-	}
-
-	private static class DefaultDataTransformer<IN, OUT> extends OutputTransformer<IN, OUT> {
-
-		public DefaultDataTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
-			super(priority, id, dataType, sink);
-		}
-
-	}
-
-	public <OUT> Registration addOutput(int priority, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
-		return addOutput(priority, dataType, dataType, sink);
-	}
-
-	public <OUT> Registration addOutput(int priority, Object id, DataType<OUT> dataType,
-			OutputMapper<IN, OUT> sink) {
-
-		OutputTransformer<IN, OUT> output = new DefaultDataTransformer<IN, OUT>(priority, id, dataType, sink);
-
-		return registerOutput(output);
-	}
-
-	@SuppressWarnings("unchecked")
-	public <OUT> OutputTransformer<IN, OUT> getOutput(Object id) {
-		if (!transformersById.containsKey(id))
-			throw pipeline.outputTransformerNotFound(id);
-
-		return (OutputTransformer<IN, OUT>) transformersById.get(id);
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "OUT["
+				+ activeTransformers.stream()
+						.map(OutputTransformer::toString)
+						.collect(Collectors.joining(" && "))
+				+ "]";
 	}
 
 }

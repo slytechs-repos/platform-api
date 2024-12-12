@@ -17,7 +17,6 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -36,6 +35,45 @@ import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
  * @author Sly Technologies Inc.
  */
 public abstract class GenericDataType<T> implements DataType<T> {
+
+	public static <T> DataType<T> from(Object obj) {
+		Type superclass = obj.getClass().getGenericSuperclass();
+		if (!(superclass instanceof ParameterizedType paramType)) {
+			throw new IllegalArgumentException("GenericDataType must be created with generic type information [%s]"
+					.formatted(obj));
+		}
+
+		var type = paramType.getActualTypeArguments()[0];
+
+		Class<T> dataClass = getDataType(type);
+
+		var empty = FunctionalProxies.createNoOpProxy(dataClass);
+		var arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
+		var arrayAllocator = FunctionalProxies.createArrayAllocator(dataClass);
+		var name = getSimpleTypeName(type);
+
+		return new RawDataType<>(name, dataClass, empty, arrayWrapper, arrayAllocator);
+	}
+
+	/**
+	 * Recursively builds a string representation of a Type object.
+	 */
+	private static <T> Class<T> getDataType(Type type) {
+		if (type instanceof Class<?>) {
+			return ((Class<T>) type);
+		}
+
+		if (type instanceof ParameterizedType) {
+			ParameterizedType paramType = (ParameterizedType) type;
+			return getDataType(paramType.getRawType());
+		}
+
+		if (type instanceof WildcardType) {
+			throw new IllegalArgumentException("WildcardTypes are not supported");
+		}
+
+		return (Class<T>) type;
+	}
 
 	/**
 	 * Recursively builds a string representation of a Type object.
@@ -121,21 +159,18 @@ public abstract class GenericDataType<T> implements DataType<T> {
 	}
 
 	private final Class<T> dataClass;
-
 	private final T empty;
-
 	private final Function<T[], T> arrayWrapper;
-
 	private final IntFunction<T[]> arrayAllocator;
 	private final String name;
 	private final Type type;
 
-	protected GenericDataType() {
+	public GenericDataType() {
 		this((String) null);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected GenericDataType(String name) {
+	public GenericDataType(String name) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
 			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
@@ -146,12 +181,12 @@ public abstract class GenericDataType<T> implements DataType<T> {
 
 		this.empty = FunctionalProxies.createNoOpProxy(dataClass);
 		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
-		this.arrayAllocator = size -> (T[]) Array.newInstance(dataClass, size);
+		this.arrayAllocator = FunctionalProxies.createArrayAllocator(dataClass);
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected GenericDataType(String name, T empty) {
+	public GenericDataType(String name, T empty) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
 			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
@@ -162,12 +197,12 @@ public abstract class GenericDataType<T> implements DataType<T> {
 
 		this.empty = empty;
 		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
-		this.arrayAllocator = size -> (T[]) Array.newInstance(dataClass, size);
+		this.arrayAllocator = FunctionalProxies.createArrayAllocator(dataClass);
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected GenericDataType(String name, T empty, Function<T[], T> arrayWrapper) {
+	public GenericDataType(String name, T empty, Function<T[], T> arrayWrapper) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
 			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
@@ -178,12 +213,12 @@ public abstract class GenericDataType<T> implements DataType<T> {
 
 		this.empty = empty;
 		this.arrayWrapper = arrayWrapper;
-		this.arrayAllocator = size -> (T[]) Array.newInstance(dataClass, size);
+		this.arrayAllocator = FunctionalProxies.createArrayAllocator(dataClass);
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected GenericDataType(String name, T empty, Function<T[], T> arrayWrapper, IntFunction<T[]> arrayAllocator) {
+	public GenericDataType(String name, T empty, Function<T[], T> arrayWrapper, IntFunction<T[]> arrayAllocator) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
 			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
@@ -198,11 +233,43 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
-	protected GenericDataType(T empty) {
+	@SuppressWarnings("unchecked")
+	public GenericDataType(T empty, IntFunction<T[]> arrayAllocator) {
+		Type superclass = getClass().getGenericSuperclass();
+		if (!(superclass instanceof ParameterizedType paramType)) {
+			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+		}
+
+		this.type = paramType.getActualTypeArguments()[0];
+		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+
+		this.empty = empty;
+		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
+		this.arrayAllocator = arrayAllocator;
+		this.name = getSimpleTypeName(type);
+	}
+
+	@SuppressWarnings("unchecked")
+	public GenericDataType(String name, T empty, IntFunction<T[]> arrayAllocator) {
+		Type superclass = getClass().getGenericSuperclass();
+		if (!(superclass instanceof ParameterizedType paramType)) {
+			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+		}
+
+		this.type = paramType.getActualTypeArguments()[0];
+		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+
+		this.empty = empty;
+		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
+		this.arrayAllocator = arrayAllocator;
+		this.name = (name == null) ? getSimpleTypeName(type) : name;
+	}
+
+	public GenericDataType(T empty) {
 		this(null, empty);
 	}
 
-	protected GenericDataType(T empty, Function<T[], T> arrayWrapper) {
+	public GenericDataType(T empty, Function<T[], T> arrayWrapper) {
 		this(null, empty, arrayWrapper);
 	}
 
