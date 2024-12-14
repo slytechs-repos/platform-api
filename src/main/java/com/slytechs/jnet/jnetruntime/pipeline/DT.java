@@ -31,15 +31,17 @@ import java.util.stream.Collectors;
 import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
 
 /**
+ * Generic data type literal.
+ * 
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public abstract class GenericDataType<T> implements DataType<T> {
+public abstract class DT<T> implements DataType<T> {
 
 	public static <T> DataType<T> from(Object obj) {
 		Type superclass = obj.getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information [%s]"
+			throw new IllegalArgumentException("DT must be created with generic type information [%s]"
 					.formatted(obj));
 		}
 
@@ -87,7 +89,7 @@ public abstract class GenericDataType<T> implements DataType<T> {
 			ParameterizedType paramType = (ParameterizedType) type;
 			String rawType = getSimpleTypeName(paramType.getRawType());
 			String args = Arrays.stream(paramType.getActualTypeArguments())
-					.map(GenericDataType::getSimpleTypeName)
+					.map(DT::getSimpleTypeName)
 					.collect(Collectors.joining(", "));
 
 			return rawType + "<" + args + ">";
@@ -128,7 +130,7 @@ public abstract class GenericDataType<T> implements DataType<T> {
 			ParameterizedType paramType = (ParameterizedType) type;
 			String rawType = getTypeName(paramType.getRawType());
 			String args = Arrays.stream(paramType.getActualTypeArguments())
-					.map(GenericDataType::getTypeName)
+					.map(DT::getTypeName)
 					.collect(Collectors.joining(", "));
 
 			return rawType + "<" + args + ">";
@@ -165,19 +167,18 @@ public abstract class GenericDataType<T> implements DataType<T> {
 	private final String name;
 	private final Type type;
 
-	public GenericDataType() {
+	public DT() {
 		this((String) null);
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDataType(String name) {
+	public DT(String name) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+			throw new IllegalArgumentException("DT must be created with generic type information");
 		}
 
 		this.type = paramType.getActualTypeArguments()[0];
-		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+		this.dataClass = getDataType(type);
 
 		this.empty = FunctionalProxies.createNoOpProxy(dataClass);
 		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
@@ -185,15 +186,14 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDataType(String name, T empty) {
+	public DT(String name, T empty) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+			throw new IllegalArgumentException("DT must be created with generic type information");
 		}
 
 		this.type = paramType.getActualTypeArguments()[0];
-		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+		this.dataClass = getDataType(type);
 
 		this.empty = empty;
 		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
@@ -201,15 +201,14 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDataType(String name, T empty, Function<T[], T> arrayWrapper) {
+	public DT(String name, T empty, Function<T[], T> arrayWrapper) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+			throw new IllegalArgumentException("DT must be created with generic type information");
 		}
 
 		this.type = paramType.getActualTypeArguments()[0];
-		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+		this.dataClass = getDataType(type);
 
 		this.empty = empty;
 		this.arrayWrapper = arrayWrapper;
@@ -217,15 +216,14 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDataType(String name, T empty, Function<T[], T> arrayWrapper, IntFunction<T[]> arrayAllocator) {
+	public DT(String name, T empty, Function<T[], T> arrayWrapper, IntFunction<T[]> arrayAllocator) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+			throw new IllegalArgumentException("DT must be created with generic type information");
 		}
 
 		this.type = paramType.getActualTypeArguments()[0];
-		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+		this.dataClass = getDataType(type);
 
 		this.empty = empty;
 		this.arrayWrapper = arrayWrapper;
@@ -233,15 +231,14 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDataType(T empty, IntFunction<T[]> arrayAllocator) {
+	public DT(T empty, IntFunction<T[]> arrayAllocator) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+			throw new IllegalArgumentException("DT must be created with generic type information");
 		}
 
 		this.type = paramType.getActualTypeArguments()[0];
-		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+		this.dataClass = getDataType(type);
 
 		this.empty = empty;
 		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
@@ -249,15 +246,14 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = getSimpleTypeName(type);
 	}
 
-	@SuppressWarnings("unchecked")
-	public GenericDataType(String name, T empty, IntFunction<T[]> arrayAllocator) {
+	public DT(String name, T empty, IntFunction<T[]> arrayAllocator) {
 		Type superclass = getClass().getGenericSuperclass();
 		if (!(superclass instanceof ParameterizedType paramType)) {
-			throw new IllegalArgumentException("GenericDataType must be created with generic type information");
+			throw new IllegalArgumentException("DT must be created with generic type information");
 		}
 
 		this.type = paramType.getActualTypeArguments()[0];
-		this.dataClass = (Class<T>) ((ParameterizedType) type).getRawType();
+		this.dataClass = getDataType(type);
 
 		this.empty = empty;
 		this.arrayWrapper = FunctionalProxies.createArrayWrapper(dataClass);
@@ -265,11 +261,11 @@ public abstract class GenericDataType<T> implements DataType<T> {
 		this.name = (name == null) ? getSimpleTypeName(type) : name;
 	}
 
-	public GenericDataType(T empty) {
+	public DT(T empty) {
 		this(null, empty);
 	}
 
-	public GenericDataType(T empty, Function<T[], T> arrayWrapper) {
+	public DT(T empty, Function<T[], T> arrayWrapper) {
 		this(null, empty, arrayWrapper);
 	}
 

@@ -25,7 +25,7 @@ import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public abstract class InputTransformer<IN, T>
+public class InputTransformer<IN, T>
 		implements Transformer<IN, T> {
 
 	/**
@@ -37,6 +37,24 @@ public abstract class InputTransformer<IN, T>
 	}
 
 	public interface InputMapper<IN, T> {
+		public static abstract class GenericInputMapper<IN, T> implements InputMapper<IN, T> {
+
+			private InputMapper<IN, T> proxy;
+
+			public GenericInputMapper(InputMapper<IN, T> proxy) {
+				this.proxy = proxy;
+			}
+
+			/**
+			 * @see com.slytechs.jnet.jnetruntime.pipeline.InputTransformer.InputMapper#createMappedInput(java.util.function.Supplier)
+			 */
+			@Override
+			public IN createMappedInput(Supplier<T> sink) {
+				return proxy.createMappedInput(sink);
+			}
+
+		}
+
 		IN createMappedInput(Supplier<T> sink);
 	}
 
@@ -53,7 +71,7 @@ public abstract class InputTransformer<IN, T>
 
 	@SuppressWarnings("unchecked")
 	protected InputTransformer(String name) {
-		this.dataType = GenericDataType.from(this);
+		this.dataType = DT.from(this);
 		this.name = name;
 		this.id = name;
 		this.inline = (IN) this;
@@ -68,7 +86,14 @@ public abstract class InputTransformer<IN, T>
 	}
 
 	protected InputTransformer(String name, InputMapper<IN, T> mapper) {
-		this.dataType = GenericDataType.from(this);
+		this.dataType = DT.from(this);
+		this.name = name;
+		this.id = name;
+		this.inline = mapper.createMappedInput(this::getOutput);
+	}
+
+	public InputTransformer(String name, DataType<IN> dataType, InputMapper<IN, T> mapper) {
+		this.dataType = dataType;
 		this.name = name;
 		this.id = name;
 		this.inline = mapper.createMappedInput(this::getOutput);
@@ -76,7 +101,7 @@ public abstract class InputTransformer<IN, T>
 
 	@SuppressWarnings("unchecked")
 	protected InputTransformer(Object id) {
-		this.dataType = GenericDataType.from(this);
+		this.dataType = DT.from(this);
 		this.name = dataType.name();
 		this.id = id;
 		this.inline = (IN) this;
@@ -91,7 +116,14 @@ public abstract class InputTransformer<IN, T>
 	}
 
 	protected InputTransformer(Object id, InputMapper<IN, T> mapper) {
-		this.dataType = GenericDataType.from(this);
+		this.dataType = DT.from(this);
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = mapper.createMappedInput(this::getOutput);
+	}
+
+	public InputTransformer(Object id, DataType<IN> dataType, InputMapper<IN, T> mapper) {
+		this.dataType = dataType;
 		this.name = dataType.name();
 		this.id = id;
 		this.inline = mapper.createMappedInput(this::getOutput);
@@ -116,7 +148,11 @@ public abstract class InputTransformer<IN, T>
 		 * manner.
 		 */
 		var readLock = head.readLock;
-		this.input = FunctionalProxies.createLockable(dataType.dataClass(), inline, readLock);
+		this.input = FunctionalProxies.createLockable(dataType.dataClass(), inline, readLock, this::handleError);
+	}
+
+	private void handleError(Throwable e) {
+		head.handleError(e, null);
 	}
 
 	void clearHead() {

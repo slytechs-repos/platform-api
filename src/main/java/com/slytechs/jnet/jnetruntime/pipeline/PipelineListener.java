@@ -23,25 +23,25 @@ import java.util.EventListener;
  * Base interface for pipeline event listeners.
  */
 public interface PipelineListener extends EventListener {
-    
-    /**
-     * Called when a processor is added to or removed from the pipeline.
-     *
-     * @param evt the processor event containing details about what changed
-     */
-    void onProcessorChanged(ProcessorEvent evt);
-    
-    /**
-     * Called when a pipeline attribute value changes.
-     *
-     * @param evt the attribute event containing the old and new values
-     */
-    void onAttributeChanged(AttributeEvent evt);
-    
-    /**
-     * Called when an error occurs in the pipeline.
-     *
-     * @param evt the error event containing details about what went wrong
-     */
-    void onError(PipelineErrorEvent evt);
+
+	/**
+	 * Called when a processor is added to or removed from the pipeline.
+	 *
+	 * @param evt the processor event containing details about what changed
+	 */
+	void onProcessorChanged(ProcessorEvent evt);
+
+	/**
+	 * Called when a pipeline attribute value changes.
+	 *
+	 * @param evt the attribute event containing the old and new values
+	 */
+	void onAttributeChanged(AttributeEvent evt);
+
+	/**
+	 * Called when an error occurs in the pipeline.
+	 *
+	 * @param evt the error event containing details about what went wrong
+	 */
+	void onError(PipelineErrorEvent evt);
 }

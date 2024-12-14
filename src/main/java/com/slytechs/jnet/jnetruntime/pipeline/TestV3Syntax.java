@@ -19,7 +19,9 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.function.LongConsumer;
+import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -32,38 +34,49 @@ public class TestV3Syntax {
 	static class StringPipeline extends Pipeline<Consumer<StringBuilder>> {
 
 		public StringPipeline(String name) {
-			super("String pipeline", new GenericDataType<>() {});
+			super("String pipeline", new DT<>() {});
 
-			var longInput = new InputTransformer<LongConsumer, Consumer<StringBuilder>>("FromLong", sink -> {
-				return num -> sink.get().accept(new StringBuilder(Long.toString(num)));
-			}) {};
+			head().addInput("FromLong", this::inputFromLong, new DT<>() {});
 
-			head().registerInput(longInput);
+			head().addInput("integer", this::inputFromInt, new DT<>() {});
 
-//			head().<IntConsumer>addInput("integer", sink -> {
-//				return num -> sink.get().accept(new StringBuilder(Integer.toString(num)));
-//			});
+			this.addProcessor(10, "ToUppercase", this::processToUppercase)
+					.peek(sb -> System.out.println("PEEK1:: " + sb.toString()))
+					.peek(sb -> System.out.println("PEEK2:: " + sb.toString()))
 
-			this.addProcessor(10, "ToUppercase", sink -> {
-				return str -> sink.get().accept(str.append("-ToUppercase"));
-			});
+			;
 
-			this.addProcessor(20, "ToLowercase", sink -> {
-				return str -> sink.get().accept(str.append("-ToLowercase"));
-			});
+			this.addProcessor(20, "ToLowercase", this::processToLowercase)
+					.peek(sb -> System.out.println("PEEK1:: " + sb.toString()))
 
-			tail().addOutput(0, "ToString", new GenericDataType<Consumer<String>>("ToString") {}, output -> {
+			;
+
+			tail().addOutput(0, "ToString", output -> {
 				return str -> output.get().accept(str.toString());
-			});
+			}, new DT<Consumer<String>>("ToString") {});
 
-			tail().addOutput(0, new GenericDataType<Consumer<String>>() {}, sink -> {
+			tail().addOutput(0, sink -> {
 				return str -> sink.get().accept(str.toString());
-			});
+			}, new DT<Consumer<String>>() {});
 
 		}
 
-		private void recoverFromProcessingError(Consumer<StringBuilder> stringBuilder, ProcessingError error) {
+		private LongConsumer inputFromLong(Supplier<Consumer<StringBuilder>> sink) {
+			return (long num) -> sink.get().accept(new StringBuilder(Long.toString(num)));
+		}
 
+		private IntConsumer inputFromInt(Supplier<Consumer<StringBuilder>> sink) {
+			return (int num) -> sink.get().accept(new StringBuilder(Long.toString(num)));
+		}
+
+		private Consumer<StringBuilder> processToUppercase(Supplier<Consumer<StringBuilder>> sink) {
+			return str -> sink.get().accept(str.append("-ToUppercase"));
+		}
+
+		private Consumer<StringBuilder> processToLowercase(Supplier<Consumer<StringBuilder>> sink) {
+			return str -> {
+				sink.get().accept(str.append("-ToLowercase"));
+			};
 		}
 
 	}
@@ -76,9 +89,11 @@ public class TestV3Syntax {
 		var registrations = new ArrayList<Registration>();
 		var pipeline = new StringPipeline("String testing");
 
+		pipeline.addPipelineErrorConsumer(Throwable::printStackTrace);
+
 		pipeline.onNewRegistration(registrations::add);
 
-		pipeline.<Consumer<String>>out("ToString", System.out::println);
+		pipeline.out("ToString", System.out::println, new DT<Consumer<String>>() {});
 		pipeline.in("FromLong", LongConsumer.class).accept(10);;
 
 		System.out.println(pipeline);

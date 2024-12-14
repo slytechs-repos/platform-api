@@ -70,28 +70,33 @@ public class Head<T> extends Processor<T> {
 
 	private final Map<InputKey<?>, InputTransformer<?, T>> inputsById = new HashMap<>();
 
-	private final T inlineWithUncaughProcessorErrorHandling;
+	private T inline;
+	private final T inlineWithErrorHandler;
 
 	Head(Pipeline<T> pipeline) {
 		super(-1, "head");
 
 		super.initializePipeline(pipeline);
-
-		this.inlineWithUncaughProcessorErrorHandling = FunctionalProxies.createThrowableSupplier(
+		this.inlineWithErrorHandler = FunctionalProxies.createThrowableSupplier(
 				dataType().dataClass(),
 				this::getOutput,
-				this::handleUncaughtProcessingError);
+				this::handleProcessingError);
 	}
 
-	private void handleUncaughtProcessingError(Throwable e) {
-		e.printStackTrace();
+	public <IN> InputTransformer<IN, T> addInput(InputTransformer<IN, T> input) {
+
+		var _ = registerInput(input);
+
+		return input;
 	}
 
-	public <IN> Registration addInput(String name, InputMapper<IN, T> mapper) {
+	public <IN> InputTransformer<IN, T> addInput(String name, InputMapper<IN, T> mapper, DataType<IN> dataType) {
 
-		var input = new DefaultInputTransformer<IN, T>(name, mapper);
+		var input = new InputTransformer<IN, T>(name, dataType, mapper);
 
-		return registerInput(input);
+		var _ = registerInput(input);
+
+		return input;
 	}
 
 	public <IN> IN connector(Object id) {
@@ -113,7 +118,7 @@ public class Head<T> extends Processor<T> {
 	 */
 	@Override
 	public final T getInput() {
-		return inlineWithUncaughProcessorErrorHandling;
+		return inline;
 	}
 
 	public <IN> InputTransformer<IN, T> getInputTransformer(DataType<IN> dataType) {
@@ -152,6 +157,15 @@ public class Head<T> extends Processor<T> {
 			throw new IllegalStateException("no output for pipeline");
 
 		return outputData;
+	}
+
+	private void handleProcessingError(Throwable e) {
+
+		// Unwrap
+		while (e.getCause() != null)
+			e = e.getCause();
+
+		pipeline.fireError(e, ErrorSeverity.ERROR);
 	}
 
 	public Registration registerInput(InputTransformer<?, T> newInput) {
@@ -196,6 +210,28 @@ public class Head<T> extends Processor<T> {
 						.map(InputTransformer::toString)
 						.collect(Collectors.joining(" || "))
 				+ "]";
+	}
+
+	/**
+	 * @see com.slytechs.jnet.jnetruntime.pipeline.Processor#setOutput(java.lang.Object)
+	 */
+	@Override
+	void setOutput(T newOutput) {
+		writeLock.lock();
+
+		try {
+			super.setOutput(newOutput);
+
+			if (pipeline.hasErrorListeners()) {
+				this.inline = inlineWithErrorHandler;
+
+			} else {
+				this.inline = getOutput();
+			}
+		} finally {
+			writeLock.unlock();
+		}
+
 	}
 
 }

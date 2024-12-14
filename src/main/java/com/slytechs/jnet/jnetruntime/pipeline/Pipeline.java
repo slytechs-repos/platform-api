@@ -19,7 +19,6 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
@@ -64,9 +63,8 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 	private final DataType<T> dataType;
 	private String name;
 
-	private final List<BiConsumer<Registration, Processor<T>>> registrationListeners = new ArrayList<>();
 	private final PipelineEventSupport eventSupport;
-	private final PipelineErrorSupport errorSupport;
+	private final ArrayList<BiConsumer<Registration, Processor<T>>> processorRegistrations;
 
 	protected Pipeline(String name, DataType<T> reducer) {
 		this.dataType = reducer;
@@ -74,7 +72,7 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		this.readLock = rwLock.readLock();
 		this.writeLock = rwLock.writeLock();
 		this.eventSupport = new PipelineEventSupport(this);
-		this.errorSupport = new PipelineErrorSupport(eventSupport);
+		this.processorRegistrations = new ArrayList<>();
 
 		this.head = new Head<>(this);
 		this.tail = new Tail<>(this);
@@ -83,26 +81,102 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		activeProcessors.offer(tail);
 	}
 
+	final boolean hasErrorListeners() {
+		return !eventSupport.isEmpty();
+	}
+
 	@Override
 	public ErrorPolicy getDefaultErrorPolicy() {
-		return errorSupport.getDefaultErrorPolicy();
+		return ErrorPolicy.SUPPRESS;
 	}
 
 	@Override
 	public void handleProcessingError(ProcessingError error) {
-		errorSupport.handleProcessingError(error);
+		fireError(error.getCause(), error.getSeverity());
 	}
 
 	public void setDefaultErrorPolicy(ErrorPolicy policy) {
-		errorSupport.setDefaultErrorPolicy(policy);
+		eventSupport.setDefaultErrorPolicy(policy);
 	}
 
-	public Registration addErrorHandler(ProcessingErrorHandler handler) {
-		return errorSupport.addErrorHandler(handler);
+	public Registration addPipelineErrorConsumer(Consumer<Throwable> listener) {
+		return addPipelineListener(new PipelineListener() {
+
+			@Override
+			public void onError(PipelineErrorEvent evt) {
+				listener.accept(evt.getError());
+			}
+
+			@Override
+			public void onProcessorChanged(ProcessorEvent evt) {
+			}
+
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+			}
+		});
+	}
+
+	public Registration addPipelineErrorListener(Consumer<PipelineErrorEvent> listener) {
+		return addPipelineListener(new PipelineListener() {
+
+			@Override
+			public void onError(PipelineErrorEvent evt) {
+				listener.accept(evt);
+			}
+
+			@Override
+			public void onProcessorChanged(ProcessorEvent evt) {
+			}
+
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+			}
+		});
+	}
+
+	public Registration addProcessorChangeListener(Consumer<ProcessorEvent> listener) {
+		return addPipelineListener(new PipelineListener() {
+
+			@Override
+			public void onError(PipelineErrorEvent evt) {
+			}
+
+			@Override
+			public void onProcessorChanged(ProcessorEvent evt) {
+				listener.accept(evt);
+			}
+
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+			}
+		});
+	}
+
+	public Registration addAttributeChangeListener(Consumer<AttributeEvent> listener) {
+		return addPipelineListener(new PipelineListener() {
+
+			@Override
+			public void onError(PipelineErrorEvent evt) {
+			}
+
+			@Override
+			public void onProcessorChanged(ProcessorEvent evt) {
+			}
+
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+				listener.accept(evt);
+			}
+		});
 	}
 
 	public Registration addPipelineListener(PipelineListener listener) {
-		return eventSupport.addListener(listener);
+		var reg = eventSupport.addListener(listener);
+
+		head.relink();
+
+		return reg;
 	}
 
 	protected void fireProcessorChanged(Processor<?> processor, ProcessorEventType type) {
@@ -161,7 +235,7 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 				fireProcessorChanged(newProcessor, ProcessorEventType.REMOVED);
 			};
 
-			registrationListeners.forEach(l -> l.accept(reg, newProcessor));
+			processorRegistrations.forEach(l -> l.accept(reg, newProcessor));
 
 			return reg;
 
@@ -206,7 +280,7 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 	}
 
 	public Pipeline<T> onNewProcessor(BiConsumer<Registration, Processor<T>> action) {
-		registrationListeners.add(action);
+		processorRegistrations.add(action);
 
 		return this;
 	}
@@ -295,11 +369,23 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return head.connector(id);
 	}
 
+	public <IN> IN in(Object id, DataType<IN> dataType) {
+		return head.connector(id);
+	}
+
 	public <OUT> OutputTransformer<T, OUT> out(Object id) {
 		return tail().getOutputTransformer(id);
 	}
 
 	public <OUT> Registration out(Object id, OUT sink) {
+		return tail().getOutputTransformer(id).connect(sink);
+	}
+
+	public <OUT> Registration out(Object id, OUT sink, Class<OUT> outClass) {
+		return tail().getOutputTransformer(id).connect(sink);
+	}
+
+	public <OUT> Registration out(Object id, OUT sink, DataType<OUT> dataType) {
 		return tail().getOutputTransformer(id).connect(sink);
 	}
 }

@@ -17,13 +17,17 @@
  */
 package com.slytechs.jnet.jnetruntime.pipeline;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
+import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]
@@ -65,6 +69,39 @@ public abstract class Processor<T>
 	protected T outputData;
 	private int priority;
 	private ProcessorErrorSupport errorSupport;
+
+	private final List<T> peekers = new ArrayList<>();
+
+	protected Processor<T> peek(T newPeeker) {
+		return peek(newPeeker, r -> {});
+	}
+
+	protected Processor<T> peek(T newPeeker, Consumer<Registration> registrar) {
+		writeLock.lock();
+
+		try {
+			peekers.add(newPeeker);
+
+			Registration newRegistration = () -> removePeeker(newPeeker);
+			registrar.accept(newRegistration);
+
+			relink();
+
+			return this;
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	private final void removePeeker(T peeker) {
+		writeLock.lock();
+
+		try {
+			peekers.remove(peeker);
+		} finally {
+			writeLock.unlock();
+		}
+	}
 
 	@SuppressWarnings("unchecked")
 	protected Processor(int priority, String name) {
@@ -160,16 +197,34 @@ public abstract class Processor<T>
 	}
 
 	void setOutput(T newOutput) {
-		var oldOutput = this.outputData;
-		if (oldOutput == newOutput)
-			return; // No change
 
-		this.outputData = newOutput;
+		writeLock.lock();
 
-		// Propagate change upstream
-		var prevProcessor = prevElement();
-		if (prevProcessor != null)
-			prevProcessor.setOutput(this.getInput());
+		try {
+			if (peekers.isEmpty()) {
+				this.outputData = newOutput;
+				return;
+			}
+
+			/*
+			 * Allocate +1 extra element for the array so we can append the next-processor
+			 * output at the end, prefixed by the list of peekers
+			 */
+			var combinedOutputArray = dataType().arrayAllocator().apply(peekers.size() + 1);
+			peekers.toArray(combinedOutputArray);
+			combinedOutputArray[combinedOutputArray.length - 1] = newOutput;
+
+			var wrappedArrayOutput = dataType().wrapArray(combinedOutputArray);
+			this.outputData = wrappedArrayOutput;
+
+			// Propagate change upstream
+			var prevProcessor = prevElement();
+			if (prevProcessor != null)
+				prevProcessor.relink();
+
+		} finally {
+			writeLock.unlock();
+		}
 	}
 
 	public Object id() {

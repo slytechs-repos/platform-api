@@ -154,6 +154,63 @@ public final class FunctionalProxies {
 	}
 
 	/**
+	 * Creates a proxy that forwards all method calls while holding the specified
+	 * lock. The lock is acquired before the method invocation and released
+	 * afterwards in a finally block.
+	 * 
+	 * <p>
+	 * Example usage:
+	 * 
+	 * <pre>{@code
+	 * Lock lock = new ReentrantLock();
+	 * Runnable task = () -> System.out.println("Hello");
+	 * 
+	 * // Create locked proxy
+	 * Runnable lockedTask = FunctionalProxies.forwardLockable(
+	 * 		Runnable.class,
+	 * 		task,
+	 * 		lock);
+	 * 
+	 * // This call will be protected by the lock
+	 * lockedTask.run();
+	 * }</pre>
+	 *
+	 * @param <T>                 the functional interface type
+	 * @param functionalInterface the functional interface class
+	 * @param target              the target instance to forward calls to
+	 * @param lock                the lock to use for synchronization
+	 * @return a proxy that forwards calls while holding the lock
+	 * @throws IllegalArgumentException if the class is not a functional interface
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T createLockable(Class<T> functionalInterface, T target, Lock lock,
+			Consumer<Throwable> errorHandler) {
+		if (!isFunctionalInterface(functionalInterface)) {
+			throw new IllegalArgumentException("Not a functional interface: " + functionalInterface);
+		}
+
+		return (T) Proxy.newProxyInstance(
+				functionalInterface.getClassLoader(),
+				new Class<?>[] { functionalInterface
+				},
+				new InvocationHandler() {
+					@Override
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						lock.lock();
+						try {
+							return method.invoke(target, args);
+						} catch (Throwable e) {
+							errorHandler.accept(e);
+
+							return null;
+						} finally {
+							lock.unlock();
+						}
+					}
+				});
+	}
+
+	/**
 	 * Creates a proxy implementation of a functional interface that does nothing
 	 * when invoked.
 	 * 
