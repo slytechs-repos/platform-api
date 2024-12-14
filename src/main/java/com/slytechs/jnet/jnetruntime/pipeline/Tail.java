@@ -51,16 +51,20 @@ public class Tail<IN> extends Processor<IN> {
 
 		setOutput(dataType().empty());
 	}
-	public <OUT> Registration addOutput(int priority, OutputMapper<IN, OUT> sink, DataType<OUT> dataType) {
+
+	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, OutputMapper<IN, OUT> sink,
+			DataType<OUT> dataType) {
 		return addOutput(priority, dataType, sink, dataType);
 	}
 
-	public <OUT> Registration addOutput(int priority, Object id, OutputMapper<IN, OUT> sink,
+	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, Object id, OutputMapper<IN, OUT> sink,
 			DataType<OUT> dataType) {
 
 		OutputTransformer<IN, OUT> output = new DefaultDataTransformer<IN, OUT>(priority, id, dataType, sink);
 
-		return registerOutput(output);
+		var _ = registerOutput(output);
+
+		return output;
 	}
 
 	/**

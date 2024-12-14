@@ -65,6 +65,7 @@ public class ProcessorErrorSupport {
 		case SUPPRESS:
 			// Just log it
 			System.err.println("Suppressed error in processor: " + error);
+			error.printStackTrace();
 			break;
 
 		case RETRY:

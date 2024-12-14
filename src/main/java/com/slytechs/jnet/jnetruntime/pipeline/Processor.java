@@ -187,6 +187,10 @@ public abstract class Processor<T>
 	}
 
 	protected void handleError(Throwable error, T data) {
+		
+		while (error.getCause() != null)
+			error = error.getCause();
+		
 		errorSupport.handleError(error, data);
 	}
 

@@ -66,8 +66,8 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 	private final PipelineEventSupport eventSupport;
 	private final ArrayList<BiConsumer<Registration, Processor<T>>> processorRegistrations;
 
-	protected Pipeline(String name, DataType<T> reducer) {
-		this.dataType = reducer;
+	protected Pipeline(String name, DataType<T> dataType) {
+		this.dataType = dataType;
 		this.name = Objects.requireNonNull(name, "name");
 		this.readLock = rwLock.readLock();
 		this.writeLock = rwLock.writeLock();
@@ -357,7 +357,7 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return name() + " ["
 				+ activeProcessors.stream()
 						.map(Processor::toString)
-						.collect(Collectors.joining(" > "))
+						.collect(Collectors.joining(" -> "))
 				+ "]";
 	}
 
