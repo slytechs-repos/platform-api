@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.OutputTransformer.OutputMapper;
+import com.slytechs.jnet.jnetruntime.pipeline.OutputTransformer.OutputMapper.SimpleOutputMapper;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -33,7 +34,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class Tail<IN> extends Processor<IN> {
 
-	private static class DefaultDataTransformer<IN, OUT> extends OutputTransformer<IN, OUT> {
+	static class DefaultDataTransformer<IN, OUT> extends OutputTransformer<IN, OUT> {
 
 		public DefaultDataTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
 			super(priority, id, dataType, sink);
@@ -45,16 +46,31 @@ public class Tail<IN> extends Processor<IN> {
 
 	private final List<OutputTransformer<IN, ?>> activeTransformers = new ArrayList<>();
 
+	private final OutputSwitch<IN> outputSwitch;
+
 	Tail(Pipeline<IN> pipeline) {
 		super(Integer.MAX_VALUE, "tail", (IN) null);
 		super.pipeline = pipeline;
 
+		this.outputSwitch = new OutputSwitch<>(this);
+
 		setOutput(dataType().empty());
+	}
+
+	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, SimpleOutputMapper<IN, OUT> sink,
+			DataType<OUT> dataType) {
+		return addOutput(priority, (OutputMapper<IN, OUT>) sink, dataType);
+
 	}
 
 	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, OutputMapper<IN, OUT> sink,
 			DataType<OUT> dataType) {
 		return addOutput(priority, dataType, sink, dataType);
+	}
+
+	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, Object id, SimpleOutputMapper<IN, OUT> sink,
+			DataType<OUT> dataType) {
+		return addOutput(priority, id, (OutputMapper<IN, OUT>) sink, dataType);
 	}
 
 	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, Object id, OutputMapper<IN, OUT> sink,
@@ -65,6 +81,10 @@ public class Tail<IN> extends Processor<IN> {
 		var _ = registerOutput(output);
 
 		return output;
+	}
+
+	public OutputSwitch<IN> getOutputSwitch() {
+		return outputSwitch;
 	}
 
 	/**
@@ -111,25 +131,20 @@ public class Tail<IN> extends Processor<IN> {
 	 */
 	@Override
 	void relink() {
-		if (activeTransformers.size() == 1) {
-			setOutput(activeTransformers.get(0).getInput());
 
-			return;
+		int switchSize = outputSwitch.isEmpty() ? 0 : 1;
 
-		} else if (activeTransformers.isEmpty()) {
-			setOutput(dataType().empty());
+		var outputs = super.dataType().arrayAllocator().apply(activeTransformers.size() + switchSize);
 
-			return;
-		}
-
-		var outputs = super.dataType().arrayAllocator().apply(activeTransformers.size());
-
-		for (int i = 0; i < outputs.length; i++) {
+		for (int i = 0; i < activeTransformers.size(); i++) {
 			var trans = activeTransformers.get(i);
 
 			IN input = trans.getInput();
 			outputs[i] = input;
 		}
+
+		if (switchSize > 0)
+			outputs[outputs.length - 1] = outputSwitch.getInput();
 
 		IN newOutput = dataType().optimizeArray(outputs);
 
@@ -141,11 +156,17 @@ public class Tail<IN> extends Processor<IN> {
 	 */
 	@Override
 	public String toString() {
-		return "OUT["
-				+ activeTransformers.stream()
-						.map(OutputTransformer::toString)
-						.collect(Collectors.joining(" && "))
-				+ "]";
+		if (outputSwitch.isEmpty()) {
+			return activeTransformers.stream()
+					.map(OutputTransformer::toString)
+					.collect(Collectors.joining(",", "{", "}"));
+
+		} else {
+			return activeTransformers.stream()
+					.map(OutputTransformer::toString)
+					.collect(Collectors.joining("&"))
+					+ outputSwitch.toString();
+		}
 	}
 
 }

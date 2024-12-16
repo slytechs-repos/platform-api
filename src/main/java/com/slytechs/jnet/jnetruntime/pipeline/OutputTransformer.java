@@ -31,17 +31,19 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
 public abstract class OutputTransformer<IN, OUT>
 		implements Transformer<IN, OUT>, Comparable<Prioritizable>, Prioritizable, Enableable {
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "<<" + name() + ">>";
-	}
-
 	public interface OutputMapper<IN, OUT> {
 
-		IN createMappedOutput(Supplier<OUT> sink);
+		interface SimpleOutputMapper<IN, OUT> extends OutputMapper<IN, OUT> {
+			IN createMappedOutput(Supplier<OUT> sink);
+
+			@Override
+			default IN createMappedOutput(Supplier<OUT> sink, OutputTransformer<IN, OUT> output) {
+				return createMappedOutput(sink);
+			}
+
+		}
+
+		IN createMappedOutput(Supplier<OUT> sink, OutputTransformer<IN, OUT> output);
 	}
 
 	private final IN input;
@@ -53,11 +55,12 @@ public abstract class OutputTransformer<IN, OUT>
 	Tail<IN> tail;
 
 	private String name;
+
 	private Object id;
 	private boolean enabled;
-
 	private final DataType<OUT> dataType;
 
+	@SuppressWarnings("unchecked")
 	public OutputTransformer(int priority, Object id, DataType<OUT> dataType) {
 		this.priority = priority;
 		this.name = Named.toName(id);
@@ -72,7 +75,7 @@ public abstract class OutputTransformer<IN, OUT>
 		this.name = Named.toName(id);
 		this.id = id;
 		this.dataType = dataType;
-		this.input = sink.createMappedOutput(this::getOutput);
+		this.input = sink.createMappedOutput(this::getOutput, this);
 		this.output = dataType.empty();
 	}
 
@@ -89,10 +92,6 @@ public abstract class OutputTransformer<IN, OUT>
 				: 1;
 	}
 
-	public DataType<OUT> dataType() {
-		return dataType;
-	}
-
 	public Registration connect(OUT out) {
 		output = out;
 
@@ -100,6 +99,10 @@ public abstract class OutputTransformer<IN, OUT>
 			if (output == out)
 				output = null;
 		};
+	}
+
+	public DataType<OUT> dataType() {
+		return dataType;
 	}
 
 	public final IN getInput() {
@@ -151,6 +154,14 @@ public abstract class OutputTransformer<IN, OUT>
 
 	public final void setName(String newName) {
 		this.name = newName;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return name();
 	}
 
 }

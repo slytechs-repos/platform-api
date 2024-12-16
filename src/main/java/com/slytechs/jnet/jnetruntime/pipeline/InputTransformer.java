@@ -20,23 +20,16 @@ package com.slytechs.jnet.jnetruntime.pipeline;
 import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
+import com.slytechs.jnet.jnetruntime.util.Named;
 
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
 public class InputTransformer<IN, T>
-		implements Transformer<IN, T> {
+		implements Transformer<IN, T>, Named {
 
-	/**
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "<<" + name + ">>";
-	}
-
-	public interface InputMapper<IN, T> {
+	public interface InputMapper<IN, OUT> {
 		public static abstract class GenericInputMapper<IN, T> implements InputMapper<IN, T> {
 
 			private InputMapper<IN, T> proxy;
@@ -49,25 +42,61 @@ public class InputTransformer<IN, T>
 			 * @see com.slytechs.jnet.jnetruntime.pipeline.InputTransformer.InputMapper#createMappedInput(java.util.function.Supplier)
 			 */
 			@Override
-			public IN createMappedInput(Supplier<T> sink) {
-				return proxy.createMappedInput(sink);
+			public IN createMappedInput(Supplier<T> sink, InputTransformer<IN, T> input) {
+				return proxy.createMappedInput(sink, input);
 			}
 
 		}
 
-		IN createMappedInput(Supplier<T> sink);
-	}
+		interface SimpleInputMapper<IN, OUT> extends InputMapper<IN, OUT> {
+			IN createMappedInput(Supplier<OUT> sink);
 
-	public interface InputFactory<IN, T, T_BASE extends InputTransformer<IN, T>> {
-		T_BASE newInputTransformer(String name);
+			@Override
+			default IN createMappedInput(Supplier<OUT> sink, InputTransformer<IN, OUT> input) {
+				return createMappedInput(sink);
+			}
+
+		}
+
+		IN createMappedInput(Supplier<OUT> sink, InputTransformer<IN, OUT> input);
 	}
 
 	IN input;
+
 	private String name;
 	private Object id;
 	Head<T> head;
 	private final DataType<IN> dataType;
 	private final IN inline;
+	@SuppressWarnings("unchecked")
+	protected InputTransformer(Object id) {
+		this.dataType = DT.from(this);
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = (IN) this;
+	}
+
+	@SuppressWarnings("unchecked")
+	protected InputTransformer(Object id, DataType<IN> dataType) {
+		this.dataType = dataType;
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = (IN) this;
+	}
+
+	public InputTransformer(Object id, DataType<IN> dataType, InputMapper<IN, T> mapper) {
+		this.dataType = dataType;
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = mapper.createMappedInput(this::getOutput, this);
+	}
+
+	protected InputTransformer(Object id, InputMapper<IN, T> mapper) {
+		this.dataType = DT.from(this);
+		this.name = dataType.name();
+		this.id = id;
+		this.inline = mapper.createMappedInput(this::getOutput, this);
+	}
 
 	@SuppressWarnings("unchecked")
 	protected InputTransformer(String name) {
@@ -85,48 +114,49 @@ public class InputTransformer<IN, T>
 		this.dataType = dataType;
 	}
 
-	protected InputTransformer(String name, InputMapper<IN, T> mapper) {
-		this.dataType = DT.from(this);
-		this.name = name;
-		this.id = name;
-		this.inline = mapper.createMappedInput(this::getOutput);
-	}
-
 	public InputTransformer(String name, DataType<IN> dataType, InputMapper<IN, T> mapper) {
 		this.dataType = dataType;
 		this.name = name;
 		this.id = name;
-		this.inline = mapper.createMappedInput(this::getOutput);
+		this.inline = mapper.createMappedInput(this::getOutput, this);
 	}
 
-	@SuppressWarnings("unchecked")
-	protected InputTransformer(Object id) {
+	protected InputTransformer(String name, InputMapper<IN, T> mapper) {
 		this.dataType = DT.from(this);
-		this.name = dataType.name();
-		this.id = id;
-		this.inline = (IN) this;
+		this.name = name;
+		this.id = name;
+		this.inline = mapper.createMappedInput(this::getOutput, this);
 	}
 
-	@SuppressWarnings("unchecked")
-	protected InputTransformer(Object id, DataType<IN> dataType) {
-		this.dataType = dataType;
-		this.name = dataType.name();
-		this.id = id;
-		this.inline = (IN) this;
+	void clearHead() {
+		this.head = null;
+		this.input = null;
 	}
 
-	protected InputTransformer(Object id, InputMapper<IN, T> mapper) {
-		this.dataType = DT.from(this);
-		this.name = dataType.name();
-		this.id = id;
-		this.inline = mapper.createMappedInput(this::getOutput);
+	public final DataType<IN> dataType() {
+		return dataType;
 	}
 
-	public InputTransformer(Object id, DataType<IN> dataType, InputMapper<IN, T> mapper) {
-		this.dataType = dataType;
-		this.name = dataType.name();
-		this.id = id;
-		this.inline = mapper.createMappedInput(this::getOutput);
+	public final IN getInput() {
+		return input;
+	}
+
+	public final IN getInputPerma() {
+		return getInput();
+	}
+
+	public final T getOutput() {
+		assert head != null : "input not connected to pipeline";
+
+		return head.getInput();
+	}
+
+	private void handleError(Throwable e) {
+		head.handleError(e, null);
+	}
+
+	public final Object id() {
+		return this.id;
 	}
 
 	void initializeHead(Head<T> head) {
@@ -151,21 +181,9 @@ public class InputTransformer<IN, T>
 		this.input = FunctionalProxies.createLockable(dataType.dataClass(), inline, readLock, this::handleError);
 	}
 
-	private void handleError(Throwable e) {
-		head.handleError(e, null);
-	}
-
-	void clearHead() {
-		this.head = null;
-		this.input = null;
-	}
-
-	public final DataType<IN> dataType() {
-		return dataType;
-	}
-
-	public final void setName(String newName) {
-		this.name = newName;
+	@Override
+	public final String name() {
+		return name;
 	}
 
 	public final void setId(Object id) {
@@ -173,26 +191,16 @@ public class InputTransformer<IN, T>
 	}
 
 	@Override
-	public final String name() {
+	public final void setName(String newName) {
+		this.name = newName;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
 		return name;
-	}
-
-	public final Object id() {
-		return this.id;
-	}
-
-	public final IN getInput() {
-		return input;
-	}
-
-	public final IN getInputPerma() {
-		return getInput();
-	}
-
-	public final T getOutput() {
-		assert head != null : "input not connected to pipeline";
-
-		return head.getInput();
 	}
 
 }

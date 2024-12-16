@@ -29,6 +29,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.pipeline.Processor.ProcessorMapper;
+import com.slytechs.jnet.jnetruntime.pipeline.Processor.ProcessorMapper.SimpleProcessorMapper;
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
@@ -81,26 +82,30 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		activeProcessors.offer(tail);
 	}
 
-	final boolean hasErrorListeners() {
-		return !eventSupport.isEmpty();
-	}
+	public Registration addAttributeChangeListener(Consumer<AttributeEvent> listener) {
+		return addPipelineListener(new PipelineListener() {
 
-	@Override
-	public ErrorPolicy getDefaultErrorPolicy() {
-		return ErrorPolicy.SUPPRESS;
-	}
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+				listener.accept(evt);
+			}
 
-	@Override
-	public void handleProcessingError(ProcessingError error) {
-		fireError(error.getCause(), error.getSeverity());
-	}
+			@Override
+			public void onError(PipelineErrorEvent evt) {
+			}
 
-	public void setDefaultErrorPolicy(ErrorPolicy policy) {
-		eventSupport.setDefaultErrorPolicy(policy);
+			@Override
+			public void onProcessorChanged(ProcessorEvent evt) {
+			}
+		});
 	}
 
 	public Registration addPipelineErrorConsumer(Consumer<Throwable> listener) {
 		return addPipelineListener(new PipelineListener() {
+
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+			}
 
 			@Override
 			public void onError(PipelineErrorEvent evt) {
@@ -110,10 +115,6 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 			@Override
 			public void onProcessorChanged(ProcessorEvent evt) {
 			}
-
-			@Override
-			public void onAttributeChanged(AttributeEvent evt) {
-			}
 		});
 	}
 
@@ -121,52 +122,16 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return addPipelineListener(new PipelineListener() {
 
 			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+			}
+
+			@Override
 			public void onError(PipelineErrorEvent evt) {
 				listener.accept(evt);
 			}
 
 			@Override
 			public void onProcessorChanged(ProcessorEvent evt) {
-			}
-
-			@Override
-			public void onAttributeChanged(AttributeEvent evt) {
-			}
-		});
-	}
-
-	public Registration addProcessorChangeListener(Consumer<ProcessorEvent> listener) {
-		return addPipelineListener(new PipelineListener() {
-
-			@Override
-			public void onError(PipelineErrorEvent evt) {
-			}
-
-			@Override
-			public void onProcessorChanged(ProcessorEvent evt) {
-				listener.accept(evt);
-			}
-
-			@Override
-			public void onAttributeChanged(AttributeEvent evt) {
-			}
-		});
-	}
-
-	public Registration addAttributeChangeListener(Consumer<AttributeEvent> listener) {
-		return addPipelineListener(new PipelineListener() {
-
-			@Override
-			public void onError(PipelineErrorEvent evt) {
-			}
-
-			@Override
-			public void onProcessorChanged(ProcessorEvent evt) {
-			}
-
-			@Override
-			public void onAttributeChanged(AttributeEvent evt) {
-				listener.accept(evt);
 			}
 		});
 	}
@@ -179,16 +144,8 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return reg;
 	}
 
-	protected void fireProcessorChanged(Processor<?> processor, ProcessorEventType type) {
-		eventSupport.fireProcessorChanged(processor, type);
-	}
-
-	protected void fireAttributeChanged(String name, Object oldValue, Object newValue) {
-		eventSupport.fireAttributeChanged(name, oldValue, newValue);
-	}
-
-	protected void fireError(Throwable error, ErrorSeverity severity) {
-		eventSupport.fireError(error, severity);
+	public final Processor<T> addProcessor(int priority, String name, SimpleProcessorMapper<T> mapper) {
+		return addProcessor(priority, name, (ProcessorMapper<T>) mapper);
 	}
 
 	public final Processor<T> addProcessor(int priority, String name, ProcessorMapper<T> mapper) {
@@ -207,50 +164,47 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return newProcessor;
 	}
 
-	public final Registration registerProcessor(Processor<T> newProcessor) {
-		String name = newProcessor.name();
-		Object id = newProcessor.id();
+	public Registration addProcessorChangeListener(Consumer<ProcessorEvent> listener) {
+		return addPipelineListener(new PipelineListener() {
 
-		writeLock.lock();
-		try {
-			if (processorsById.containsKey(id))
-				throw new IllegalArgumentException("processor already registered [%s]".formatted(name));
+			@Override
+			public void onAttributeChanged(AttributeEvent evt) {
+			}
 
-			if (newProcessor.isEnabled())
-				throw new IllegalStateException("processor already initialized [%s]".formatted(name));
+			@Override
+			public void onError(PipelineErrorEvent evt) {
+			}
 
-			// Initialize new processor
-			newProcessor.initializePipeline(this);
-
-			// Fast lookup
-			processorsById.put(id, newProcessor);
-
-			// doubly linked list of processors (priority sorted)
-			activeProcessors.offer(newProcessor);
-
-			newProcessor.relink();
-
-			Registration reg = () -> {
-				removeProcessor(newProcessor);
-				fireProcessorChanged(newProcessor, ProcessorEventType.REMOVED);
-			};
-
-			processorRegistrations.forEach(l -> l.accept(reg, newProcessor));
-
-			return reg;
-
-		} catch (Exception e) {
-			fireError(e, ErrorSeverity.ERROR);
-			throw e;
-
-		} finally {
-			writeLock.unlock();
-		}
-
+			@Override
+			public void onProcessorChanged(ProcessorEvent evt) {
+				listener.accept(evt);
+			}
+		});
 	}
 
 	public final DataType<T> dataType() {
 		return dataType;
+	}
+
+	IllegalArgumentException duplicateOutputException(Object id) {
+		return new IllegalArgumentException("duplicate output transformer [id=%s]".formatted(id));
+	}
+
+	protected void fireAttributeChanged(String name, Object oldValue, Object newValue) {
+		eventSupport.fireAttributeChanged(name, oldValue, newValue);
+	}
+
+	protected void fireError(Throwable error, ErrorSeverity severity) {
+		eventSupport.fireError(error, severity);
+	}
+
+	protected void fireProcessorChanged(Processor<?> processor, ProcessorEventType type) {
+		eventSupport.fireProcessorChanged(processor, type);
+	}
+
+	@Override
+	public ErrorPolicy getDefaultErrorPolicy() {
+		return ErrorPolicy.SUPPRESS;
 	}
 
 	public Processor<T> getProcessor(Object id) {
@@ -267,8 +221,29 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		}
 	}
 
+	@Override
+	public void handleProcessingError(ProcessingError error) {
+		fireError(error.getCause(), error.getSeverity());
+	}
+
+	final boolean hasErrorListeners() {
+		return !eventSupport.isEmpty();
+	}
+
 	public final Head<T> head() {
 		return head;
+	}
+
+	public <IN> IN in(Object id) {
+		return head.connector(id);
+	}
+
+	public <IN> IN in(Object id, Class<IN> inClass) {
+		return head.connector(id);
+	}
+
+	public <IN> IN in(Object id, DataType<IN> dataType) {
+		return head.connector(id);
 	}
 
 	IllegalArgumentException inputNotFoundException(Object id) {
@@ -289,6 +264,22 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return onNewProcessor((r, p) -> action.accept(r));
 	}
 
+	public <OUT> OutputTransformer<T, OUT> out(Object id) {
+		return tail().getOutputTransformer(id);
+	}
+
+	public <OUT> Registration out(Object id, OUT sink) {
+		return tail().getOutputTransformer(id).connect(sink);
+	}
+
+	public <OUT> Registration out(Object id, OUT sink, Class<OUT> outClass) {
+		return tail().getOutputTransformer(id).connect(sink);
+	}
+
+	public <OUT> Registration out(Object id, OUT sink, DataType<OUT> dataType) {
+		return tail().getOutputTransformer(id).connect(sink);
+	}
+
 	/**
 	 * @param id
 	 * @return
@@ -301,8 +292,44 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return new IllegalArgumentException("processor not found [id=%s]".formatted(id));
 	}
 
-	IllegalArgumentException duplicateOutputException(Object id) {
-		return new IllegalArgumentException("duplicate output transformer [id=%s]".formatted(id));
+	public final Registration registerProcessor(Processor<T> newProcessor) {
+		Object id = newProcessor.id();
+
+		writeLock.lock();
+		try {
+			if (processorsById.containsKey(id))
+				throw new IllegalArgumentException("processor already registered [%s]".formatted(id));
+
+			if (newProcessor.isEnabled())
+				throw new IllegalStateException("processor already initialized [%s]".formatted(id));
+
+			// Initialize new processor
+			newProcessor.initializePipeline(this);
+
+			// Fast lookup
+			processorsById.put(id, newProcessor);
+
+			// doubly linked list of processors (priority sorted)
+			activeProcessors.offer(newProcessor);
+
+			Registration reg = () -> {
+				removeProcessor(newProcessor);
+				fireProcessorChanged(newProcessor, ProcessorEventType.REMOVED);
+			};
+
+			newProcessor.relink();
+			processorRegistrations.forEach(l -> l.accept(reg, newProcessor));
+
+			return reg;
+
+		} catch (Exception e) {
+			fireError(e, ErrorSeverity.ERROR);
+			throw e;
+
+		} finally {
+			writeLock.unlock();
+		}
+
 	}
 
 	private void removeProcessor(Processor<T> processor) {
@@ -318,6 +345,10 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		processor.reset();
 
 		prevProcessor.relink();
+	}
+
+	public void setDefaultErrorPolicy(ErrorPolicy policy) {
+		eventSupport.setDefaultErrorPolicy(policy);
 	}
 
 	void setEnableProcessor(Processor<T> processor, boolean newState) {
@@ -354,38 +385,26 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 	 */
 	@Override
 	public String toString() {
-		return name() + " ["
-				+ activeProcessors.stream()
-						.map(Processor::toString)
-						.collect(Collectors.joining(" -> "))
-				+ "]";
+		return toString(false);
 	}
 
-	public <IN> IN in(Object id) {
-		return head.connector(id);
-	}
+	public String toString(boolean includeHeadAndTail) {
+		if (includeHeadAndTail) {
+			return name() + ": "
+					+ activeProcessors.stream()
+							.map(Processor::toString)
+							.collect(Collectors.joining(" → "));
 
-	public <IN> IN in(Object id, Class<IN> inClass) {
-		return head.connector(id);
-	}
+		} else {
+			if (activeProcessors.size() == 2)
+				return name() + ": <no processors>";
 
-	public <IN> IN in(Object id, DataType<IN> dataType) {
-		return head.connector(id);
-	}
+			return name() + ": "
+					+ activeProcessors.stream()
+							.filter(p -> (p != head && p != tail))
+							.map(Processor::toString)
+							.collect(Collectors.joining(" → "));
 
-	public <OUT> OutputTransformer<T, OUT> out(Object id) {
-		return tail().getOutputTransformer(id);
-	}
-
-	public <OUT> Registration out(Object id, OUT sink) {
-		return tail().getOutputTransformer(id).connect(sink);
-	}
-
-	public <OUT> Registration out(Object id, OUT sink, Class<OUT> outClass) {
-		return tail().getOutputTransformer(id).connect(sink);
-	}
-
-	public <OUT> Registration out(Object id, OUT sink, DataType<OUT> dataType) {
-		return tail().getOutputTransformer(id).connect(sink);
+		}
 	}
 }

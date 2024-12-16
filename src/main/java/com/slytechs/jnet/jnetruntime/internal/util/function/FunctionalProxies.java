@@ -73,14 +73,14 @@ public final class FunctionalProxies {
 			throw new IllegalArgumentException("Not a functional interface: " + functionalInterface);
 		}
 
-		Method functionalMethod = Arrays.stream(functionalInterface.getMethods())
-				.filter(m -> Modifier.isAbstract(m.getModifiers()))
-				.findFirst()
-				.orElseThrow();
+//		Method functionalMethod = Arrays.stream(functionalInterface.getMethods())
+//				.filter(m -> Modifier.isAbstract(m.getModifiers()))
+//				.findFirst()
+//				.orElseThrow();
 
-		if (functionalMethod.getReturnType() != void.class) {
-			throw new IllegalArgumentException("Method must return void: " + functionalMethod);
-		}
+//		if (functionalMethod.getReturnType() != void.class) {
+//			throw new IllegalArgumentException("Method must return void: " + functionalMethod);
+//		}
 
 		return array -> (T) Proxy.newProxyInstance(
 				functionalInterface.getClassLoader(),
@@ -89,14 +89,16 @@ public final class FunctionalProxies {
 				new InvocationHandler() {
 					@Override
 					public Object invoke(Object proxy, Method method, Object[] args) {
+
+						Object result = null;
 						for (T element : array) {
 							try {
-								method.invoke(element, args);
+								result = method.invoke(element, args);
 							} catch (Exception e) {
 								throw new RuntimeException("Error invoking " + method, e);
 							}
 						}
-						return null;
+						return result;
 					}
 				});
 	}

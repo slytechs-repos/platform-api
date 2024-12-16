@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
 import com.slytechs.jnet.jnetruntime.pipeline.InputTransformer.InputMapper;
+import com.slytechs.jnet.jnetruntime.pipeline.InputTransformer.InputMapper.SimpleInputMapper;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -88,6 +89,10 @@ public class Head<T> extends Processor<T> {
 		var _ = registerInput(input);
 
 		return input;
+	}
+
+	public <IN> InputTransformer<IN, T> addInput(String name, SimpleInputMapper<IN, T> mapper, DataType<IN> dataType) {
+		return addInput(name, (InputMapper<IN, T>) mapper, dataType);
 	}
 
 	public <IN> InputTransformer<IN, T> addInput(String name, InputMapper<IN, T> mapper, DataType<IN> dataType) {
@@ -205,11 +210,9 @@ public class Head<T> extends Processor<T> {
 	 */
 	@Override
 	public String toString() {
-		return " IN["
-				+ inputsById.values().stream()
-						.map(InputTransformer::toString)
-						.collect(Collectors.joining(" || "))
-				+ "]";
+		return inputsById.values().stream()
+				.map(InputTransformer::toString)
+				.collect(Collectors.joining("|", "{", "}"));
 	}
 
 	/**
