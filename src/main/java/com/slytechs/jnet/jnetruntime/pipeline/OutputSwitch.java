@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
 import com.slytechs.jnet.jnetruntime.internal.util.function.FunctionalProxies;
 import com.slytechs.jnet.jnetruntime.pipeline.OutputTransformer.OutputMapper;
 import com.slytechs.jnet.jnetruntime.pipeline.OutputTransformer.OutputMapper.SimpleOutputMapper;
-import com.slytechs.jnet.jnetruntime.pipeline.Tail.DefaultDataTransformer;
+import com.slytechs.jnet.jnetruntime.pipeline.Tail.MappedDataTransformer;
 
 /**
  * 
@@ -87,7 +87,7 @@ public final class OutputSwitch<IN> {
 
 		String name = dataType.name().replace("<Object>", "<?>");
 
-		OutputTransformer<IN, OUT> output = new DefaultDataTransformer<IN, OUT>(index, name, dataType, mapper);
+		OutputTransformer<IN, OUT> output = new MappedDataTransformer<IN, OUT>(index, name, dataType, mapper);
 
 		return setOutput(index, output);
 	}

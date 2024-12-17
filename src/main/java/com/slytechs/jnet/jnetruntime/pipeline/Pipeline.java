@@ -385,26 +385,20 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 	 */
 	@Override
 	public String toString() {
-		return toString(false);
+		if (activeProcessors.size() == 2)
+			return name() + ": <no processors>";
+
+		return name() + ": "
+				+ activeProcessors.stream()
+						.filter(p -> (p != head && p != tail))
+						.map(Processor::toString)
+						.collect(Collectors.joining(" → "));
 	}
 
-	public String toString(boolean includeHeadAndTail) {
-		if (includeHeadAndTail) {
-			return name() + ": "
-					+ activeProcessors.stream()
-							.map(Processor::toString)
-							.collect(Collectors.joining(" → "));
-
-		} else {
-			if (activeProcessors.size() == 2)
-				return name() + ": <no processors>";
-
-			return name() + ": "
-					+ activeProcessors.stream()
-							.filter(p -> (p != head && p != tail))
-							.map(Processor::toString)
-							.collect(Collectors.joining(" → "));
-
-		}
+	public String toStringInOut() {
+		return name() + ": "
+				+ activeProcessors.stream()
+						.map(Processor::toString)
+						.collect(Collectors.joining(" → "));
 	}
 }

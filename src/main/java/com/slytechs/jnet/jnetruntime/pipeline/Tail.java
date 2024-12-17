@@ -22,7 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.slytechs.jnet.jnetruntime.pipeline.OutputTransformer.OutputMapper;
 import com.slytechs.jnet.jnetruntime.pipeline.OutputTransformer.OutputMapper.SimpleOutputMapper;
@@ -34,9 +36,9 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  */
 public class Tail<IN> extends Processor<IN> {
 
-	static class DefaultDataTransformer<IN, OUT> extends OutputTransformer<IN, OUT> {
+	static class MappedDataTransformer<IN, OUT> extends OutputTransformer<IN, OUT> {
 
-		public DefaultDataTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
+		public MappedDataTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> sink) {
 			super(priority, id, dataType, sink);
 		}
 
@@ -48,11 +50,14 @@ public class Tail<IN> extends Processor<IN> {
 
 	private final OutputSwitch<IN> outputSwitch;
 
+	private final OutputStack<IN> outputStack;
+
 	Tail(Pipeline<IN> pipeline) {
 		super(Integer.MAX_VALUE, "tail", (IN) null);
 		super.pipeline = pipeline;
 
 		this.outputSwitch = new OutputSwitch<>(this);
+		this.outputStack = new OutputStack<>(this);
 
 		setOutput(dataType().empty());
 	}
@@ -76,11 +81,15 @@ public class Tail<IN> extends Processor<IN> {
 	public <OUT> OutputTransformer<IN, OUT> addOutput(int priority, Object id, OutputMapper<IN, OUT> sink,
 			DataType<OUT> dataType) {
 
-		OutputTransformer<IN, OUT> output = new DefaultDataTransformer<IN, OUT>(priority, id, dataType, sink);
+		OutputTransformer<IN, OUT> output = new MappedDataTransformer<IN, OUT>(priority, id, dataType, sink);
 
 		var _ = registerOutput(output);
 
 		return output;
+	}
+
+	public OutputStack<IN> getOutputStack() {
+		return outputStack;
 	}
 
 	public OutputSwitch<IN> getOutputSwitch() {
@@ -156,17 +165,18 @@ public class Tail<IN> extends Processor<IN> {
 	 */
 	@Override
 	public String toString() {
-		if (outputSwitch.isEmpty()) {
-			return activeTransformers.stream()
-					.map(OutputTransformer::toString)
-					.collect(Collectors.joining(",", "{", "}"));
+		String activeStr = activeTransformers.isEmpty()
+				? ""
+				: activeTransformers.stream()
+						.map(OutputTransformer::toString)
+						.collect(Collectors.joining("&", "{", "}"));
+		String switchStr = outputSwitch.isEmpty() ? "" : outputSwitch.toString();
+		String stackStr = outputStack.isEmpty() ? "" : outputStack.toString();
 
-		} else {
-			return activeTransformers.stream()
-					.map(OutputTransformer::toString)
-					.collect(Collectors.joining("&"))
-					+ outputSwitch.toString();
-		}
+		return Stream.of(activeStr, switchStr, stackStr)
+				.filter(Predicate.not(String::isEmpty))
+				.collect(Collectors.joining(" & "));
+
 	}
 
 }

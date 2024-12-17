@@ -29,7 +29,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Sly Technologies Inc.
  */
 public abstract class OutputTransformer<IN, OUT>
-		implements Transformer<IN, OUT>, Comparable<Prioritizable>, Prioritizable, Enableable {
+		implements Transformer<IN, OUT>, Comparable<Prioritizable>, Prioritizable, Enableable, Named {
 
 	public interface OutputMapper<IN, OUT> {
 
@@ -101,6 +101,14 @@ public abstract class OutputTransformer<IN, OUT>
 		};
 	}
 
+	public void connectNoRegistration(OUT out) {
+		output = out;
+	}
+
+	public void disconnect() {
+		output = null;
+	}
+
 	public DataType<OUT> dataType() {
 		return dataType;
 	}
@@ -152,6 +160,7 @@ public abstract class OutputTransformer<IN, OUT>
 		this.id = id;
 	}
 
+	@Override
 	public final void setName(String newName) {
 		this.name = newName;
 	}
