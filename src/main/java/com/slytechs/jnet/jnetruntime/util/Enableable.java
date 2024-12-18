@@ -34,6 +34,67 @@ package com.slytechs.jnet.jnetruntime.util;
 public interface Enableable {
 
 	/**
+	 * A fluent interface for components that can be enabled or disabled, supporting
+	 * method chaining by returning the base type.
+	 *
+	 * @param <T_BASE> the base type to return for method chaining
+	 */
+	interface FluentEnableable<T_BASE> {
+
+		/**
+		 * Checks if this object is currently enabled.
+		 *
+		 * @return true if this object is enabled, false if it is disabled
+		 */
+		boolean isEnabled();
+
+		/**
+		 * Sets the enabled state of this object.
+		 *
+		 * @param newState true to enable this object, false to disable it
+		 * @return the base instance for method chaining
+		 * @see #onEnableChange(boolean)
+		 */
+		T_BASE setEnable(boolean newState);
+
+		/**
+		 * Enables this object. This is equivalent to calling {@code setEnable(true)}.
+		 *
+		 * @return the base instance for method chaining
+		 */
+		default T_BASE enable() {
+			return setEnable(true);
+		}
+
+		/**
+		 * Disables this object. This is equivalent to calling {@code setEnable(false)}.
+		 *
+		 * @return the base instance for method chaining
+		 */
+		default T_BASE disable() {
+			return setEnable(false);
+		}
+
+		/**
+		 * Called when the enabled state changes. Implementing classes can override this
+		 * method to perform any necessary actions when the state changes.
+		 *
+		 * <p>
+		 * This method is called after the state has been changed through
+		 * {@link #setEnable(boolean)}, {@link #enable()}, or {@link #disable()}.
+		 * </p>
+		 *
+		 * @param newState the new enabled state; true if the object was enabled, false
+		 *                 if it was disabled
+		 * @return the base instance for method chaining
+		 */
+		@SuppressWarnings("unchecked")
+		default T_BASE onEnableChange(boolean newState) {
+			return (T_BASE) this;
+		}
+	}
+
+	/**
 	 * Checks if this object is currently enabled.
 	 *
 	 * @return true if this object is enabled, false if it is disabled
