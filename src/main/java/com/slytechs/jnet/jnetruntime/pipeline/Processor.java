@@ -26,6 +26,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import com.slytechs.jnet.jnetruntime.function.GuardedCode;
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
 import com.slytechs.jnet.jnetruntime.util.Enableable.FluentEnableable;
 import com.slytechs.jnet.jnetruntime.util.Registration;
@@ -60,6 +61,7 @@ public abstract class Processor<T>
 	protected Lock readLock = rwLock.readLock();
 	protected Lock writeLock = rwLock.writeLock();
 	protected Pipeline<T> pipeline;
+	protected GuardedCode rwGuard = new GuardedCode(rwLock);
 
 	private Processor<T> nextProcessor;
 	private Processor<T> prevProcessor;
@@ -138,7 +140,7 @@ public abstract class Processor<T>
 		return outputData;
 	}
 
-	protected void handleError(Throwable error, T data) {
+	protected void handleError(Throwable error, Object data) {
 
 		while (error.getCause() != null)
 			error = error.getCause();
@@ -341,6 +343,8 @@ public abstract class Processor<T>
 		this.rwLock = rwLock;
 		this.readLock = rwLock.readLock();
 		this.writeLock = rwLock.writeLock();
+
+		this.rwGuard = new GuardedCode(rwLock, e -> handleError(e, inlineData));
 	}
 
 	/**
