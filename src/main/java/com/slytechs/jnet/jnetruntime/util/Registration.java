@@ -35,6 +35,14 @@ import java.util.Objects;
  */
 public interface Registration {
 
+	interface AutoRegistration extends Registration, AutoCloseable {
+
+		@Override
+		default void close() {
+			unregister();
+		}
+	}
+
 	/**
 	 * A registration that throws a checked exception upon unregistration.
 	 * 
