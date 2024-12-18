@@ -33,7 +33,7 @@ import com.slytechs.jnet.jnetruntime.pipeline.Tail.MappedDataTransformer;
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public class OutputStack<IN> {
+public class OutputStack<IN> implements AutoCloseable {
 
 	private final DataType<IN> dataType;
 	private final Stack<OutputTransformer<IN, ?>> stack = new Stack<>();
@@ -46,10 +46,12 @@ public class OutputStack<IN> {
 		this.dataType = tail.dataType();
 	}
 
-	public <OUT> void push(OutputTransformer<IN, OUT> output) {
+	public <OUT> OutputStack<IN> push(OutputTransformer<IN, OUT> output) {
 		stack.push(output);
 
 		tail.setOutput(output.getInput());
+
+		return this;
 	}
 
 	public void pop() {
@@ -112,5 +114,13 @@ public class OutputStack<IN> {
 		return "STACK{"
 				+ str
 				+ "}";
+	}
+
+	/**
+	 * @see java.lang.AutoCloseable#close()
+	 */
+	@Override
+	public void close() {
+		pop();
 	}
 }

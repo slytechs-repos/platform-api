@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 import com.slytechs.jnet.jnetruntime.util.Enableable;
 import com.slytechs.jnet.jnetruntime.util.Named;
 import com.slytechs.jnet.jnetruntime.util.Prioritizable;
-import com.slytechs.jnet.jnetruntime.util.Registration;
+import com.slytechs.jnet.jnetruntime.util.Registration.AutoRegistration;
 
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]
@@ -92,18 +92,14 @@ public abstract class OutputTransformer<IN, OUT>
 				: 1;
 	}
 
-	public Registration connect(OUT out) {
+	public AutoRegistration connect(OUT out) {
 		output = out;
 
-		return () -> {
-			if (output == out)
-				output = null;
-		};
+		return disconnectRegistration;
 	}
 
-	public void connectNoRegistration(OUT out) {
-		output = out;
-	}
+	/** Preallocated AutoCloseable registration that calls on disconnect */
+	private final AutoRegistration disconnectRegistration = this::disconnect;
 
 	public void disconnect() {
 		output = null;
