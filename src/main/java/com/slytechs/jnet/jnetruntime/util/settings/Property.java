@@ -108,7 +108,66 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 	 *
 	 * @param <T> the type of value handled by this action
 	 */
-	interface Action<T> {
+	public interface Action<T> {
+
+		/**
+		 * Creates a standard Action from a FluentAction by adapting the fluent
+		 * interface to the standard action interface.
+		 *
+		 * @param <T>      the type of value handled by this action
+		 * @param <T_BASE> the base type used for method chaining in the fluent action
+		 * @param action   the fluent action to adapt
+		 * @return a standard Action that delegates to the fluent action
+		 */
+		static <T, T_BASE> Action<T> ofFluent(FluentAction<T, T_BASE> action) {
+			return action.asAction();
+		}
+
+		/**
+		 * A specialized action interface that supports fluent method chaining when
+		 * handling property changes. This interface allows actions to return a base
+		 * type for method chaining while still being compatible with the standard
+		 * Action interface.
+		 *
+		 * @param <T>      the type of value handled by this action
+		 * @param <T_BASE> the base type returned for method chaining
+		 */
+		interface FluentAction<T, T_BASE> {
+
+			/**
+			 * Creates a FluentAction from another FluentAction, effectively acting as an
+			 * identity function for fluent actions.
+			 *
+			 * @param <T>      the type of value handled by this action
+			 * @param <T_BASE> the base type used for method chaining
+			 * @param action   the fluent action to return
+			 * @return the provided fluent action
+			 */
+			static <T, T_BASE> FluentAction<T, T_BASE> of(FluentAction<T, T_BASE> action) {
+				return action;
+			}
+
+			/**
+			 * Performs the action when a property value changes, supporting method
+			 * chaining.
+			 *
+			 * @param newValue the new value of the property
+			 * @return the base instance for method chaining
+			 */
+			T_BASE propertyChangeFluentAction(T newValue);
+
+			/**
+			 * Converts this FluentAction to a standard Action by wrapping the fluent method
+			 * call. This allows FluentActions to be used anywhere a standard Action is
+			 * expected.
+			 *
+			 * @return an Action that delegates to this FluentAction's implementation
+			 */
+			default Action<T> asAction() {
+				return FluentAction.this::propertyChangeFluentAction;
+			}
+
+		}
 
 		/**
 		 * Wraps an action to enable method chaining with {@code andThen()} when using

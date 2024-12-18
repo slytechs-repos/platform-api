@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
+import com.slytechs.jnet.jnetruntime.util.Enableable.FluentEnableable;
 import com.slytechs.jnet.jnetruntime.util.Registration;
 
 /**
@@ -34,7 +35,7 @@ import com.slytechs.jnet.jnetruntime.util.Registration;
  * @author Sly Technologies Inc.
  */
 public abstract class Processor<T>
-		implements DoublyLinkedElement<Processor<T>>, Comparable<Processor<T>> {
+		implements DoublyLinkedElement<Processor<T>>, Comparable<Processor<T>>, FluentEnableable<Processor<T>> {
 
 	public interface ProcessorMapper<T> {
 
@@ -115,10 +116,12 @@ public abstract class Processor<T>
 		return pipeline.dataType();
 	}
 
+	@Override
 	public Processor<T> disable() {
 		return setEnable(false);
 	}
 
+	@Override
 	public Processor<T> enable() {
 		return setEnable(true);
 	}
@@ -157,6 +160,7 @@ public abstract class Processor<T>
 		this.setRwLock(newPipeline.rwLock);
 	}
 
+	@Override
 	public boolean isEnabled() {
 		readLock.lock();
 
@@ -285,6 +289,7 @@ public abstract class Processor<T>
 
 	}
 
+	@Override
 	public Processor<T> setEnable(boolean newState) {
 		pipeline.setEnableProcessor(this, newState);
 
