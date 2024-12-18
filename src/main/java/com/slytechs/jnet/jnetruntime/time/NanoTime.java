@@ -82,6 +82,41 @@ public class NanoTime {
 	}
 
 	/**
+	 * Returns the current epoch time in nanoseconds, representing nanoseconds
+	 * elapsed since the Unix epoch (January 1, 1970 00:00:00 UTC).
+	 * 
+	 * <p>
+	 * This method combines the wall-clock time from
+	 * {@link System#currentTimeMillis()} with sub-millisecond precision from
+	 * {@link #nanoTime()} to provide nanosecond resolution timestamps relative to
+	 * epoch. The calculation:
+	 * <ol>
+	 * <li>Gets the epoch time in milliseconds</li>
+	 * <li>Gets the fractional nanoseconds within the current millisecond</li>
+	 * <li>Combines them to create a complete nanosecond-precision epoch
+	 * timestamp</li>
+	 * </ol>
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Note:</b> While this provides nanosecond resolution, the absolute accuracy
+	 * is limited by the underlying system clock synchronization and the factors
+	 * that affect nanosecond precision timing.
+	 * </p>
+	 *
+	 * @return nanoseconds since the Unix epoch (1970-01-01T00:00:00Z)
+	 * @see System#currentTimeMillis()
+	 * @see #nanoTime()
+	 */
+	public static long offsetNanoTime(long offsetFrom, long delta) {
+		return offsetFrom + delta;
+	}
+
+	public static long deltaFromStart(long start) {
+		return currentTimeNanos() - start;
+	}
+
+	/**
 	 * Returns the current value of the most precise available system timer, in
 	 * nanoseconds. When available, specialized hardware timing sources may be used
 	 * to provide higher precision than the standard system timer. Current and
