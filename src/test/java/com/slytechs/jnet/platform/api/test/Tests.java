@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.jnetruntime.test;
+package com.slytechs.jnet.platform.api.test;
 
 import java.io.PrintStream;
 import java.util.logging.ConsoleHandler;

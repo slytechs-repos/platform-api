@@ -1,4 +1,4 @@
-package com.slytechs.jnet.jnetruntime.test.util;
+package com.slytechs.jnet.platform.api.test.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 

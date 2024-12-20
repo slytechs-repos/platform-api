@@ -109,6 +109,7 @@ public class GuardedCode {
 	 *         occurs
 	 * @throws E if an exception of type E occurs during execution
 	 */
+	@SuppressWarnings("unchecked")
 	public <T, E extends Throwable> T readLocked(Callable<T> code, Class<E> exceptionClass) throws E {
 		readLock.lock();
 		try {
@@ -135,6 +136,7 @@ public class GuardedCode {
 	 *         occurs
 	 * @throws E if an exception of type E occurs during execution
 	 */
+	@SuppressWarnings("unchecked")
 	public <T, E extends Throwable> T writeLocked(Callable<T> code, Class<E> exceptionClass) throws E {
 		writeLock.lock();
 		try {

@@ -1,4 +1,4 @@
-package com.slytechs.jnet.jnetruntime.test.hash;
+package com.slytechs.jnet.platform.api.test.hash;
 
 import static org.junit.jupiter.api.Assertions.*;
 
