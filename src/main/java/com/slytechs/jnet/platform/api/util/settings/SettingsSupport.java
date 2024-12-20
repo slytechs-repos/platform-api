@@ -28,7 +28,7 @@ import java.util.Map;
 import com.slytechs.jnet.platform.api.util.Registration;
 import com.slytechs.jnet.platform.api.util.settings.Property.Action;
 
-class SettingsSupport {
+public class SettingsSupport {
 	Map<String, List<Reference<Property.Action<?>>>> actions = new HashMap<>();
 
 	boolean enableFireEvents = true;

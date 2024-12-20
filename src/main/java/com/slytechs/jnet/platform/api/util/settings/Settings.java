@@ -85,14 +85,15 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 		class MySettings extends Settings<MySettings> {
 			private static final String BASENAME = "ports";
 
-			private final IntProperty x = newProperty("delay", 10, IntProperty::new)
+			private final IntProperty x = super.<Integer, IntProperty>newProperty("delay", 10, IntProperty::new)
 					.on(Action.withSource(this::setX_withSource, this).andThen(this::setY_simpleSetter))
 					.loadSystemProperty();
 
-			private final EnumProperty<TimeUnit> e = newProperty("timeunit", TimeUnit.MICROSECONDS, EnumProperty::new)
+			private final EnumProperty<TimeUnit> e = super.<TimeUnit, EnumProperty<TimeUnit>>newProperty("timeunit",
+					TimeUnit.MICROSECONDS, EnumProperty::new)
 					.on(Action.withSource(this::setTimeUnit, this));
 
-			private final ListProperty<TimeUnit> l = newListProperty("ids", TimeUnit::valueOf,
+			private final ListProperty<TimeUnit> l = super.<TimeUnit>newListProperty("ids", TimeUnit::valueOf,
 					TimeUnit.MICROSECONDS);
 
 			MySettings(String name) {
@@ -416,7 +417,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	}
 
 	public BooleanProperty newBooleanProperty(String name, boolean defaultValue) {
-		return newProperty(name, defaultValue, BooleanProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -437,7 +438,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new ByteProperty instance
 	 */
 	public ByteProperty newByteProperty(String name, byte defaultValue) {
-		return newProperty(name, defaultValue, ByteProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -458,7 +459,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new DoubleProperty instance
 	 */
 	public DoubleProperty newDoubleProperty(String name, double defaultValue) {
-		return newProperty(name, defaultValue, DoubleProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -503,7 +504,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new FloatProperty instance
 	 */
 	public FloatProperty newFloatProperty(String name, float defaultValue) {
-		return newProperty(name, defaultValue, FloatProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -524,7 +525,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new IntProperty instance
 	 */
 	public IntProperty newIntProperty(String name, int defaultValue) {
-		return newProperty(name, defaultValue, IntProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -623,7 +624,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new LongProperty instance
 	 */
 	public LongProperty newLongProperty(String name, long defaultValue) {
-		return newProperty(name, defaultValue, LongProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -714,7 +715,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new ShortProperty instance
 	 */
 	public ShortProperty newShortProperty(String name, short defaultValue) {
-		return newProperty(name, defaultValue, ShortProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**
@@ -735,7 +736,7 @@ public class Settings<T_BASE extends Settings<T_BASE>> {
 	 * @return a new StringProperty instance
 	 */
 	public StringProperty newStringProperty(String name, String defaultValue) {
-		return newProperty(name, defaultValue, StringProperty::new);
+		return newProperty(name, defaultValue);
 	}
 
 	/**

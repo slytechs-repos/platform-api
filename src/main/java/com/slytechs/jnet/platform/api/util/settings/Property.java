@@ -406,8 +406,12 @@ public sealed abstract class Property<T, T_BASE extends Property<T, T_BASE>>
 		@SuppressWarnings("unchecked")
 		T_BASE property = (T_BASE) switch (value) {
 		case null -> new EmptyProperty<>(name);
+		case Byte bvalue -> new ByteProperty(name, bvalue);
+		case Short svalue -> new ShortProperty(name, svalue);
 		case Integer ivalue -> new IntProperty(name, ivalue);
 		case Long lvalue -> new LongProperty(name, lvalue);
+		case Float fvalue -> new FloatProperty(name, fvalue);
+		case Double dvalue -> new DoubleProperty(name, dvalue);
 		case String svalue -> new StringProperty(name, svalue);
 		case Boolean bvalue -> new BooleanProperty(name, bvalue);
 		default -> throw new IllegalArgumentException("unknown property type for value of " + value);
