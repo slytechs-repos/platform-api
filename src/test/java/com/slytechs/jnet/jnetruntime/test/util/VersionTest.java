@@ -8,8 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.slytechs.jnet.jnetruntime.util.InvalidVersionException;
-import com.slytechs.jnet.jnetruntime.util.Version;
+import com.slytechs.jnet.platform.api.util.InvalidVersionException;
+import com.slytechs.jnet.platform.api.util.Version;
 
 /**
  * Comprehensive test suite for the {@link Version} class. Tests include

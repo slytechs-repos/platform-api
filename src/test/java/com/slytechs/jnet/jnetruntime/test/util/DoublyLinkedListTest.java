@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
-import com.slytechs.jnet.jnetruntime.util.DoublyLinkedList;
+import com.slytechs.jnet.platform.api.util.DoublyLinkedElement;
+import com.slytechs.jnet.platform.api.util.DoublyLinkedList;
 
 public class DoublyLinkedListTest {
 

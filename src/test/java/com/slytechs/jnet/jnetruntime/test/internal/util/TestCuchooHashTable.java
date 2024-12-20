@@ -25,9 +25,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.slytechs.jnet.jnetruntime.hash.CuckooHashTable;
-import com.slytechs.jnet.jnetruntime.hash.HashTable;
 import com.slytechs.jnet.jnetruntime.test.Tests;
+import com.slytechs.jnet.platform.api.hash.CuckooHashTable;
+import com.slytechs.jnet.platform.api.hash.HashTable;
 
 /**
  * The Class TestCuchooHashTable.

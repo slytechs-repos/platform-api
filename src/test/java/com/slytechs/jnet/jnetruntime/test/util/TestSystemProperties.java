@@ -25,8 +25,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.slytechs.jnet.jnetruntime.util.MemoryUnit;
-import com.slytechs.jnet.jnetruntime.util.config.SystemProperties;
+import com.slytechs.jnet.platform.api.util.MemoryUnit;
+import com.slytechs.jnet.platform.api.util.config.SystemProperties;
 
 /**
  * The Class TestSystemProperties.

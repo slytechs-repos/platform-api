@@ -25,8 +25,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 
-import com.slytechs.jnet.jnetruntime.internal.util.format.BitFormat2;
 import com.slytechs.jnet.jnetruntime.test.Tests;
+import com.slytechs.jnet.platform.api.internal.util.format.BitFormat2;
 
 /**
  * The Class TestBitFormat.

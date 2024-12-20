@@ -18,31 +18,31 @@
 /**
  * Net modules runtime utilties and APIs
  */
-module com.slytechs.jnet.jnetruntime {
+module com.slytechs.jnet.platform.api {
 
 	/* Public API */
-	exports com.slytechs.jnet.jnetruntime;
-	exports com.slytechs.jnet.jnetruntime.time;
-	exports com.slytechs.jnet.jnetruntime.frame;
-	exports com.slytechs.jnet.jnetruntime.hash;
-	exports com.slytechs.jnet.jnetruntime.util;
-	exports com.slytechs.jnet.jnetruntime.util.config;
-	exports com.slytechs.jnet.jnetruntime.util.settings;
-	exports com.slytechs.jnet.jnetruntime.function;
-	exports com.slytechs.jnet.jnetruntime.pipeline;
-	exports com.slytechs.jnet.jnetruntime.vm;
+	exports com.slytechs.jnet.platform.api;
+	exports com.slytechs.jnet.platform.api.time;
+	exports com.slytechs.jnet.platform.api.frame;
+	exports com.slytechs.jnet.platform.api.hash;
+	exports com.slytechs.jnet.platform.api.util;
+	exports com.slytechs.jnet.platform.api.util.config;
+	exports com.slytechs.jnet.platform.api.util.settings;
+	exports com.slytechs.jnet.platform.api.function;
+	exports com.slytechs.jnet.platform.api.pipeline;
+	exports com.slytechs.jnet.platform.api.vm;
 
 	/* Private API */
-	exports com.slytechs.jnet.jnetruntime.internal;
-	exports com.slytechs.jnet.jnetruntime.internal.layout;
-	exports com.slytechs.jnet.jnetruntime.internal.foreign;
-	exports com.slytechs.jnet.jnetruntime.internal.foreign.struct;
-	exports com.slytechs.jnet.jnetruntime.internal.concurrent;
-	exports com.slytechs.jnet.jnetruntime.internal.util;
-	exports com.slytechs.jnet.jnetruntime.internal.util.format;
-	exports com.slytechs.jnet.jnetruntime.internal.util.function;
-	exports com.slytechs.jnet.jnetruntime.internal.util.collection;
-	exports com.slytechs.jnet.jnetruntime.internal.json;
+	exports com.slytechs.jnet.platform.api.internal;
+	exports com.slytechs.jnet.platform.api.internal.layout;
+	exports com.slytechs.jnet.platform.api.internal.foreign;
+	exports com.slytechs.jnet.platform.api.internal.foreign.struct;
+	exports com.slytechs.jnet.platform.api.internal.concurrent;
+	exports com.slytechs.jnet.platform.api.internal.util;
+	exports com.slytechs.jnet.platform.api.internal.util.format;
+	exports com.slytechs.jnet.platform.api.internal.util.function;
+	exports com.slytechs.jnet.platform.api.internal.util.collection;
+	exports com.slytechs.jnet.platform.api.internal.json;
 
 	requires java.logging;
 

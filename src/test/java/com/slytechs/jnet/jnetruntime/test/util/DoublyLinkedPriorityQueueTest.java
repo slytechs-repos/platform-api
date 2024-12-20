@@ -13,8 +13,8 @@ import java.util.Spliterator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.slytechs.jnet.jnetruntime.util.DoublyLinkedElement;
-import com.slytechs.jnet.jnetruntime.util.DoublyLinkedPriorityQueue;
+import com.slytechs.jnet.platform.api.util.DoublyLinkedElement;
+import com.slytechs.jnet.platform.api.util.DoublyLinkedPriorityQueue;
 
 /**
  * JUnit test case for the DoublyLinkedPriorityQueue class. This class contains

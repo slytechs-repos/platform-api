@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.slytechs.jnet.jnetruntime.hash.CollisionResistantHashTable;
+import com.slytechs.jnet.platform.api.hash.CollisionResistantHashTable;
 
 public class CollisionResistantHashTableTest {
 	private CollisionResistantHashTable<String, Integer> table;
