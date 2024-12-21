@@ -36,9 +36,9 @@ import com.slytechs.jnet.platform.api.internal.util.function.FunctionalProxies;
  * functionality similar to Guice's TypeLiteral.
  * 
  * <p>
- * The DataLiteral class works with the FunctionalProxies utility to create proxy
- * implementations when actual method references are not provided. This ensures
- * seamless operation with data type handlers in the pipeline platform.
+ * The DataLiteral class works with the FunctionalProxies utility to create
+ * proxy implementations when actual method references are not provided. This
+ * ensures seamless operation with data type handlers in the pipeline platform.
  * </p>
  * 
  * <p>
@@ -287,6 +287,8 @@ public class DataLiteral<T> implements DataType<T> {
 	 * @param dataClass The Class object representing the data type
 	 */
 	public DataLiteral(String name, Class<T> dataClass) {
+		assert getClass() == DataLiteral.class;
+
 		this.dataClass = dataClass;
 		this.type = dataClass;
 		this.empty = FunctionalProxies.createNoOpProxy(dataClass);
@@ -310,6 +312,8 @@ public class DataLiteral<T> implements DataType<T> {
 	 * @param dataClass The Class object representing the data type
 	 */
 	public DataLiteral(String name, Class<T> dataClass, Function<T[], T> arrayWrapper) {
+		assert getClass() == DataLiteral.class;
+		
 		this.dataClass = dataClass;
 		this.type = dataClass;
 		this.empty = FunctionalProxies.createNoOpProxy(dataClass);
@@ -333,6 +337,8 @@ public class DataLiteral<T> implements DataType<T> {
 	 * @param dataClass The Class object representing the data type
 	 */
 	public DataLiteral(String name, Class<T> dataClass, T empty) {
+		assert getClass() == DataLiteral.class;
+		
 		this.dataClass = dataClass;
 		this.type = dataClass;
 		this.empty = empty;
@@ -349,6 +355,8 @@ public class DataLiteral<T> implements DataType<T> {
 	 */
 	public DataLiteral(String name, Class<T> dataClass, T empty, Function<T[], T> arrayWrapper,
 			IntFunction<T[]> arrayAllocator) {
+		assert getClass() == DataLiteral.class;
+		
 		this.dataClass = dataClass;
 		this.type = dataClass;
 		this.empty = empty;
@@ -371,6 +379,8 @@ public class DataLiteral<T> implements DataType<T> {
 	 * @param dataClass The Class object representing the data type
 	 */
 	public DataLiteral(String name, Class<T> dataClass, T empty, IntFunction<T[]> arrayAllocator) {
+		assert getClass() == DataLiteral.class;
+		
 		this.dataClass = dataClass;
 		this.type = dataClass;
 		this.empty = empty;

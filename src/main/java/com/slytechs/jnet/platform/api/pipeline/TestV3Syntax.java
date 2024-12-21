@@ -34,11 +34,11 @@ public class TestV3Syntax {
 	static class StringPipeline extends Pipeline<Consumer<StringBuilder>> {
 
 		public StringPipeline(String name) {
-			super("String pipeline", new DT<>() {});
+			super("String pipeline", new DataLiteral<>() {});
 
-			head().addInput("FromLong", this::inputFromLong, new DT<>() {});
+			head().addInput("FromLong", this::inputFromLong, new DataLiteral<>() {});
 
-			head().addInput("integer", this::inputFromInt, new DT<>() {});
+			head().addInput("integer", this::inputFromInt, new DataLiteral<>() {});
 
 			this.addProcessor(10, "ToUppercase", this::processToUppercase)
 					.peek(sb -> System.out.println("PEEK1:: " + sb.toString()))
@@ -53,11 +53,11 @@ public class TestV3Syntax {
 
 			tail().addOutput(0, "ToString", output -> {
 				return str -> output.get().accept(str.toString());
-			}, new DT<Consumer<String>>("ToString") {});
+			}, new DataLiteral<Consumer<String>>("ToString") {});
 
 			tail().addOutput(0, sink -> {
 				return str -> sink.get().accept(str.toString());
-			}, new DT<Consumer<String>>() {});
+			}, new DataLiteral<Consumer<String>>() {});
 
 		}
 
@@ -93,7 +93,7 @@ public class TestV3Syntax {
 
 		pipeline.onNewRegistration(registrations::add);
 
-		pipeline.out("ToString", System.out::println, new DT<Consumer<String>>() {});
+		pipeline.out("ToString", System.out::println, new DataLiteral<Consumer<String>>() {});
 		pipeline.in("FromLong", LongConsumer.class).accept(10);;
 
 		System.out.println(pipeline);

@@ -17,6 +17,7 @@
  */
 package com.slytechs.jnet.platform.api.pipeline;
 
+import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
 import com.slytechs.jnet.platform.api.internal.util.function.FunctionalProxies;
@@ -68,9 +69,11 @@ public class InputTransformer<IN, T>
 	Head<T> head;
 	private final DataType<IN> dataType;
 	private final IN inline;
+
+	protected Lock readLock;
 	@SuppressWarnings("unchecked")
 	protected InputTransformer(Object id) {
-		this.dataType = DT.from(this);
+		this.dataType = DataLiteral.from(this);
 		this.name = dataType.name();
 		this.id = id;
 		this.inline = (IN) this;
@@ -92,7 +95,7 @@ public class InputTransformer<IN, T>
 	}
 
 	protected InputTransformer(Object id, InputMapper<IN, T> mapper) {
-		this.dataType = DT.from(this);
+		this.dataType = DataLiteral.from(this);
 		this.name = dataType.name();
 		this.id = id;
 		this.inline = mapper.createMappedInput(this::getOutput, this);
@@ -100,7 +103,7 @@ public class InputTransformer<IN, T>
 
 	@SuppressWarnings("unchecked")
 	protected InputTransformer(String name) {
-		this.dataType = DT.from(this);
+		this.dataType = DataLiteral.from(this);
 		this.name = name;
 		this.id = name;
 		this.inline = (IN) this;
@@ -122,7 +125,7 @@ public class InputTransformer<IN, T>
 	}
 
 	protected InputTransformer(String name, InputMapper<IN, T> mapper) {
-		this.dataType = DT.from(this);
+		this.dataType = DataLiteral.from(this);
 		this.name = name;
 		this.id = name;
 		this.inline = mapper.createMappedInput(this::getOutput, this);
@@ -177,7 +180,7 @@ public class InputTransformer<IN, T>
 		 * manipulate the state of the pipeline itself in a thread safe and coherent
 		 * manner.
 		 */
-		var readLock = head.readLock;
+		this.readLock = head.readLock;
 		this.input = FunctionalProxies.createLockable(dataType.dataClass(), inline, readLock, this::handleError);
 	}
 

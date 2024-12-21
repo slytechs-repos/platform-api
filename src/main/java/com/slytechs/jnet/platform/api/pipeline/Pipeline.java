@@ -144,10 +144,6 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return reg;
 	}
 
-	public final Processor<T> addProcessor(int priority, String name, SimpleProcessorMapper<T> mapper) {
-		return addProcessor(priority, name, (ProcessorMapper<T>) mapper);
-	}
-
 	public final Processor<T> addProcessor(int priority, String name, ProcessorMapper<T> mapper) {
 
 		var processor = new DefaultProcessor<T>(priority, name, mapper);
@@ -155,6 +151,10 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		var _ = registerProcessor(processor);
 
 		return processor;
+	}
+
+	public final Processor<T> addProcessor(int priority, String name, SimpleProcessorMapper<T> mapper) {
+		return addProcessor(priority, name, (ProcessorMapper<T>) mapper);
 	}
 
 	public final Processor<T> addProcessor(Processor<T> newProcessor) {
@@ -242,12 +242,36 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return head.connector(id);
 	}
 
+	public <IN> void in(Object id, Consumer<IN> consumer) {
+		consumer.accept(in(id));
+	}
+
+	public <IN> void in(Object id, Consumer<IN> consumer, Class<IN> inClass) {
+		consumer.accept(in(id));
+	}
+
+	public <IN> void in(Object id, Consumer<IN> consumer, DataType<IN> dataType) {
+		consumer.accept(in(id));
+	}
+
 	public <IN> IN in(Object id, DataType<IN> dataType) {
 		return head.connector(id);
 	}
 
 	IllegalArgumentException inputNotFoundException(Object id) {
 		return new IllegalArgumentException("input not found [id=%s]".formatted(id));
+	}
+
+	public <IN> InputTransformer<IN, T> inputTransformer(Object id) {
+		return head.getInputTransformer(id);
+	}
+
+	public <IN> InputTransformer<IN, T> inputTransformer(Object id, Class<IN> inClass) {
+		return head.getInputTransformer(id);
+	}
+
+	public <IN> InputTransformer<IN, T> inputTransformer(Object id, DataType<IN> dataType) {
+		return head.getInputTransformer(id);
 	}
 
 	public String name() {
@@ -264,10 +288,6 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 		return onNewProcessor((r, p) -> action.accept(r));
 	}
 
-	public <OUT> OutputTransformer<T, OUT> out(Object id) {
-		return tail().getOutputTransformer(id);
-	}
-
 	public <OUT> Registration out(Object id, OUT sink) {
 		return tail().getOutputTransformer(id).connect(sink);
 	}
@@ -278,6 +298,18 @@ public abstract class Pipeline<T> implements ErrorHandlingPipeline {
 
 	public <OUT> Registration out(Object id, OUT sink, DataType<OUT> dataType) {
 		return tail().getOutputTransformer(id).connect(sink);
+	}
+
+	public <OUT> OutputTransformer<T, OUT> outputTransformer(Object id) {
+		return tail().getOutputTransformer(id);
+	}
+
+	public <OUT> OutputTransformer<T, OUT> outputTransformer(Object id, Class<OUT> outClass) {
+		return tail().getOutputTransformer(id);
+	}
+
+	public <OUT> OutputTransformer<T, OUT> outputTransformer(Object id, DataType<OUT> dataType) {
+		return tail().getOutputTransformer(id);
 	}
 
 	/**
