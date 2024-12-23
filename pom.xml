@@ -6,9 +6,9 @@
 	<!-- jNet SDK - Platform POM definition -->
 	<parent>
 		<groupId>com.slytechs.jnet.platform</groupId>
-		<artifactId>jnet-platform-parent</artifactId>
+		<artifactId>platform-sdk-parent</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
-		<relativePath>../jnet-platform</relativePath>
+		<relativePath>../platform-sdk</relativePath>
 	</parent>
 	
 	<artifactId>platform-api</artifactId>
