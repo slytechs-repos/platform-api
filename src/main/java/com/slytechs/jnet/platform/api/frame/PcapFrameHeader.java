@@ -21,7 +21,7 @@ import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
-import com.slytechs.jnet.platform.api.MemoryBinding;
+import com.slytechs.jnet.platform.api.common.binding.MemoryBinding;
 import com.slytechs.jnet.platform.api.time.TimestampUnit;
 
 /**

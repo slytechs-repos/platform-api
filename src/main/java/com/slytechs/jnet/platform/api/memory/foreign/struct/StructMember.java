@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign.struct;
+package com.slytechs.jnet.platform.api.memory.foreign.struct;
 
 import java.lang.foreign.MemorySegment;
 

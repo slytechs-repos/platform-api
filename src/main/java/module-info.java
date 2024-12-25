@@ -22,6 +22,7 @@ module com.slytechs.jnet.platform.api {
 
 	/* Public API */
 	exports com.slytechs.jnet.platform.api;
+	exports com.slytechs.jnet.platform.api.common.binding;
 	exports com.slytechs.jnet.platform.api.time;
 	exports com.slytechs.jnet.platform.api.frame;
 	exports com.slytechs.jnet.platform.api.hash;
@@ -39,10 +40,11 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.vm;
 
 	/* Private API */
+	exports com.slytechs.jnet.platform.api.memory.foreign;
+	exports com.slytechs.jnet.platform.api.memory.foreign.struct;
+	
 	exports com.slytechs.jnet.platform.api.internal;
 	exports com.slytechs.jnet.platform.api.internal.layout;
-	exports com.slytechs.jnet.platform.api.internal.foreign;
-	exports com.slytechs.jnet.platform.api.internal.foreign.struct;
 	exports com.slytechs.jnet.platform.api.internal.concurrent;
 	exports com.slytechs.jnet.platform.api.internal.util;
 	exports com.slytechs.jnet.platform.api.internal.util.format;

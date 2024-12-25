@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign.struct;
+package com.slytechs.jnet.platform.api.memory.foreign.struct;
 
 import java.lang.foreign.GroupLayout;
 import java.lang.foreign.MemoryLayout;
@@ -34,7 +34,7 @@ import java.util.function.IntUnaryOperator;
 import java.util.function.LongUnaryOperator;
 import java.util.stream.Collectors;
 
-import com.slytechs.jnet.platform.api.internal.foreign.MemoryUtils;
+import com.slytechs.jnet.platform.api.memory.foreign.MemoryUtils;
 
 import static java.lang.foreign.ValueLayout.*;
 

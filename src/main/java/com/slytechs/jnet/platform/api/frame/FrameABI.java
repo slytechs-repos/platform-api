@@ -3,7 +3,7 @@ package com.slytechs.jnet.platform.api.frame;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteOrder;
 
-import com.slytechs.jnet.platform.api.internal.foreign.NativeABI;
+import com.slytechs.jnet.platform.api.memory.foreign.NativeABI;
 
 /**
  * Defines Application Binary Interface (ABI) configurations for accessing

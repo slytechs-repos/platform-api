@@ -15,14 +15,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign.struct;
+package com.slytechs.jnet.platform.api.memory.foreign.struct;
 
 import java.lang.foreign.MemorySegment;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
-import com.slytechs.jnet.platform.api.internal.foreign.ForeignUtils;
+import com.slytechs.jnet.platform.api.memory.foreign.ForeignUtils;
 import com.slytechs.jnet.platform.api.util.Detail;
 
 /**

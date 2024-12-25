@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign;
+package com.slytechs.jnet.platform.api.memory.foreign;
 
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.Linker;
@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.slytechs.jnet.platform.api.internal.foreign.ForeignException.ForeignExceptionFactory;
+import com.slytechs.jnet.platform.api.memory.foreign.ForeignException.ForeignExceptionFactory;
 
 /**
  * The Class ForeignInitializer.

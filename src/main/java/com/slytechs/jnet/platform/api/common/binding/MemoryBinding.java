@@ -15,12 +15,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api;
+package com.slytechs.jnet.platform.api.common.binding;
 
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 
-import com.slytechs.jnet.platform.api.internal.foreign.ForeignUtils;
+import com.slytechs.jnet.platform.api.memory.foreign.ForeignUtils;
 
 /**
  * Host memory binding base class. This class is designed to be sbuclassed and

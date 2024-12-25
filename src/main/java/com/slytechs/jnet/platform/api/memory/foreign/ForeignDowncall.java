@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign;
+package com.slytechs.jnet.platform.api.memory.foreign;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.invoke.MethodHandle;
@@ -24,7 +24,7 @@ import java.util.function.IntFunction;
 import java.util.function.LongFunction;
 import java.util.function.Supplier;
 
-import com.slytechs.jnet.platform.api.internal.foreign.ForeignException.ForeignExceptionFactory;
+import com.slytechs.jnet.platform.api.memory.foreign.ForeignException.ForeignExceptionFactory;
 
 /**
  * The Class ForeignDowncall.

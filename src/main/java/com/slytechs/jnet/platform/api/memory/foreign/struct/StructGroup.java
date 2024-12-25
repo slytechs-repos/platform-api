@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign.struct;
+package com.slytechs.jnet.platform.api.memory.foreign.struct;
 
 import java.lang.foreign.MemorySegment;
 import java.util.function.Function;
@@ -76,7 +76,7 @@ public final class StructGroup<T> extends StructMember {
 	 * Checks if is printable.
 	 *
 	 * @return true, if is printable
-	 * @see com.slytechs.jnet.platform.api.internal.foreign.struct.StructMember#isPrintable()
+	 * @see com.slytechs.jnet.platform.api.memory.foreign.struct.StructMember#isPrintable()
 	 */
 	@Override
 	public boolean isPrintable() {
@@ -89,7 +89,7 @@ public final class StructGroup<T> extends StructMember {
 	 * @param b       the b
 	 * @param segment the segment
 	 * @return the string builder
-	 * @see com.slytechs.jnet.platform.api.internal.foreign.struct.StructMember#toString(java.lang.StringBuilder,
+	 * @see com.slytechs.jnet.platform.api.memory.foreign.struct.StructMember#toString(java.lang.StringBuilder,
 	 *      java.lang.foreign.MemorySegment)
 	 */
 	@Override

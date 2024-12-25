@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign;
+package com.slytechs.jnet.platform.api.memory.foreign;
 
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.ValueLayout;
@@ -454,7 +454,7 @@ public class PaddedLayout implements PaddedField {
 	 * As memory layout.
 	 *
 	 * @return the memory layout
-	 * @see com.slytechs.jnet.platform.api.internal.foreign.PaddedField#asMemoryLayout()
+	 * @see com.slytechs.jnet.platform.api.memory.foreign.PaddedField#asMemoryLayout()
 	 */
 	@Override
 	public MemoryLayout asMemoryLayout() {

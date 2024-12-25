@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign;
+package com.slytechs.jnet.platform.api.memory.foreign;
 
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 

@@ -21,7 +21,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 
-import com.slytechs.jnet.platform.api.MemoryBinding;
+import com.slytechs.jnet.platform.api.common.binding.MemoryBinding;
 
 /**
  * The Interface Attribute.

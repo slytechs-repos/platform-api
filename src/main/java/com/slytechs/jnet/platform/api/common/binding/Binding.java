@@ -15,29 +15,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.foreign;
-
-import java.lang.invoke.MethodHandles;
+package com.slytechs.jnet.platform.api.common.binding;
 
 /**
- * The Class DefaultForeignInitializer.
- *
+ * A opaque binding to a reusable object. The most used binding type is by
+ * {@link MemoryBinding} which binds data to protocol specific objects such as
+ * packets and headers.
+ * 
  * @author Mark Bednarczyk
+ *
  */
-public class DefaultForeignInitializer
-		extends ForeignInitializer<DefaultForeignDowncall, ForeignIllegalStateException> {
+public interface Binding {
 
 	/**
-	 * Instantiates a new default foreign initializer.
-	 *
-	 * @param clazz the clazz
+	 * Unbinds the reusable object and make it available for another binding.
 	 */
-	public DefaultForeignInitializer(Class<?> clazz) {
-		super(
-				clazz.getSimpleName(),
-				DefaultForeignDowncall::new,
-				DefaultForeignDowncall::new,
-				MethodHandles.lookup());
-	}
+	void unbind();
 
+	/**
+	 * Checks if this reusable object is bound.
+	 *
+	 * @return true, if is bound
+	 */
+	boolean isBound();
 }
