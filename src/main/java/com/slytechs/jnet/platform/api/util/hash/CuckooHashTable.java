@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.hash;
+package com.slytechs.jnet.platform.api.util.hash;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -309,7 +309,7 @@ public final class CuckooHashTable<T> extends HashTable<T> {
 	 * @param key      the key
 	 * @param hashcode the hashcode
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.hash.HashTable#lookup(java.nio.ByteBuffer,
+	 * @see com.slytechs.jnet.platform.api.util.hash.HashTable#lookup(java.nio.ByteBuffer,
 	 *      long)
 	 */
 	@Override
@@ -354,7 +354,7 @@ public final class CuckooHashTable<T> extends HashTable<T> {
 	 * To string extra.
 	 *
 	 * @return the string
-	 * @see com.slytechs.jnet.platform.api.hash.HashTable#toStringExtra()
+	 * @see com.slytechs.jnet.platform.api.util.hash.HashTable#toStringExtra()
 	 */
 	@Override
 	protected String toStringExtra() {

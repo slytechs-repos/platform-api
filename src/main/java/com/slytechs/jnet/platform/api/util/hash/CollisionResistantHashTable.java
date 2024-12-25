@@ -1,4 +1,4 @@
-package com.slytechs.jnet.platform.api.hash;
+package com.slytechs.jnet.platform.api.util.hash;
 
 import java.util.Arrays;
 

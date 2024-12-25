@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.hash;
+package com.slytechs.jnet.platform.api.util.hash;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -130,7 +130,7 @@ public class HashTable<T> implements KeyedTable<T> {
 		 * Data.
 		 *
 		 * @return the t
-		 * @see com.slytechs.jnet.platform.api.hash.KeyedTable.Entry#data()
+		 * @see com.slytechs.jnet.platform.api.util.hash.KeyedTable.Entry#data()
 		 */
 		@Override
 		public T data() {
@@ -141,7 +141,7 @@ public class HashTable<T> implements KeyedTable<T> {
 		 * Index.
 		 *
 		 * @return the int
-		 * @see com.slytechs.jnet.platform.api.hash.KeyedTable.Entry#index()
+		 * @see com.slytechs.jnet.platform.api.util.hash.KeyedTable.Entry#index()
 		 */
 		@Override
 		public int index() {
@@ -338,7 +338,7 @@ public class HashTable<T> implements KeyedTable<T> {
 	 *
 	 * @param index the index
 	 * @return the hash entry
-	 * @see com.slytechs.jnet.platform.api.hash.KeyedTable#get(int)
+	 * @see com.slytechs.jnet.platform.api.util.hash.KeyedTable#get(int)
 	 */
 	@Override
 	public final HashEntry<T> get(int index) {
@@ -382,7 +382,7 @@ public class HashTable<T> implements KeyedTable<T> {
 	 *
 	 * @param key the key
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.hash.KeyedTable#lookup(java.nio.ByteBuffer)
+	 * @see com.slytechs.jnet.platform.api.util.hash.KeyedTable#lookup(java.nio.ByteBuffer)
 	 */
 	@Override
 	public final int lookup(ByteBuffer key) {
@@ -411,7 +411,7 @@ public class HashTable<T> implements KeyedTable<T> {
 	 *
 	 * @param key the key
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.hash.KeyedTable#remove(java.nio.ByteBuffer)
+	 * @see com.slytechs.jnet.platform.api.util.hash.KeyedTable#remove(java.nio.ByteBuffer)
 	 */
 	@Override
 	public final boolean remove(ByteBuffer key) {
