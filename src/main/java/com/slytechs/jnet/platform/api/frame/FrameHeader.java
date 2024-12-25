@@ -20,7 +20,7 @@ package com.slytechs.jnet.platform.api.frame;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 
-import com.slytechs.jnet.platform.api.time.TimestampUnit;
+import com.slytechs.jnet.platform.api.util.time.TimestampUnit;
 
 /**
  * Represents a captured network frame with associated metadata such as

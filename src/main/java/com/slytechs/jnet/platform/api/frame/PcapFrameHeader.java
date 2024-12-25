@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import com.slytechs.jnet.platform.api.common.binding.MemoryBinding;
-import com.slytechs.jnet.platform.api.time.TimestampUnit;
+import com.slytechs.jnet.platform.api.util.time.TimestampUnit;
 
 /**
  * A libpcap-specific FrameHeader implementation that provides access to
@@ -462,7 +462,7 @@ public class PcapFrameHeader extends MemoryBinding implements FrameHeader {
 
 	/**
 	 * @see com.slytechs.jnet.platform.api.frame.FrameHeader#timestamp(long,
-	 *      com.slytechs.jnet.platform.api.time.TimestampUnit)
+	 *      com.slytechs.jnet.platform.api.util.time.TimestampUnit)
 	 */
 	@Override
 	public long timestamp(long newTs, TimestampUnit timestampUnit) {
@@ -478,7 +478,7 @@ public class PcapFrameHeader extends MemoryBinding implements FrameHeader {
 	}
 
 	/**
-	 * @see com.slytechs.jnet.platform.api.frame.FrameHeader#timestamp(com.slytechs.jnet.platform.api.time.TimestampUnit)
+	 * @see com.slytechs.jnet.platform.api.frame.FrameHeader#timestamp(com.slytechs.jnet.platform.api.util.time.TimestampUnit)
 	 */
 	@Override
 	public long timestamp(TimestampUnit tsUnit) {

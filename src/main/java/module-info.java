@@ -24,7 +24,7 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api;
 	exports com.slytechs.jnet.platform.api.common.binding;
 	exports com.slytechs.jnet.platform.api.common.settings;
-	exports com.slytechs.jnet.platform.api.time;
+	exports com.slytechs.jnet.platform.api.util.time;
 	exports com.slytechs.jnet.platform.api.frame;
 	exports com.slytechs.jnet.platform.api.util.hash;
 	exports com.slytechs.jnet.platform.api.util;

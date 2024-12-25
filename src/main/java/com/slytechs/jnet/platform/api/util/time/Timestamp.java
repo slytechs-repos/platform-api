@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.time;
+package com.slytechs.jnet.platform.api.util.time;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -188,7 +188,7 @@ public class Timestamp extends Date implements TimestampPrecisionInfo, StringBui
 	 * Precision time unit.
 	 *
 	 * @return the time unit
-	 * @see com.slytechs.jnet.platform.api.time.TimestampPrecisionInfo#precisionTimeUnit()
+	 * @see com.slytechs.jnet.platform.api.util.time.TimestampPrecisionInfo#precisionTimeUnit()
 	 */
 	@Override
 	public TimeUnit precisionTimeUnit() {
@@ -199,7 +199,7 @@ public class Timestamp extends Date implements TimestampPrecisionInfo, StringBui
 	 * Precision.
 	 *
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.time.TimestampPrecisionInfo#precision()
+	 * @see com.slytechs.jnet.platform.api.util.time.TimestampPrecisionInfo#precision()
 	 */
 	@Override
 	public int precision() {

@@ -15,9 +15,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.time;
+package com.slytechs.jnet.platform.api.util.time;
 
-import static com.slytechs.jnet.platform.api.time.Timestamp.*;
+import static com.slytechs.jnet.platform.api.util.time.Timestamp.*;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +48,7 @@ public interface TimeSource extends AutoCloseable {
 		 * As updatable.
 		 *
 		 * @return the optional
-		 * @see com.slytechs.jnet.platform.api.time.TimeSource#asUpdatable()
+		 * @see com.slytechs.jnet.platform.api.util.time.TimeSource#asUpdatable()
 		 */
 		@Override
 		default Optional<Updatable> asUpdatable() {

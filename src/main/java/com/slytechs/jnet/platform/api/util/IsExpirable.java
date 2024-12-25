@@ -19,7 +19,7 @@ package com.slytechs.jnet.platform.api.util;
 
 import java.util.concurrent.TimeUnit;
 
-import com.slytechs.jnet.platform.api.time.TimestampSource;
+import com.slytechs.jnet.platform.api.util.time.TimestampSource;
 
 /**
  * The Interface IsExpirable.

@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.time;
+package com.slytechs.jnet.platform.api.util.time;
 
 import java.util.concurrent.TimeUnit;
 
@@ -53,7 +53,7 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	 * Initialize.
 	 *
 	 * @param initTimestamp the init timestamp
-	 * @see com.slytechs.jnet.platform.api.time.TimeSource.Updatable#initialize(long)
+	 * @see com.slytechs.jnet.platform.api.util.time.TimeSource.Updatable#initialize(long)
 	 */
 	@Override
 	public final void initialize(long initTimestamp) {
@@ -65,7 +65,7 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	 * Update.
 	 *
 	 * @param newTimestamp the new timestamp
-	 * @see com.slytechs.jnet.platform.api.time.TimeSource.Updatable#update(long)
+	 * @see com.slytechs.jnet.platform.api.util.time.TimeSource.Updatable#update(long)
 	 */
 	@Override
 	public final void update(long newTimestamp) {
@@ -92,7 +92,7 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	 * Timestamp.
 	 *
 	 * @return the long
-	 * @see com.slytechs.jnet.platform.api.time.TimeSource#timestamp()
+	 * @see com.slytechs.jnet.platform.api.util.time.TimeSource#timestamp()
 	 */
 	@Override
 	public final long timestamp() {
@@ -103,7 +103,7 @@ public class RebasedTimetSource implements TimeSource.Updatable {
 	 * Time unit.
 	 *
 	 * @return the time unit
-	 * @see com.slytechs.jnet.platform.api.time.TimeSource#timeUnit()
+	 * @see com.slytechs.jnet.platform.api.util.time.TimeSource#timeUnit()
 	 */
 	@Override
 	public final TimeUnit timeUnit() {

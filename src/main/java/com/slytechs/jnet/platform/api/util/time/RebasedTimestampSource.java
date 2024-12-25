@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.time;
+package com.slytechs.jnet.platform.api.util.time;
 
 import java.time.Instant;
 
@@ -64,7 +64,7 @@ public class RebasedTimestampSource implements TimestampSource {
 	 * Timestamp.
 	 *
 	 * @return the long
-	 * @see com.slytechs.jnet.platform.api.time.TimestampSource#timestamp()
+	 * @see com.slytechs.jnet.platform.api.util.time.TimestampSource#timestamp()
 	 */
 	@Override
 	public long timestamp() {
@@ -75,7 +75,7 @@ public class RebasedTimestampSource implements TimestampSource {
 	 * Inits the.
 	 *
 	 * @param initialTimestamp the initial timestamp
-	 * @see com.slytechs.jnet.platform.api.time.TimestampSource#init(long)
+	 * @see com.slytechs.jnet.platform.api.util.time.TimestampSource#init(long)
 	 */
 	@Override
 	public void init(long initialTimestamp) {
@@ -88,7 +88,7 @@ public class RebasedTimestampSource implements TimestampSource {
 	 *
 	 * @param newTimestamp the new timestamp
 	 * @throws InterruptedException the interrupted exception
-	 * @see com.slytechs.jnet.platform.api.time.TimestampSource#update(long)
+	 * @see com.slytechs.jnet.platform.api.util.time.TimestampSource#update(long)
 	 */
 	@Override
 	public void update(long newTimestamp) throws InterruptedException {
@@ -105,7 +105,7 @@ public class RebasedTimestampSource implements TimestampSource {
 	 * Checks if is realtime.
 	 *
 	 * @return the realtime
-	 * @see com.slytechs.jnet.platform.api.time.TimestampSource#isRealtime()
+	 * @see com.slytechs.jnet.platform.api.util.time.TimestampSource#isRealtime()
 	 */
 	@Override
 	public boolean isRealtime() {
