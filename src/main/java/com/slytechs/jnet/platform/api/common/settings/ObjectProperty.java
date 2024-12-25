@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.util.settings;
+package com.slytechs.jnet.platform.api.common.settings;
 
 public final class ObjectProperty<E> extends Property<E, ObjectProperty<E>> {
 

@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.util.settings;
+package com.slytechs.jnet.platform.api.common.settings;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -25,8 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.slytechs.jnet.platform.api.common.settings.Property.Action;
 import com.slytechs.jnet.platform.api.util.Registration;
-import com.slytechs.jnet.platform.api.util.settings.Property.Action;
 
 public class SettingsSupport {
 	Map<String, List<Reference<Property.Action<?>>>> actions = new HashMap<>();

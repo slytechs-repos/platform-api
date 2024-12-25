@@ -23,12 +23,12 @@ module com.slytechs.jnet.platform.api {
 	/* Public API */
 	exports com.slytechs.jnet.platform.api;
 	exports com.slytechs.jnet.platform.api.common.binding;
+	exports com.slytechs.jnet.platform.api.common.settings;
 	exports com.slytechs.jnet.platform.api.time;
 	exports com.slytechs.jnet.platform.api.frame;
 	exports com.slytechs.jnet.platform.api.hash;
 	exports com.slytechs.jnet.platform.api.util;
 	exports com.slytechs.jnet.platform.api.util.config;
-	exports com.slytechs.jnet.platform.api.util.settings;
 	exports com.slytechs.jnet.platform.api.function;
 	exports com.slytechs.jnet.platform.api.data;
 	exports com.slytechs.jnet.platform.api.data.event;

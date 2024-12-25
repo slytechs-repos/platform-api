@@ -17,9 +17,9 @@
  * 
  * <h2>Main Components</h2>
  * <ul>
- * <li>{@link com.slytechs.jnet.platform.api.util.settings.Settings} - The main
+ * <li>{@link com.slytechs.jnet.platform.api.common.settings.Settings} - The main
  * settings container class</li>
- * <li>{@link com.slytechs.jnet.platform.api.util.settings.Property} - Base class
+ * <li>{@link com.slytechs.jnet.platform.api.common.settings.Property} - Base class
  * for all property types</li>
  * <li>Type-specific property implementations (e.g., IntProperty,
  * StringProperty)</li>
@@ -98,10 +98,10 @@
  * <li>Use the most specific property type for your data</li>
  * </ul>
  * 
- * @see com.slytechs.jnet.platform.api.util.settings.Settings
- * @see com.slytechs.jnet.platform.api.util.settings.Property
+ * @see com.slytechs.jnet.platform.api.common.settings.Settings
+ * @see com.slytechs.jnet.platform.api.common.settings.Property
  * 
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc
  */
-package com.slytechs.jnet.platform.api.util.settings;
+package com.slytechs.jnet.platform.api.common.settings;

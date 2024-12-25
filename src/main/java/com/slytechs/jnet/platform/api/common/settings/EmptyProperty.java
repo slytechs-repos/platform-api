@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.util.settings;
+package com.slytechs.jnet.platform.api.common.settings;
 
 import java.util.function.Function;
 
@@ -26,7 +26,7 @@ final class EmptyProperty<T, T_BASE extends Property<T, T_BASE>> extends Propert
 	}
 
 	/**
-	 * @see com.slytechs.jnet.platform.api.util.settings.Property#getValue()
+	 * @see com.slytechs.jnet.platform.api.common.settings.Property#getValue()
 	 */
 	@Override
 	public T getValue() {
@@ -34,7 +34,7 @@ final class EmptyProperty<T, T_BASE extends Property<T, T_BASE>> extends Propert
 	}
 
 	/**
-	 * @see com.slytechs.jnet.platform.api.util.settings.Property#map(java.util.function.Function)
+	 * @see com.slytechs.jnet.platform.api.common.settings.Property#map(java.util.function.Function)
 	 */
 	@Override
 	public <U, P_BASE extends Property<U, P_BASE>> P_BASE map(Function<? super T, ? extends U> action) {
@@ -42,7 +42,7 @@ final class EmptyProperty<T, T_BASE extends Property<T, T_BASE>> extends Propert
 	}
 
 	/**
-	 * @see com.slytechs.jnet.platform.api.util.settings.Property#deserializeValue(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.common.settings.Property#deserializeValue(java.lang.String)
 	 */
 	@Override
 	public T_BASE deserializeValue(String newValue) {
@@ -50,7 +50,7 @@ final class EmptyProperty<T, T_BASE extends Property<T, T_BASE>> extends Propert
 	}
 
 	/**
-	 * @see com.slytechs.jnet.platform.api.util.settings.Property#setValue(java.lang.Object)
+	 * @see com.slytechs.jnet.platform.api.common.settings.Property#setValue(java.lang.Object)
 	 */
 	@Override
 	public T_BASE setValue(T newValue) {

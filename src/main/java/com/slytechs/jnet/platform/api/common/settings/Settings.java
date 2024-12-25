@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.util.settings;
+package com.slytechs.jnet.platform.api.common.settings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,12 +28,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
+import com.slytechs.jnet.platform.api.common.settings.Property.Action;
+import com.slytechs.jnet.platform.api.common.settings.Property.Deserializer;
+import com.slytechs.jnet.platform.api.common.settings.Property.PropertyFactory;
+import com.slytechs.jnet.platform.api.common.settings.Property.PropertyFactoryWithValue;
+import com.slytechs.jnet.platform.api.common.settings.Property.Serializer;
 import com.slytechs.jnet.platform.api.util.Registration;
-import com.slytechs.jnet.platform.api.util.settings.Property.Action;
-import com.slytechs.jnet.platform.api.util.settings.Property.Deserializer;
-import com.slytechs.jnet.platform.api.util.settings.Property.PropertyFactory;
-import com.slytechs.jnet.platform.api.util.settings.Property.PropertyFactoryWithValue;
-import com.slytechs.jnet.platform.api.util.settings.Property.Serializer;
 
 /**
  * A flexible and extensible settings management system that provides type-safe
