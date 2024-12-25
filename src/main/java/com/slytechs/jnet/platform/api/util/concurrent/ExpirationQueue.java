@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.concurrent;
+package com.slytechs.jnet.platform.api.util.concurrent;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;

@@ -15,34 +15,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.concurrent;
-
-import java.util.function.IntFunction;
+package com.slytechs.jnet.platform.api.util.concurrent;
 
 /**
- * The Class ObjRing.
+ * The Class IntRing.
  *
- * @param <T> the generic type
  * @author Mark Bednarczyk
  */
-public class ObjRing<T> extends Ring {
+public class IntRing extends Ring {
 
 	/** The table. */
-	private final T[] table;
-	
-	/** The allocator. */
-	private final IntFunction<T[]> allocator;
+	private final int[] table;
 
 	/**
-	 * Instantiates a new obj ring.
+	 * Instantiates a new int ring.
 	 *
-	 * @param size      the size
-	 * @param allocator the allocator
+	 * @param size the size
 	 */
-	public ObjRing(int size, IntFunction<T[]> allocator) {
+	public IntRing(int size) {
 		super(size);
-		this.table = allocator.apply(size);
-		this.allocator = allocator;
+		this.table = new int[size];
 	}
 
 	/**
@@ -51,7 +43,7 @@ public class ObjRing<T> extends Ring {
 	 * @param value the value
 	 * @return true, if successful
 	 */
-	public boolean enqueue(T value) {
+	public boolean enqueue(int value) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -61,8 +53,7 @@ public class ObjRing<T> extends Ring {
 	 * @param values the values
 	 * @return true, if successful
 	 */
-	@SuppressWarnings("unchecked")
-	public boolean bulkEnqueue(T... values) {
+	public boolean bulkEnqueue(int... values) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -72,8 +63,39 @@ public class ObjRing<T> extends Ring {
 	 * @param values the values
 	 * @return the int
 	 */
-	@SuppressWarnings("unchecked")
-	public int burstEnqueue(T... values) {
+	public int burstEnqueue(int... values) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Dequeue.
+	 *
+	 * @param dstOfSizeOne the dst of size one
+	 * @return true, if successful
+	 */
+	public boolean dequeue(int[] dstOfSizeOne) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Bulk dequeue.
+	 *
+	 * @param count the count
+	 * @param dst   the dst
+	 * @return true, if successful
+	 */
+	public boolean bulkDequeue(int count, int[] dst) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Burst dequeue.
+	 *
+	 * @param count the count
+	 * @param dst   the dst
+	 * @return the int
+	 */
+	public int burstDequeue(int count, int[] dst) {
 		throw new UnsupportedOperationException();
 	}
 }

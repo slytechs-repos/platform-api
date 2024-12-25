@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.concurrent;
+package com.slytechs.jnet.platform.api.util.concurrent;
 
 import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
@@ -108,7 +108,7 @@ public class RingExecutor<T> {
 		 *
 		 * @return the t
 		 * @throws InterruptedException the interrupted exception
-		 * @see com.slytechs.jnet.platform.api.internal.concurrent.RingExecutor.ResourceStatus#await()
+		 * @see com.slytechs.jnet.platform.api.util.concurrent.RingExecutor.ResourceStatus#await()
 		 */
 		@Override
 		public T await() throws InterruptedException {
@@ -122,7 +122,7 @@ public class RingExecutor<T> {
 		 * @param unit    the unit
 		 * @return the t
 		 * @throws InterruptedException the interrupted exception
-		 * @see com.slytechs.jnet.platform.api.internal.concurrent.RingExecutor.ResourceStatus#await(long,
+		 * @see com.slytechs.jnet.platform.api.util.concurrent.RingExecutor.ResourceStatus#await(long,
 		 *      java.util.concurrent.TimeUnit)
 		 */
 		@Override

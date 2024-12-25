@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.concurrent;
+package com.slytechs.jnet.platform.api.util.concurrent;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -62,7 +62,7 @@ public class Ring {
 		 *
 		 * @param count the count
 		 * @return true, if successful
-		 * @see com.slytechs.jnet.platform.api.internal.concurrent.Ring.Guardian#bulk()
+		 * @see com.slytechs.jnet.platform.api.util.concurrent.Ring.Guardian#bulk()
 		 */
 		@Override
 		public synchronized boolean bulk(int count) {
@@ -79,7 +79,7 @@ public class Ring {
 		 *
 		 * @param count the count
 		 * @return the int
-		 * @see com.slytechs.jnet.platform.api.internal.concurrent.Ring.Guardian#burst(int)
+		 * @see com.slytechs.jnet.platform.api.util.concurrent.Ring.Guardian#burst(int)
 		 */
 		@Override
 		public synchronized int burst(int count) {
