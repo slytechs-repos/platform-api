@@ -32,9 +32,9 @@ import com.slytechs.jnet.platform.api.data.common.processor.ProcessorMapper;
 import com.slytechs.jnet.platform.api.data.handler.ProcessingError;
 import com.slytechs.jnet.platform.api.data.handler.ProcessorErrorSupport;
 import com.slytechs.jnet.platform.api.data.pipeline.ErrorPolicy;
-import com.slytechs.jnet.platform.api.function.GuardedCode;
 import com.slytechs.jnet.platform.api.util.DoublyLinkedElement;
 import com.slytechs.jnet.platform.api.util.Enableable.FluentEnableable;
+import com.slytechs.jnet.platform.api.util.function.GuardedCode;
 import com.slytechs.jnet.platform.api.util.Prioritizable;
 import com.slytechs.jnet.platform.api.util.Registration;
 

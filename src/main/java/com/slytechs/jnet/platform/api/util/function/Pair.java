@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
  * Represents a pair of values, with one value of type {@code T1} and the other

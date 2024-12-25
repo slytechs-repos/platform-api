@@ -43,10 +43,8 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.memory.foreign;
 	exports com.slytechs.jnet.platform.api.memory.foreign.struct;
 	
-	exports com.slytechs.jnet.platform.api.internal;
 	exports com.slytechs.jnet.platform.api.memory.layout;
 	exports com.slytechs.jnet.platform.api.util.concurrent;
-	exports com.slytechs.jnet.platform.api.internal.util;
 	exports com.slytechs.jnet.platform.api.util.format;
 	exports com.slytechs.jnet.platform.api.util.function;
 	exports com.slytechs.jnet.platform.api.util.collection;
