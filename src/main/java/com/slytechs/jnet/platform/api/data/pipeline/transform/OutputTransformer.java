@@ -1,0 +1,85 @@
+/*
+ * Sly Technologies Free License
+ * 
+ * Copyright 2024 Sly Technologies Inc.
+ *
+ * Licensed under the Sly Technologies Free License (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.slytechs.com/free-license-text
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.slytechs.jnet.platform.api.data.pipeline.transform;
+
+import java.util.function.Supplier;
+
+import com.slytechs.jnet.platform.api.data.DataType;
+import com.slytechs.jnet.platform.api.data.pipeline.Transformer;
+import com.slytechs.jnet.platform.api.data.pipeline.transform.impl.OutputTransformerBase;
+import com.slytechs.jnet.platform.api.util.Enableable;
+import com.slytechs.jnet.platform.api.util.Named;
+import com.slytechs.jnet.platform.api.util.Prioritizable;
+import com.slytechs.jnet.platform.api.util.Registration.AutoRegistration;
+
+/**
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
+ */
+public abstract class OutputTransformer<IN, OUT>
+		extends OutputTransformerBase<IN, OUT>
+		implements Transformer<IN, OUT>,
+		Prioritizable.LowToHigh,
+		Enableable,
+		Named {
+
+	public interface OutputMapper<IN, OUT> {
+
+		interface SimpleOutputMapper<IN, OUT> extends OutputMapper<IN, OUT> {
+			IN createMappedOutput(Supplier<OUT> sink);
+
+			@Override
+			default IN createMappedOutput(Supplier<OUT> sink, OutputTransformer<IN, OUT> output) {
+				return createMappedOutput(sink);
+			}
+
+		}
+
+		IN createMappedOutput(Supplier<OUT> sink, OutputTransformer<IN, OUT> output);
+	}
+
+	public OutputTransformer(int priority, Object id, DataType<OUT> dataType) {
+		super(priority, id, dataType);
+	}
+
+	public OutputTransformer(int priority, Object id, DataType<OUT> dataType, OutputMapper<IN, OUT> mapper) {
+		super(priority, id, dataType, mapper);
+	}
+
+	public AutoRegistration connect(OUT out) {
+		output = out;
+
+		return disconnectRegistration;
+	}
+
+	/** Preallocated AutoCloseable registration that calls on disconnect */
+	private final AutoRegistration disconnectRegistration = this::disconnect;
+
+	public void disconnect() {
+		output = null;
+	}
+
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return name();
+	}
+
+}

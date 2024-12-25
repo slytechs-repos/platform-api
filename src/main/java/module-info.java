@@ -29,7 +29,13 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.util.config;
 	exports com.slytechs.jnet.platform.api.util.settings;
 	exports com.slytechs.jnet.platform.api.function;
-	exports com.slytechs.jnet.platform.api.pipeline;
+	exports com.slytechs.jnet.platform.api.data;
+	exports com.slytechs.jnet.platform.api.data.event;
+	exports com.slytechs.jnet.platform.api.data.handler;
+	exports com.slytechs.jnet.platform.api.data.common.processor;
+	exports com.slytechs.jnet.platform.api.data.pipeline;
+	exports com.slytechs.jnet.platform.api.data.pipeline.transform;
+	exports com.slytechs.jnet.platform.api.data.pipeline.processor;
 	exports com.slytechs.jnet.platform.api.vm;
 
 	/* Private API */

@@ -65,6 +65,28 @@ import java.util.Comparator;
  */
 public interface Prioritizable {
 
+	interface LowToHigh extends Prioritizable, Comparable<Prioritizable> {
+		/**
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		@Override
+		default int compareTo(Prioritizable o) {
+			return Prioritizable.compareLowToHigh(this, o);
+		}
+
+	}
+
+	interface HighToLow extends Prioritizable, Comparable<Prioritizable> {
+		/**
+		 * @see java.lang.Comparable#compareTo(java.lang.Object)
+		 */
+		@Override
+		default int compareTo(Prioritizable o) {
+			return Prioritizable.compareHighToLow(this, o);
+		}
+
+	}
+
 	/**
 	 * The default priority value (0). This is the highest priority level.
 	 */
@@ -102,9 +124,13 @@ public interface Prioritizable {
 	 *                                  {@link #MAX_PRIORITY_VALUE}
 	 * @see #isValidPriority(int)
 	 */
-	static void checkPriorityValue(int value) throws IllegalArgumentException {
+	static int checkPriorityValue(int value) throws IllegalArgumentException {
 		if (value < MIN_PRIORITY_VALUE || value > MAX_PRIORITY_VALUE)
-			throw new IllegalArgumentException("Priority value out of range [%d]".formatted(value));
+			throw new IllegalArgumentException(
+					"Priority value out of range [%d], allowed values are [%d, %,d] inclusive"
+							.formatted(value, MIN_PRIORITY_VALUE, MAX_PRIORITY_VALUE));
+
+		return value;
 	}
 
 	/**
@@ -118,7 +144,10 @@ public interface Prioritizable {
 	 * @see #HIGH_LOW_COMPARATOR
 	 */
 	static int compareHighToLow(Prioritizable a, Prioritizable b) {
-		return a.priority() - b.priority();
+		if (a.priority() == b.priority())
+			return 0;
+
+		return a.priority() < b.priority() ? 1 : -1;
 	}
 
 	/**
@@ -132,7 +161,10 @@ public interface Prioritizable {
 	 * @see #LOW_HIGH_COMPARATOR
 	 */
 	static int compareLowToHigh(Prioritizable a, Prioritizable b) {
-		return b.priority() - a.priority();
+		if (a.priority() == b.priority())
+			return 0;
+
+		return a.priority() < b.priority() ? -1 : 1;
 	}
 
 	/**
