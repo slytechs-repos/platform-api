@@ -29,7 +29,7 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.util.hash;
 	exports com.slytechs.jnet.platform.api.util;
 	exports com.slytechs.jnet.platform.api.util.config;
-	exports com.slytechs.jnet.platform.api.function;
+	exports com.slytechs.jnet.platform.api.util.array;
 	exports com.slytechs.jnet.platform.api.data;
 	exports com.slytechs.jnet.platform.api.data.event;
 	exports com.slytechs.jnet.platform.api.data.handler;
@@ -42,13 +42,15 @@ module com.slytechs.jnet.platform.api {
 	/* Private API */
 	exports com.slytechs.jnet.platform.api.memory.foreign;
 	exports com.slytechs.jnet.platform.api.memory.foreign.struct;
-	
+
 	exports com.slytechs.jnet.platform.api.memory.layout;
 	exports com.slytechs.jnet.platform.api.util.concurrent;
 	exports com.slytechs.jnet.platform.api.util.format;
 	exports com.slytechs.jnet.platform.api.util.function;
 	exports com.slytechs.jnet.platform.api.util.collection;
 	exports com.slytechs.jnet.platform.api.util.json;
+	exports com.slytechs.jnet.platform.api.common.impl
+			to com.slytechs.jnet.protocol.api; // For Benchmark class
 
 	requires java.logging;
 
