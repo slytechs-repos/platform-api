@@ -20,9 +20,9 @@ package com.slytechs.jnet.platform.api.memory.layout;
 import java.nio.ByteOrder;
 import java.util.Objects;
 
-import com.slytechs.jnet.platform.api.internal.util.collection.ArrayListLong;
-import com.slytechs.jnet.platform.api.internal.util.collection.ListLong;
 import com.slytechs.jnet.platform.api.util.Bits;
+import com.slytechs.jnet.platform.api.util.collection.ArrayListLong;
+import com.slytechs.jnet.platform.api.util.collection.ListLong;
 
 /**
  * The Class FieldCarrierContext.

@@ -49,7 +49,7 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.internal.util;
 	exports com.slytechs.jnet.platform.api.internal.util.format;
 	exports com.slytechs.jnet.platform.api.internal.util.function;
-	exports com.slytechs.jnet.platform.api.internal.util.collection;
+	exports com.slytechs.jnet.platform.api.util.collection;
 	exports com.slytechs.jnet.platform.api.internal.json;
 
 	requires java.logging;

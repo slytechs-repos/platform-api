@@ -15,14 +15,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.collection;
+package com.slytechs.jnet.platform.api.util.collection;
 
 /**
- * The Interface IntSet.
+ * The Interface DoubleSet.
  *
  * @author Mark Bednarczyk
  */
 // @formatter:off
-public interface IntSet extends IntCollection {
+public interface DoubleSet extends DoubleCollection {
 }
 // @formatter:on

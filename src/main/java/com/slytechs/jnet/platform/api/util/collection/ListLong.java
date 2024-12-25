@@ -15,83 +15,83 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.collection;
+package com.slytechs.jnet.platform.api.util.collection;
+
+import java.util.List;
 
 /**
- * The Interface IntList.
+ * The Interface ListLong.
  *
  * @author Mark Bednarczyk
  */
 // @formatter:off
-public interface IntList extends IntCollection {
+public interface ListLong extends LongCollection, List<Long>, Cloneable {
 	
 	/**
-	 * Adds the int.
+	 * Adds the long.
 	 *
 	 * @param index the index
 	 * @param e     the e
 	 */
-	void addInt(int index, int e);
+	void     addLong(int index, long e);
 	
 	/**
-	 * Adds the all ints.
+	 * Adds the all longs.
 	 *
 	 * @param index the index
 	 * @param c     the c
 	 * @return true, if successful
 	 */
-	boolean addAllInts(int index, IntCollection c);
+	boolean  addAllLongs(int index, LongCollection c);
 	
 	/**
-	 * Index of int.
+	 * Index of long.
 	 *
 	 * @param e the e
 	 * @return the int
 	 */
-	int indexOfInt(int e);
+	int      indexOfLong(long e);
 	
 	/**
-	 * Last index of int.
+	 * Last index of long.
 	 *
 	 * @param e the e
 	 * @return the int
 	 */
-	int lastIndexOfInt(int e);
-	
-	/**
-	 * Removes the int.
-	 *
-	 * @param index the index
-	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#removeInt(int)
-	 */
-	@Override
-	boolean removeInt(int index);
-	
-	/**
-	 * Gets the int.
-	 *
-	 * @param index the index
-	 * @return the int
-	 */
-	int getInt(int index);
+	int      lastIndexOfLong(long e);
 	
 	/**
 	 * Sets the.
 	 *
 	 * @param index the index
 	 * @param e     the e
-	 * @return the int
+	 * @return the long
 	 */
-	int set(int index, int e);
+	long     set(int index, long e);
 	
 	/**
 	 * Sub list.
 	 *
 	 * @param fromIndex the from index
 	 * @param toIndex   the to index
-	 * @return the int list
+	 * @return the list long
+	 * @see java.util.List#subList(int, int)
 	 */
-	IntList subList(int fromIndex, int toIndex);
+	ListLong subList(int fromIndex, int toIndex);
+	
+	/**
+	 * Removes the long.
+	 *
+	 * @param index the index
+	 * @return the long
+	 */
+	long     removeLong(int index);
+	
+	/**
+	 * Clone.
+	 *
+	 * @return the list long
+	 */
+	ListLong clone();
 }
 // @formatter:on

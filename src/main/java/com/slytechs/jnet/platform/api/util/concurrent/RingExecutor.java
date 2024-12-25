@@ -21,7 +21,7 @@ import java.util.concurrent.Exchanger;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.slytechs.jnet.platform.api.internal.util.collection.LinkedListSupport;
+import com.slytechs.jnet.platform.api.util.collection.LinkedListSupport;
 
 /**
  * A ring executor with multiple slots, where a 'resource' is passed around the

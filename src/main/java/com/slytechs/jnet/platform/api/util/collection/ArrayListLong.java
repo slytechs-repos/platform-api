@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.collection;
+package com.slytechs.jnet.platform.api.util.collection;
 
 import java.util.AbstractList;
 import java.util.Collection;
@@ -149,7 +149,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param e the e
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#addLong(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#addLong(int)
 	 */
 	@Override
 	public boolean addLong(long e) {
@@ -166,7 +166,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#addAllLongs(com.slytechs.jnet.platform.api.internal.util.collection.LongCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#addAllLongs(com.slytechs.jnet.platform.api.util.collection.LongCollection)
 	 */
 	@Override
 	public boolean addAllLongs(LongCollection c) {
@@ -190,7 +190,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param e the e
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#containsLong(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#containsLong(int)
 	 */
 	@Override
 	public boolean containsLong(long e) {
@@ -206,7 +206,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#containsAllLongs(com.slytechs.jnet.platform.api.internal.util.collection.LongCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#containsAllLongs(com.slytechs.jnet.platform.api.util.collection.LongCollection)
 	 */
 	@Override
 	public boolean containsAllLongs(LongCollection c) {
@@ -227,7 +227,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#removeAllLongs(com.slytechs.jnet.platform.api.internal.util.collection.LongCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#removeAllLongs(com.slytechs.jnet.platform.api.util.collection.LongCollection)
 	 */
 	@Override
 	public boolean removeAllLongs(LongCollection c) {
@@ -239,7 +239,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param filter the filter
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#removeLongIf(java.util.function.LongPredicate)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#removeLongIf(java.util.function.LongPredicate)
 	 */
 	@Override
 	public boolean removeLongIf(LongPredicate filter) {
@@ -251,7 +251,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#retainAllLongs(com.slytechs.jnet.platform.api.internal.util.collection.LongCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#retainAllLongs(com.slytechs.jnet.platform.api.util.collection.LongCollection)
 	 */
 	@Override
 	public boolean retainAllLongs(LongCollection c) {
@@ -262,7 +262,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 * To long array.
 	 *
 	 * @return the long[]
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#toLongArray()
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#toLongArray()
 	 */
 	@Override
 	public long[] toLongArray() {
@@ -274,7 +274,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param array the array
 	 * @return the long[]
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#toLongArray(int[])
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#toLongArray(int[])
 	 */
 	@Override
 	public long[] toLongArray(long[] array) {
@@ -288,7 +288,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param generator the generator
 	 * @return the long[]
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#toLongArray(java.util.function.LongFunction)
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#toLongArray(java.util.function.LongFunction)
 	 */
 	@Override
 	public long[] toLongArray(IntFunction<long[]> generator) {
@@ -299,7 +299,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 * Iterator.
 	 *
 	 * @return the of long
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#iterator()
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#iterator()
 	 */
 	@Override
 	public OfLong iterator() {
@@ -329,7 +329,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 * Long stream.
 	 *
 	 * @return the long stream
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.LongCollection#intStream()
+	 * @see com.slytechs.jnet.platform.api.util.collection.LongCollection#intStream()
 	 */
 	@Override
 	public LongStream longStream() {
@@ -354,7 +354,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param index the index
 	 * @param e     the e
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.ListLong#addLong(int, int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.ListLong#addLong(int, int)
 	 */
 	@Override
 	public void addLong(int index, long e) {
@@ -396,8 +396,8 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 * @param index the index
 	 * @param c     the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.ListLong#addAllLongs(int,
-	 *      com.slytechs.jnet.platform.api.internal.util.collection.LongCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.ListLong#addAllLongs(int,
+	 *      com.slytechs.jnet.platform.api.util.collection.LongCollection)
 	 */
 	@Override
 	public boolean addAllLongs(int index, LongCollection c) {
@@ -424,7 +424,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param e the e
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.ListLong#indexOfLong(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.ListLong#indexOfLong(int)
 	 */
 	@Override
 	public int indexOfLong(long e) {
@@ -440,7 +440,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param e the e
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.ListLong#lastIndexOfLong(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.ListLong#lastIndexOfLong(int)
 	 */
 	@Override
 	public int lastIndexOfLong(long e) {
@@ -456,7 +456,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 *
 	 * @param index the index
 	 * @return the long
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.ListLong#removeLong(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.ListLong#removeLong(int)
 	 */
 	@Override
 	public long removeLong(int index) {
@@ -477,7 +477,7 @@ public class ArrayListLong extends AbstractList<Long> implements ListLong {
 	 * @param index the index
 	 * @param e     the e
 	 * @return the long
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.ListLong#set(int, int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.ListLong#set(int, int)
 	 */
 	@Override
 	public long set(int index, long e) {

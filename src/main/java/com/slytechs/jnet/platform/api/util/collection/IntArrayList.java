@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.collection;
+package com.slytechs.jnet.platform.api.util.collection;
 
 import java.util.AbstractList;
 import java.util.Collection;
@@ -148,7 +148,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param e the e
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#addInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#addInt(int)
 	 */
 	@Override
 	public boolean addInt(int e) {
@@ -166,7 +166,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#addAllInts(com.slytechs.jnet.platform.api.internal.util.collection.IntCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#addAllInts(com.slytechs.jnet.platform.api.util.collection.IntCollection)
 	 */
 	@Override
 	public boolean addAllInts(IntCollection c) {
@@ -190,7 +190,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param e the e
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#containsInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#containsInt(int)
 	 */
 	@Override
 	public boolean containsInt(int e) {
@@ -206,7 +206,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#containsAllInts(com.slytechs.jnet.platform.api.internal.util.collection.IntCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#containsAllInts(com.slytechs.jnet.platform.api.util.collection.IntCollection)
 	 */
 	@Override
 	public boolean containsAllInts(IntCollection c) {
@@ -227,7 +227,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#removeAllInts(com.slytechs.jnet.platform.api.internal.util.collection.IntCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#removeAllInts(com.slytechs.jnet.platform.api.util.collection.IntCollection)
 	 */
 	@Override
 	public boolean removeAllInts(IntCollection c) {
@@ -239,7 +239,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param filter the filter
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#removeIntIf(java.util.function.IntPredicate)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#removeIntIf(java.util.function.IntPredicate)
 	 */
 	@Override
 	public boolean removeIntIf(IntPredicate filter) {
@@ -251,7 +251,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param c the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#retainAllInts(com.slytechs.jnet.platform.api.internal.util.collection.IntCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#retainAllInts(com.slytechs.jnet.platform.api.util.collection.IntCollection)
 	 */
 	@Override
 	public boolean retainAllInts(IntCollection c) {
@@ -262,7 +262,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 * To int array.
 	 *
 	 * @return the int[]
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#toIntArray()
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#toIntArray()
 	 */
 	@Override
 	public int[] toIntArray() {
@@ -274,7 +274,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param array the array
 	 * @return the int[]
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#toIntArray(int[])
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#toIntArray(int[])
 	 */
 	@Override
 	public int[] toIntArray(int[] array) {
@@ -288,7 +288,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param generator the generator
 	 * @return the int[]
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#toIntArray(java.util.function.IntFunction)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#toIntArray(java.util.function.IntFunction)
 	 */
 	@Override
 	public int[] toIntArray(IntFunction<int[]> generator) {
@@ -299,7 +299,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 * Iterator.
 	 *
 	 * @return the of int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#iterator()
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#iterator()
 	 */
 	@Override
 	public OfInt iterator() {
@@ -329,7 +329,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 * Int stream.
 	 *
 	 * @return the int stream
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#intStream()
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#intStream()
 	 */
 	@Override
 	public IntStream intStream() {
@@ -340,7 +340,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 * Spliterator.
 	 *
 	 * @return the java.util. spliterator. of int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntCollection#spliterator()
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntCollection#spliterator()
 	 */
 	@Override
 	public java.util.Spliterator.OfInt spliterator() {
@@ -365,7 +365,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param index the index
 	 * @param e     the e
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#addInt(int,
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#addInt(int,
 	 *      int)
 	 */
 	@Override
@@ -381,8 +381,8 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 * @param index the index
 	 * @param c     the c
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#addAllInts(int,
-	 *      com.slytechs.jnet.platform.api.internal.util.collection.IntCollection)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#addAllInts(int,
+	 *      com.slytechs.jnet.platform.api.util.collection.IntCollection)
 	 */
 	@Override
 	public boolean addAllInts(int index, IntCollection c) {
@@ -396,7 +396,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param e the e
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#indexOfInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#indexOfInt(int)
 	 */
 	@Override
 	public int indexOfInt(int e) {
@@ -412,7 +412,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param e the e
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#lastIndexOfInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#lastIndexOfInt(int)
 	 */
 	@Override
 	public int lastIndexOfInt(int e) {
@@ -428,7 +428,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param index the index
 	 * @return true, if successful
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#removeInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#removeInt(int)
 	 */
 	@Override
 	public boolean removeInt(int index) {
@@ -448,7 +448,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 * @param index the index
 	 * @param e     the e
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#set(int,
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#set(int,
 	 *      int)
 	 */
 	@Override
@@ -477,7 +477,7 @@ public class IntArrayList extends AbstractList<Integer> implements IntList {
 	 *
 	 * @param index the index
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.util.collection.IntList#getInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.collection.IntList#getInt(int)
 	 */
 	@Override
 	public int getInt(int index) {

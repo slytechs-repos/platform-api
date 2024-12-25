@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.collection;
+package com.slytechs.jnet.platform.api.util.collection;
 
 import java.util.Collection;
 import java.util.PrimitiveIterator;
@@ -25,121 +25,121 @@ import java.util.function.IntPredicate;
 import java.util.stream.IntStream;
 
 /**
- * The Interface IntCollection.
+ * The Interface DoubleCollection.
  *
  * @author Mark Bednarczyk
  */
 // @formatter:off
-public interface IntCollection extends Collection<Integer> {
+public interface DoubleCollection extends Collection<Double> {
 	
 	/**
-	 * Adds the int.
+	 * Adds the double.
 	 *
 	 * @param e the e
 	 * @return true, if successful
 	 */
-	boolean addInt(int e);
+	boolean addDouble(double e);
 	
 	/**
-	 * Adds the all ints.
+	 * Adds the all doubles.
 	 *
 	 * @param c the c
 	 * @return true, if successful
 	 */
-	boolean addAllInts(IntCollection c);
+	boolean addAllDoubles(DoubleCollection c);
 	
 	/**
-	 * Contains int.
+	 * Contains double.
 	 *
 	 * @param e the e
 	 * @return true, if successful
 	 */
-	boolean containsInt(int e);
+	boolean containsDouble(double e);
 	
 	/**
-	 * Contains all ints.
+	 * Contains all doubles.
 	 *
 	 * @param c the c
 	 * @return true, if successful
 	 */
-	boolean containsAllInts(IntCollection c);
+	boolean containsAllDoubles(DoubleCollection c);
 	
 	/**
-	 * Removes the int.
+	 * Removes the double.
 	 *
 	 * @param e the e
 	 * @return true, if successful
 	 */
-	boolean removeInt(int e);
+	boolean removeDouble(double e);
 	
 	/**
-	 * Removes the all ints.
+	 * Removes the all doubles.
 	 *
 	 * @param c the c
 	 * @return true, if successful
 	 */
-	boolean removeAllInts(IntCollection c);
+	boolean removeAllDoubles(DoubleCollection c);
 	
 	/**
-	 * Removes the int if.
+	 * Removes the double if.
 	 *
 	 * @param filter the filter
 	 * @return true, if successful
 	 */
-	boolean removeIntIf(IntPredicate filter);
+	boolean removeDoubleIf(IntPredicate filter);
 	
 	/**
-	 * Retain all ints.
+	 * Retain all doubles.
 	 *
 	 * @param c the c
 	 * @return true, if successful
 	 */
-	boolean retainAllInts(IntCollection c);
+	boolean retainAllDoubles(DoubleCollection c);
 	
 	/**
-	 * To int array.
+	 * To double array.
 	 *
-	 * @return the int[]
+	 * @return the double[]
 	 */
-	int[] toIntArray();
+	double[] toDoubleArray();
 	
 	/**
-	 * To int array.
+	 * To double array.
 	 *
 	 * @param array the array
-	 * @return the int[]
+	 * @return the double[]
 	 */
-	int[] toIntArray(int[] array);
+	double[] toDoubleArray(double[] array);
 	
 	/**
-	 * To int array.
+	 * To double array.
 	 *
 	 * @param generator the generator
-	 * @return the int[]
+	 * @return the double[]
 	 */
-	int[] toIntArray(IntFunction<int[]> generator);
+	double[] toDoubleArray(IntFunction<double[]> generator);
 	
 	/**
 	 * Iterator.
 	 *
-	 * @return the primitive iterator. of int
+	 * @return the primitive iterator. of double
 	 * @see java.util.Collection#iterator()
 	 */
-	PrimitiveIterator.OfInt iterator();
+	PrimitiveIterator.OfDouble iterator();
 	
 	/**
-	 * Int stream.
+	 * Double stream.
 	 *
 	 * @return the int stream
 	 */
-	IntStream intStream();
+	IntStream doubleStream();
 	
 	/**
 	 * Spliterator.
 	 *
-	 * @return the spliterator. of int
+	 * @return the spliterator. of double
 	 * @see java.util.Collection#spliterator()
 	 */
-	Spliterator.OfInt spliterator();
+	Spliterator.OfDouble spliterator();
 }
 // @formatter:on

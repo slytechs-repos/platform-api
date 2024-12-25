@@ -5,4 +5,4 @@
  * 
  * @author Sly Technologies
  */
-package com.slytechs.jnet.platform.api.internal.util.collection;
+package com.slytechs.jnet.platform.api.util.collection;
