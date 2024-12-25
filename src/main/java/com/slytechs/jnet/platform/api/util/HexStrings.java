@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArraySlice;
+import com.slytechs.jnet.platform.api.util.array.ByteArraySlice;
 
 /**
  * Utilities for various byte array to hex string conversions and parsing.

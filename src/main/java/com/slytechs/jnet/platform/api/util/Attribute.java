@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util;
+package com.slytechs.jnet.platform.api.util;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
@@ -47,7 +47,7 @@ public interface Attribute  {
 		 * Family.
 		 *
 		 * @return the int
-		 * @see com.slytechs.jnet.platform.api.internal.util.Attribute#family()
+		 * @see com.slytechs.jnet.platform.api.util.Attribute#family()
 		 */
 		@Override
 		public int family() {

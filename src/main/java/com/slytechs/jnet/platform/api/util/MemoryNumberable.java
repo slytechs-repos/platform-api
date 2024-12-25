@@ -15,13 +15,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util;
+package com.slytechs.jnet.platform.api.util;
 
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.VarHandle;
-
-import com.slytechs.jnet.platform.api.util.Numberable;
 
 /**
  * @author Mark Bednarczyk

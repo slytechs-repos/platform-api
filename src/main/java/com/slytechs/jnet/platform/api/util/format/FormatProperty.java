@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArraySlice;
+import com.slytechs.jnet.platform.api.util.array.ByteArraySlice;
 
 /**
  * The Interface FormatProperty.

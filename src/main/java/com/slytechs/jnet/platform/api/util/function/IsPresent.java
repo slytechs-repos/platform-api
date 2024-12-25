@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
  * Interface provides a common way to determine access to optional values.

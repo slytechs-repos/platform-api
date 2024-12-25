@@ -21,7 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
-import com.slytechs.jnet.platform.api.internal.ArrayUtils;
+import com.slytechs.jnet.platform.api.util.array.ArrayUtils;
 
 /**
  * Utility class and a collection of different kinds of checksum generation

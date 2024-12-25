@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.platform.api.memory.layout;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArray;
+import com.slytechs.jnet.platform.api.util.array.ByteArray;
 
 /**
  * The Interface ArrayCarrier.

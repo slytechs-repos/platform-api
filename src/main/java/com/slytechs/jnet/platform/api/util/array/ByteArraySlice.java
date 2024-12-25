@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util;
+package com.slytechs.jnet.platform.api.util.array;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

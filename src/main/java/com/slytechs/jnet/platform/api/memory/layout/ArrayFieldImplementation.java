@@ -17,7 +17,7 @@
  */
 package com.slytechs.jnet.platform.api.memory.layout;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArray;
+import com.slytechs.jnet.platform.api.util.array.ByteArray;
 
 /**
  * The Class ArrayFieldImplementation.
@@ -425,7 +425,7 @@ class ArrayFieldImplementation implements ArrayField {
 	 * @param data      the data
 	 * @param sequences the sequences
 	 * @return the byte array
-	 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#wrap(org.jnet.buffer.ByteArray,
+	 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#wrap(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 	 *      long[])
 	 */
 	@Override

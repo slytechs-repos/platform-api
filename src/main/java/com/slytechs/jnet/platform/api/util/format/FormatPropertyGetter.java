@@ -19,7 +19,7 @@ package com.slytechs.jnet.platform.api.util.format;
 
 import java.util.Optional;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArraySlice;
+import com.slytechs.jnet.platform.api.util.array.ByteArraySlice;
 
 /**
  * The Interface FormatPropertyGetter.

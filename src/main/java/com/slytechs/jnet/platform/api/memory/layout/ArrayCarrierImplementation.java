@@ -21,7 +21,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArray;
+import com.slytechs.jnet.platform.api.util.array.ByteArray;
 
 /**
  * The Class ArrayCarrierImplementation.
@@ -360,7 +360,7 @@ class ArrayCarrierImplementation implements ArrayCarrier {
 	 * @param byteOffset the byte offset
 	 * @param byteSize   the byte size
 	 * @return the byte array
-	 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayCarrier#wrapAtOffset(org.jnet.buffer.ByteArray,
+	 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayCarrier#wrapAtOffset(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 	 *      long, long)
 	 */
 	@Override

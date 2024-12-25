@@ -20,7 +20,7 @@ package com.slytechs.jnet.platform.api.memory.layout;
 import java.util.Optional;
 import java.util.OptionalLong;
 
-import com.slytechs.jnet.platform.api.internal.util.ByteArray;
+import com.slytechs.jnet.platform.api.util.array.ByteArray;
 
 /**
  * The Interface ArrayField.
@@ -189,7 +189,7 @@ public interface ArrayField extends BinaryField {
 		 * @param array the array
 		 * @param data  the data
 		 * @return the byte array
-		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#getByteArray(org.jnet.buffer.ByteArray,
+		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#getByteArray(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 		 *      java.lang.Object)
 		 */
 		@Override
@@ -204,7 +204,7 @@ public interface ArrayField extends BinaryField {
 		 * @param data      the data
 		 * @param sequences the sequences
 		 * @return the byte array
-		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#getByteArray(org.jnet.buffer.ByteArray,
+		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#getByteArray(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 		 *      java.lang.Object, long[])
 		 */
 		@Override
@@ -588,7 +588,7 @@ public interface ArrayField extends BinaryField {
 		 * @param array the array
 		 * @param data  the data
 		 * @return the byte array
-		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#setByteArray(org.jnet.buffer.ByteArray,
+		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#setByteArray(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 		 *      java.lang.Object)
 		 */
 		@Override
@@ -603,7 +603,7 @@ public interface ArrayField extends BinaryField {
 		 * @param data      the data
 		 * @param sequences the sequences
 		 * @return the byte array
-		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#setByteArray(org.jnet.buffer.ByteArray,
+		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#setByteArray(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 		 *      java.lang.Object, long[])
 		 */
 		@Override
@@ -865,7 +865,7 @@ public interface ArrayField extends BinaryField {
 		 * @param data      the data
 		 * @param sequences the sequences
 		 * @return the byte array
-		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#wrap(org.jnet.buffer.ByteArray,
+		 * @see com.slytechs.jnet.platform.api.memory.layout.ArrayField#wrap(com.slytechs.jnet.platform.api.util.array.jnet.buffer.ByteArray,
 		 *      long[])
 		 */
 		@Override

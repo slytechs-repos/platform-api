@@ -22,8 +22,8 @@ import java.lang.foreign.ValueLayout;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import com.slytechs.jnet.platform.api.internal.ArrayUtils;
-import com.slytechs.jnet.platform.api.internal.util.ByteArray;
+import com.slytechs.jnet.platform.api.util.array.ArrayUtils;
+import com.slytechs.jnet.platform.api.util.array.ByteArray;
 
 /**
  * The Class BitCarrierImplementation.
