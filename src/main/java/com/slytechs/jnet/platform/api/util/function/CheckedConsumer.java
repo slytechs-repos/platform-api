@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
  * The Interface CheckedConsumer.
@@ -23,17 +23,27 @@ package com.slytechs.jnet.platform.api.internal.util.function;
  * @param <T> the generic type
  * @author Mark Bednarczyk
  */
-public interface ThrowableConsumer<T> {
+public interface CheckedConsumer<T, E extends Throwable> {
 
-	static <T> ThrowableConsumer<T> of(ThrowableConsumer<T> before) {
-		return t -> before.acceptOrThrow(t);
+	static <T, E extends Throwable> CheckedConsumer<T, E> of(CheckedConsumer<T, E> before) {
+		return before;
 	}
 
-	static <T> CheckedConsumer<T, ?> ofChecked(CheckedConsumer<T, ?> before) {
-		return t -> before.acceptOrThrow(t);
+	static <T, E extends Exception> CheckedConsumer<T, E> ofThrowable(ThrowableConsumer<T> before,
+			Class<E> checkedClass) {
+		return t -> {
+			try {
+				before.acceptOrThrow(t);
+			} catch (RuntimeException e) {
+				throw e;
+
+			} catch (Exception e) {
+				throw CheckedUtils.castAsCheckedOrThrowRuntime(e, checkedClass);
+			}
+		};
 	}
 
-	static <T> ThrowableConsumer<T> ofUnchecked(UncheckedConsumer<T> before) {
+	static <T, E extends Throwable> CheckedConsumer<T, E> ofUnchecked(UncheckedConsumer<T> before) {
 		return t -> before.accept(t);
 	}
 
@@ -48,27 +58,26 @@ public interface ThrowableConsumer<T> {
 	default UncheckedConsumer<T> asUnchecked() {
 		return t -> {
 			try {
-				ThrowableConsumer.this.acceptOrThrow(t);
+				CheckedConsumer.this.acceptOrThrow(t);
 
 			} catch (RuntimeException e) {
 				throw e;
 
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
 		};
 	}
 
-	default <E extends Throwable> CheckedConsumer<T, E> asChecked(Class<E> checkedClass) {
+	default ThrowableConsumer<T> asThrowable() {
 		return t -> {
 			try {
-				ThrowableConsumer.this.acceptOrThrow(t);
-
+				CheckedConsumer.this.acceptOrThrow(t);
 			} catch (RuntimeException e) {
-				throw CheckedUtils.unwrapCheckedOrThrowRuntime(e, checkedClass);
+				throw CheckedUtils.unwrapExceptionOrThrowRuntime(e);
 
-			} catch (Exception e) {
-				throw CheckedUtils.castAsCheckedOrThrowRuntime(e, checkedClass);
+			} catch (Throwable e) {
+				throw (Exception) e;
 			}
 		};
 	}
@@ -79,5 +88,5 @@ public interface ThrowableConsumer<T> {
 	 * @param t the t
 	 * @throws Exception the exception
 	 */
-	void acceptOrThrow(T t) throws Exception;
+	void acceptOrThrow(T t) throws E;
 }

@@ -1,4 +1,4 @@
-package com.slytechs.jnet.platform.api.internal.util.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;

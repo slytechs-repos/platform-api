@@ -23,8 +23,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.slytechs.jnet.platform.api.data.DataLiteral;
 import com.slytechs.jnet.platform.api.data.DataType;
 import com.slytechs.jnet.platform.api.data.pipeline.Transformer;
-import com.slytechs.jnet.platform.api.internal.util.function.FunctionalProxies;
 import com.slytechs.jnet.platform.api.util.Named;
+import com.slytechs.jnet.platform.api.util.function.FunctionalProxies;
 
 /**
  * @param <IN>

@@ -15,30 +15,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
- * The Class Try.
+ * The Interface ShortConsumer.
  *
- * @param <R> the generic type
- * @author Mark Bednarczyk
+ * @author Sly Technologies
  */
-public class Try<R> {
-	
-	/** The failure. */
-	private final Exception failure;
-	
-	/** The succes. */
-	private final R succes;
+public interface ShortConsumer {
 
 	/**
-	 * Instantiates a new try.
+	 * Accept.
 	 *
-	 * @param failure the failure
-	 * @param succes  the succes
+	 * @param value the value
 	 */
-	public Try(Exception failure, R succes) {
-		this.failure = failure;
-		this.succes = succes;
+	void accept(short value);
+
+	/**
+	 * And then.
+	 *
+	 * @param after the after
+	 * @return the short consumer
+	 */
+	default ShortConsumer andThen(ShortConsumer after) {
+		return b -> {
+			accept(b);
+			after.accept(b);
+		};
 	}
 }

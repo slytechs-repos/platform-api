@@ -15,32 +15,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
- * The Interface ByteConsumer.
+ * The Interface ByteSupplier.
  *
  * @author Sly Technologies
  */
-public interface ByteConsumer {
+public interface ByteSupplier {
 
 	/**
-	 * Accept.
+	 * Gets the as byte.
 	 *
-	 * @param value the value
+	 * @return the as byte
 	 */
-	void accept(byte value);
+	byte getAsByte();
 
-	/**
-	 * And then.
-	 *
-	 * @param after the after
-	 * @return the byte consumer
-	 */
-	default ByteConsumer andThen(ByteConsumer after) {
-		return b -> {
-			accept(b);
-			after.accept(b);
-		};
-	}
 }

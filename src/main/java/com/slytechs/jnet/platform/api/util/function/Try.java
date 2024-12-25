@@ -15,20 +15,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
- * The Interface ShortSupplier.
+ * The Class Try.
  *
- * @author Sly Technologies
+ * @param <R> the generic type
+ * @author Mark Bednarczyk
  */
-public interface ShortSupplier {
+public class Try<R> {
+	
+	/** The failure. */
+	private final Exception failure;
+	
+	/** The succes. */
+	private final R succes;
 
 	/**
-	 * Gets the as short.
+	 * Instantiates a new try.
 	 *
-	 * @return the as short
+	 * @param failure the failure
+	 * @param succes  the succes
 	 */
-	short getAsShort();
-
+	public Try(Exception failure, R succes) {
+		this.failure = failure;
+		this.succes = succes;
+	}
 }

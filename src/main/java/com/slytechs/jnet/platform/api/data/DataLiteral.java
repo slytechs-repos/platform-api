@@ -28,7 +28,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-import com.slytechs.jnet.platform.api.internal.util.function.FunctionalProxies;
+import com.slytechs.jnet.platform.api.util.function.FunctionalProxies;
 
 /**
  * A generic data type literal that determines raw and generic data types at

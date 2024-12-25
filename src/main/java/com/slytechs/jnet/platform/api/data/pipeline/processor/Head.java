@@ -33,8 +33,8 @@ import com.slytechs.jnet.platform.api.data.pipeline.transform.InputMapper;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.InputMapper.SimpleInputMapper;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.InputTransformer;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.TransformerParent;
-import com.slytechs.jnet.platform.api.internal.util.function.FunctionalProxies;
 import com.slytechs.jnet.platform.api.util.Registration;
+import com.slytechs.jnet.platform.api.util.function.FunctionalProxies;
 
 /**
  * @author Mark Bednarczyk [mark@slytechs.com]

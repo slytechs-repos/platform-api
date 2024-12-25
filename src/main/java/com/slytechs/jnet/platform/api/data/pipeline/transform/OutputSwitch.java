@@ -28,7 +28,7 @@ import com.slytechs.jnet.platform.api.data.pipeline.processor.Tail;
 import com.slytechs.jnet.platform.api.data.pipeline.processor.impl.MappedDataTransformer;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.OutputTransformer.OutputMapper;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.OutputTransformer.OutputMapper.SimpleOutputMapper;
-import com.slytechs.jnet.platform.api.internal.util.function.FunctionalProxies;
+import com.slytechs.jnet.platform.api.util.function.FunctionalProxies;
 
 /**
  * 

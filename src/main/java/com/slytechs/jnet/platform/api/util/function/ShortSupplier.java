@@ -15,31 +15,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.function;
+package com.slytechs.jnet.platform.api.util.function;
 
 /**
- * The Interface BooleanConsumer.
+ * The Interface ShortSupplier.
  *
  * @author Sly Technologies
  */
-public interface BooleanConsumer {
+public interface ShortSupplier {
 
 	/**
-	 * Accept.
+	 * Gets the as short.
 	 *
-	 * @param value the value
+	 * @return the as short
 	 */
-	void accept(boolean value);
-	
-	/**
-	 * And then.
-	 *
-	 * @param after the after
-	 * @return the boolean consumer
-	 */
-	default BooleanConsumer andThen(BooleanConsumer after) {
-		return b -> {
-			accept(b);
-			after.accept(b);};
-	}
+	short getAsShort();
+
 }

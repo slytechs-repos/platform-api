@@ -20,9 +20,9 @@ package com.slytechs.jnet.platform.api.internal.util;
 import java.io.Closeable;
 import java.util.function.Supplier;
 
-import com.slytechs.jnet.platform.api.internal.util.function.CheckedUtils;
-import com.slytechs.jnet.platform.api.internal.util.function.ThrowableSupplier;
-import com.slytechs.jnet.platform.api.internal.util.function.UncheckedSupplier;
+import com.slytechs.jnet.platform.api.util.function.CheckedUtils;
+import com.slytechs.jnet.platform.api.util.function.ThrowableSupplier;
+import com.slytechs.jnet.platform.api.util.function.UncheckedSupplier;
 
 /**
  * An implementation of a stable value container that represents immutable data
