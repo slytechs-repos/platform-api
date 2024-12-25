@@ -15,25 +15,35 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.format;
+package com.slytechs.jnet.platform.api.util.format;
+
+import java.util.Optional;
+
+import com.slytechs.jnet.platform.api.internal.util.ByteArraySlice;
 
 /**
- * The Enum FormatStyle.
+ * The Interface FormatPropertyGetter.
  *
+ * @param <T> the generic type
  * @author mark
  */
-public enum FormatStyle {
+public interface FormatPropertyGetter<T> {
 
-	/** The short. */
-	SHORT,
-	
-	/** The medium. */
-	MEDIUM,
-	
-	/** The long. */
-	LONG,
-	
-	/** The full. */
-	FULL
+	/**
+	 * Gets the format property.
+	 *
+	 * @param target the target
+	 * @param slice  the slice
+	 * @return the format property
+	 */
+	FormatProperty getFormatProperty(T target, Optional<ByteArraySlice> slice);
 
+	/**
+	 * Gets the attribute property.
+	 *
+	 * @return the attribute property
+	 */
+	default FormatProperty getAttributeProperty() {
+		throw new UnsupportedOperationException();
+	}
 }

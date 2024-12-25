@@ -15,35 +15,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.format;
-
-import java.util.Optional;
-
-import com.slytechs.jnet.platform.api.internal.util.ByteArraySlice;
+package com.slytechs.jnet.platform.api.util.format;
 
 /**
- * The Interface FormatPropertyGetter.
+ * The Interface HasMessageResolver.
  *
  * @param <T> the generic type
  * @author mark
  */
-public interface FormatPropertyGetter<T> {
+public interface HasMessageResolver<T> {
 
 	/**
-	 * Gets the format property.
+	 * Gets the message resolver.
 	 *
-	 * @param target the target
-	 * @param slice  the slice
-	 * @return the format property
+	 * @return the message resolver
 	 */
-	FormatProperty getFormatProperty(T target, Optional<ByteArraySlice> slice);
+	MessageResolver<T> getMessageResolver();
 
 	/**
-	 * Gets the attribute property.
+	 * Sets the message resolver.
 	 *
-	 * @return the attribute property
+	 * @param newResolver the new message resolver
 	 */
-	default FormatProperty getAttributeProperty() {
-		throw new UnsupportedOperationException();
-	}
+	void setMessageResolver(MessageResolver<T> newResolver);
 }

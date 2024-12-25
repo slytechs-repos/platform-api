@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.format;
+package com.slytechs.jnet.platform.api.util.format;
 
 import static java.lang.Character.*;
 import static java.util.Objects.*;

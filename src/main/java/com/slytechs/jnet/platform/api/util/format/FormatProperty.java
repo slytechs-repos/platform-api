@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.format;
+package com.slytechs.jnet.platform.api.util.format;
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
@@ -92,7 +92,7 @@ public interface FormatProperty {
 		 * Value.
 		 *
 		 * @return the object
-		 * @see com.slytechs.jnet.platform.api.internal.util.format.FormatProperty#value()
+		 * @see com.slytechs.jnet.platform.api.util.format.FormatProperty#value()
 		 */
 		@Override
 		default Object value() {
@@ -136,7 +136,7 @@ public interface FormatProperty {
 		 * Value.
 		 *
 		 * @return the object
-		 * @see com.slytechs.jnet.platform.api.internal.util.format.FormatProperty#value()
+		 * @see com.slytechs.jnet.platform.api.util.format.FormatProperty#value()
 		 */
 		@Override
 		default Object value() {

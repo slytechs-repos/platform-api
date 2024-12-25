@@ -15,27 +15,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.util.format;
+package com.slytechs.jnet.platform.api.util.format;
 
 /**
- * The Interface HasMessageResolver.
+ * The Enum FormatStyle.
  *
- * @param <T> the generic type
  * @author mark
  */
-public interface HasMessageResolver<T> {
+public enum FormatStyle {
 
-	/**
-	 * Gets the message resolver.
-	 *
-	 * @return the message resolver
-	 */
-	MessageResolver<T> getMessageResolver();
+	/** The short. */
+	SHORT,
+	
+	/** The medium. */
+	MEDIUM,
+	
+	/** The long. */
+	LONG,
+	
+	/** The full. */
+	FULL
 
-	/**
-	 * Sets the message resolver.
-	 *
-	 * @param newResolver the new message resolver
-	 */
-	void setMessageResolver(MessageResolver<T> newResolver);
 }
