@@ -15,64 +15,64 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 /**
- * The Class JsonParsingException.
+ * The Class JsonException.
  *
  * @author Mark Bednarczyk
  */
-public class JsonParsingException extends JsonException {
+public class JsonException extends Exception {
 
 	/**
-	 * Instantiates a new json parsing exception.
+	 * Instantiates a new json exception.
 	 */
-	public JsonParsingException() {
+	public JsonException() {
 		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * Instantiates a new json parsing exception.
+	 * Instantiates a new json exception.
 	 *
 	 * @param message the message
 	 */
-	public JsonParsingException(String message) {
+	public JsonException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * Instantiates a new json parsing exception.
+	 * Instantiates a new json exception.
 	 *
 	 * @param cause the cause
 	 */
-	public JsonParsingException(Throwable cause) {
+	public JsonException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * Instantiates a new json parsing exception.
+	 * Instantiates a new json exception.
 	 *
 	 * @param message the message
 	 * @param cause   the cause
 	 */
-	public JsonParsingException(String message, Throwable cause) {
+	public JsonException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
 
 	/**
-	 * Instantiates a new json parsing exception.
+	 * Instantiates a new json exception.
 	 *
 	 * @param message            the message
 	 * @param cause              the cause
 	 * @param enableSuppression  the enable suppression
 	 * @param writableStackTrace the writable stack trace
 	 */
-	public JsonParsingException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
+	public JsonException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+		// TODO Auto-generated constructor stub
 	}
 
 }

@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -71,7 +71,7 @@ class JsonArrayImpl implements JsonArray {
 	 * Gets the value type.
 	 *
 	 * @return the value type
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonValue#getValueType()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonValue#getValueType()
 	 */
 	@Override
 	public ValueType getValueType() {
@@ -94,7 +94,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the boolean
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getBoolean(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getBoolean(int)
 	 */
 	@Override
 	public boolean getBoolean(int index) {
@@ -107,7 +107,7 @@ class JsonArrayImpl implements JsonArray {
 	 * @param index        the index
 	 * @param defaultValue the default value
 	 * @return the boolean
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getBoolean(int,
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getBoolean(int,
 	 *      boolean)
 	 */
 	@Override
@@ -124,7 +124,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getInt(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getInt(int)
 	 */
 	@Override
 	public int getInt(int index) {
@@ -137,7 +137,7 @@ class JsonArrayImpl implements JsonArray {
 	 * @param index        the index
 	 * @param defaultValue the default value
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getInt(int, int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getInt(int, int)
 	 */
 	@Override
 	public int getInt(int index, int defaultValue) {
@@ -153,7 +153,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the string
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getString(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getString(int)
 	 */
 	@Override
 	public String getString(int index) {
@@ -166,7 +166,7 @@ class JsonArrayImpl implements JsonArray {
 	 * @param index        the index
 	 * @param defaultValue the default value
 	 * @return the string
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getString(int,
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getString(int,
 	 *      java.lang.String)
 	 */
 	@Override
@@ -183,7 +183,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the json array
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getJsonArray(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getJsonArray(int)
 	 */
 	@Override
 	public JsonArray getJsonArray(int index) {
@@ -195,7 +195,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the json number
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getJsonNumber(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getJsonNumber(int)
 	 */
 	@Override
 	public JsonNumber getJsonNumber(int index) {
@@ -207,7 +207,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the json object
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getJsonObject(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getJsonObject(int)
 	 */
 	@Override
 	public JsonObject getJsonObject(int index) {
@@ -219,7 +219,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the json string
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getJsonString(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getJsonString(int)
 	 */
 	@Override
 	public JsonString getJsonString(int index) {
@@ -260,7 +260,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return true, if is null
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#isNull(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#isNull(int)
 	 */
 	@Override
 	public boolean isNull(int index) {
@@ -271,7 +271,7 @@ class JsonArrayImpl implements JsonArray {
 	 * Size.
 	 *
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#size()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#size()
 	 */
 	@Override
 	public int size() {
@@ -282,7 +282,7 @@ class JsonArrayImpl implements JsonArray {
 	 * Checks if is empty.
 	 *
 	 * @return true, if is empty
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#isEmpty()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#isEmpty()
 	 */
 	@Override
 	public boolean isEmpty() {
@@ -292,7 +292,7 @@ class JsonArrayImpl implements JsonArray {
 	/**
 	 * Clear.
 	 *
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#clear()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#clear()
 	 */
 	@Override
 	public void clear() {
@@ -305,7 +305,7 @@ class JsonArrayImpl implements JsonArray {
 	 * @param <T>   the generic type
 	 * @param clazz the clazz
 	 * @return the values as
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getValuesAs(java.lang.Class)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getValuesAs(java.lang.Class)
 	 */
 	@SuppressWarnings({ "unchecked",
 			"rawtypes" })
@@ -321,7 +321,7 @@ class JsonArrayImpl implements JsonArray {
 	 *
 	 * @param index the index
 	 * @return the value type
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonArray#getValueType(int)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonArray#getValueType(int)
 	 */
 	@Override
 	public ValueType getValueType(int index) {

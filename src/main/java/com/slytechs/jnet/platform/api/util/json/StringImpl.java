@@ -15,19 +15,36 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 /**
- * The Class JsonNullImpl.
+ * The Class StringImpl.
  *
  * @author Mark Bednarczyk
  */
-class JsonNullImpl implements JsonValue {
+class StringImpl implements JsonString {
+
+	/** The str. */
+	private final String str;
 
 	/**
-	 * Instantiates a new json null impl.
+	 * Instantiates a new string impl.
+	 *
+	 * @param str the str
 	 */
-	public JsonNullImpl() {
+	public StringImpl(String str) {
+		this.str = str;
+	}
+
+	/**
+	 * Gets the string.
+	 *
+	 * @return the string
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonString#getString()
+	 */
+	@Override
+	public String getString() {
+		return str;
 	}
 
 	/**
@@ -38,26 +55,17 @@ class JsonNullImpl implements JsonValue {
 	 */
 	@Override
 	public String toString() {
-		return "null";
-	}
-
-	/**
-	 * Checks if is null.
-	 *
-	 * @return true, if is null
-	 */
-	public boolean isNull() {
-		return true;
+		return "\"%s\"".formatted(str);
 	}
 
 	/**
 	 * Gets the value type.
 	 *
 	 * @return the value type
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonValue#getValueType()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonValue#getValueType()
 	 */
 	@Override
 	public ValueType getValueType() {
-		return ValueType.NULL;
+		return ValueType.STRING;
 	}
 }

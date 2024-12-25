@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 /**
  * The Class NumberImpl.
@@ -40,7 +40,7 @@ class NumberImpl implements JsonNumber {
 	 * Int value.
 	 *
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonNumber#intValue()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonNumber#intValue()
 	 */
 	@Override
 	public int intValue() {
@@ -51,7 +51,7 @@ class NumberImpl implements JsonNumber {
 	 * Long value.
 	 *
 	 * @return the long
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonNumber#longValue()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonNumber#longValue()
 	 */
 	@Override
 	public long longValue() {
@@ -73,7 +73,7 @@ class NumberImpl implements JsonNumber {
 	 * Gets the value type.
 	 *
 	 * @return the value type
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonValue#getValueType()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonValue#getValueType()
 	 */
 	@Override
 	public ValueType getValueType() {

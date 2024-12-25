@@ -15,19 +15,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 /**
- * A factory for creating JsonBuilder objects.
+ * The Interface JsonNumber.
+ *
+ * @author Mark Bednarczyk
  */
-public class JsonBuilderFactory {
-	
+public interface JsonNumber extends JsonValue {
+
 	/**
-	 * Creates a new JsonBuilder object.
+	 * Int value.
 	 *
-	 * @return the json object builder
+	 * @return the int
 	 */
-	public JsonObjectBuilder createObjectBuilder() {
-		return new JsonObjectBuilder();
-	}
+	int intValue();
+
+	/**
+	 * Long value.
+	 *
+	 * @return the long
+	 */
+	long longValue();
 }

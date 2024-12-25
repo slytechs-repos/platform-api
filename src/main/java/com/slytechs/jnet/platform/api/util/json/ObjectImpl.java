@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,7 +60,7 @@ class ObjectImpl implements JsonObject {
 	/**
 	 * Clear.
 	 *
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#clear()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#clear()
 	 */
 	@Override
 	public void clear() {
@@ -71,7 +71,7 @@ class ObjectImpl implements JsonObject {
 	 * Entry set.
 	 *
 	 * @return the sets the
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#entrySet()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#entrySet()
 	 */
 	@Override
 	public Set<Entry<String, JsonValue>> entrySet() {
@@ -83,7 +83,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the json value
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#get(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#get(java.lang.String)
 	 */
 	@Override
 	public JsonValue get(String name) {
@@ -108,7 +108,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the boolean
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getBoolean(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getBoolean(java.lang.String)
 	 */
 	@Override
 	public boolean getBoolean(String name) {
@@ -121,7 +121,7 @@ class ObjectImpl implements JsonObject {
 	 * @param name         the name
 	 * @param defaultValue the default value
 	 * @return the boolean
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getBoolean(java.lang.String,
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getBoolean(java.lang.String,
 	 *      boolean)
 	 */
 	@Override
@@ -138,7 +138,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getInt(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getInt(java.lang.String)
 	 */
 	@Override
 	public int getInt(String name) {
@@ -151,7 +151,7 @@ class ObjectImpl implements JsonObject {
 	 * @param name         the name
 	 * @param defaultValue the default value
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getInt(java.lang.String,
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getInt(java.lang.String,
 	 *      int)
 	 */
 	@Override
@@ -168,7 +168,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the json array
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getJsonArray(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getJsonArray(java.lang.String)
 	 */
 	@Override
 	public JsonArray getJsonArray(String name) {
@@ -180,7 +180,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the json number
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getJsonNumber(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getJsonNumber(java.lang.String)
 	 */
 	@Override
 	public JsonNumber getJsonNumber(String name) {
@@ -192,7 +192,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the json object
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getJsonObject(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getJsonObject(java.lang.String)
 	 */
 	@Override
 	public JsonObject getJsonObject(String name) {
@@ -204,7 +204,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the json string
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getJsonString(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getJsonString(java.lang.String)
 	 */
 	@Override
 	public JsonString getJsonString(String name) {
@@ -233,7 +233,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return the string
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getString(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getString(java.lang.String)
 	 */
 	@Override
 	public String getString(String name) {
@@ -246,7 +246,7 @@ class ObjectImpl implements JsonObject {
 	 * @param name         the name
 	 * @param defaultValue the default value
 	 * @return the string
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#getString(java.lang.String,
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#getString(java.lang.String,
 	 *      java.lang.String)
 	 */
 	@Override
@@ -262,7 +262,7 @@ class ObjectImpl implements JsonObject {
 	 * Gets the value type.
 	 *
 	 * @return the value type
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonValue#getValueType()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonValue#getValueType()
 	 */
 	@Override
 	public ValueType getValueType() {
@@ -273,7 +273,7 @@ class ObjectImpl implements JsonObject {
 	 * Checks if is empty.
 	 *
 	 * @return true, if is empty
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#isEmpty()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#isEmpty()
 	 */
 	@Override
 	public boolean isEmpty() {
@@ -285,7 +285,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return true, if is null
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#isNull(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#isNull(java.lang.String)
 	 */
 	@Override
 	public boolean isNull(String name) {
@@ -296,7 +296,7 @@ class ObjectImpl implements JsonObject {
 	 * Key set.
 	 *
 	 * @return the sets the
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#keyOrderedList()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#keyOrderedList()
 	 */
 	@Override
 	public List<String> keyOrderedList() {
@@ -318,7 +318,7 @@ class ObjectImpl implements JsonObject {
 	 * Size.
 	 *
 	 * @return the int
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#size()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#size()
 	 */
 	@Override
 	public int size() {
@@ -340,7 +340,7 @@ class ObjectImpl implements JsonObject {
 	 * Values.
 	 *
 	 * @return the collection
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#values()
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#values()
 	 */
 	@Override
 	public Collection<JsonValue> values() {
@@ -352,7 +352,7 @@ class ObjectImpl implements JsonObject {
 	 *
 	 * @param name the name
 	 * @return true, if is present
-	 * @see com.slytechs.jnet.platform.api.internal.json.JsonObject#isPresent(java.lang.String)
+	 * @see com.slytechs.jnet.platform.api.util.json.JsonObject#isPresent(java.lang.String)
 	 */
 	@Override
 	public boolean isPresent(String name) {

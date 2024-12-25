@@ -15,26 +15,46 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.internal.json;
+package com.slytechs.jnet.platform.api.util.json;
 
 /**
- * The Interface JsonNumber.
+ * The Interface JsonReader.
  *
  * @author Mark Bednarczyk
  */
-public interface JsonNumber extends JsonValue {
+public interface JsonReader extends AutoCloseable {
 
 	/**
-	 * Int value.
+	 * Close.
 	 *
-	 * @return the int
+	 * @throws JsonException the json exception
+	 * @see java.lang.AutoCloseable#close()
 	 */
-	int intValue();
+	@Override
+	void close() throws JsonException;
 
 	/**
-	 * Long value.
+	 * Read.
 	 *
-	 * @return the long
+	 * @return the json structure
+	 * @throws JsonException the json exception
 	 */
-	long longValue();
+	JsonStructure read() throws JsonException;
+
+	/**
+	 * Read array.
+	 *
+	 * @return the json array
+	 * @throws JsonException the json exception
+	 */
+	JsonArray readArray() throws JsonException;
+
+	/**
+	 * Read object.
+	 *
+	 * @return the json object
+	 * @throws JsonException the json exception
+	 */
+	JsonObject readObject() throws JsonException;
+
 }
