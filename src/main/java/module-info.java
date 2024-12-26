@@ -22,13 +22,12 @@ module com.slytechs.jnet.platform.api {
 
 	/* Public API */
 	exports com.slytechs.jnet.platform.api;
+	exports com.slytechs.jnet.platform.api.common;
 	exports com.slytechs.jnet.platform.api.common.binding;
 	exports com.slytechs.jnet.platform.api.common.settings;
 	exports com.slytechs.jnet.platform.api.util.time;
-	exports com.slytechs.jnet.platform.api.frame;
 	exports com.slytechs.jnet.platform.api.util.hash;
 	exports com.slytechs.jnet.platform.api.util;
-	exports com.slytechs.jnet.platform.api.util.config;
 	exports com.slytechs.jnet.platform.api.util.array;
 	exports com.slytechs.jnet.platform.api.data;
 	exports com.slytechs.jnet.platform.api.data.event;
@@ -37,6 +36,7 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.data.pipeline;
 	exports com.slytechs.jnet.platform.api.data.pipeline.transform;
 	exports com.slytechs.jnet.platform.api.data.pipeline.processor;
+	exports com.slytechs.jnet.platform.api.frame;
 	exports com.slytechs.jnet.platform.api.vm;
 
 	/* Private API */
@@ -49,8 +49,8 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.util.function;
 	exports com.slytechs.jnet.platform.api.util.collection;
 	exports com.slytechs.jnet.platform.api.util.json;
-	exports com.slytechs.jnet.platform.api.common.impl
-			to com.slytechs.jnet.protocol.api; // For Benchmark class
+	exports com.slytechs.jnet.platform.api.common.impl // For Benchmark class
+			to com.slytechs.jnet.protocol.api; // protocol-api
 
 	requires java.logging;
 
