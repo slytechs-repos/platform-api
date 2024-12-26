@@ -41,15 +41,15 @@ module com.slytechs.jnet.platform.api {
 
 	/* Private API */
 	exports com.slytechs.jnet.platform.api.memory.foreign
-			to com.slytechs.jnet.jnetntapi, // jnetntapi-api
-			com.slytechs.jnet.jnetdpdk, // jnetdpdk-api
+			to com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
+			com.slytechs.jnet.jnetdpdk.api, // jnetdpdk-api
 			com.slytechs.jnet.protocol.api; // protocol-api
 
 	exports com.slytechs.jnet.platform.api.memory.foreign.struct
 			to com.slytechs.jnet.protocol.api; // protocol-api
 
 	exports com.slytechs.jnet.platform.api.memory.layout
-			to com.slytechs.jnet.jnetntapi, // jnetntapi-api
+			to com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
 			com.slytechs.jnet.protocol.api; // protocol-api
 
 	exports com.slytechs.jnet.platform.api.util.concurrent
@@ -60,8 +60,8 @@ module com.slytechs.jnet.platform.api {
 
 	exports com.slytechs.jnet.platform.api.util.function
 			to com.slytechs.jnet.jnetpcap.api, // jnetpcap-api
-			com.slytechs.jnet.jnetntapi, // jnetntapi-api
-			com.slytechs.jnet.jnetdpdk, // jnetdpdk-api
+			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
+			com.slytechs.jnet.jnetdpdk.api, // jnetdpdk-api
 			com.slytechs.jnet.protocol.api; // protocol-api
 
 	exports com.slytechs.jnet.platform.api.util.collection
