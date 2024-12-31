@@ -257,7 +257,7 @@ public final class Values {
 	}
 
 	/**
-	 * Creates a value that provides read/write access to a property through method
+	 * Creates a value that provides read/write access to a property through method 
 	 * handle reflection.
 	 *
 	 * @param name   the name of the value
