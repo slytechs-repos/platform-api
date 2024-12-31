@@ -14,4 +14,13 @@
 	<artifactId>platform-api</artifactId>
 	<name>jNet Platform - API</name>
 	<description>Base runtime API and implementation classes</description>
+	
+	<dependencies>
+		<dependency>
+		    <groupId>org.yaml</groupId>
+		    <artifactId>snakeyaml</artifactId>
+		    <version>2.2</version>
+		</dependency>
+	</dependencies>
+		
 </project>
