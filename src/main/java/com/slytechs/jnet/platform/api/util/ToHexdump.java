@@ -19,6 +19,8 @@ package com.slytechs.jnet.platform.api.util;
 
 import java.nio.ByteBuffer;
 
+import com.slytechs.jnet.platform.api.util.format.Detail;
+
 /**
  * Interface which provides various {@code toHexdump} methods which return a
  * hexdump string. Various overrides are provided that can display different
@@ -35,7 +37,7 @@ import java.nio.ByteBuffer;
 public interface ToHexdump {
 
 	/** The default detail. */
-	Detail DEFAULT_DETAIL = Detail.LOW;
+	Detail DEFAULT_DETAIL = Detail.SUMMARY;
 
 	/**
 	 * Buffer.
@@ -62,9 +64,9 @@ public interface ToHexdump {
 	 */
 	default String toHexdump(Detail detail) {
 		return switch (detail) {
-		case DEBUG, TRACE, HIGH -> HexStrings.toHexTextDump(buffer());
+		case DEBUG, HEXDUMP, HIGH -> HexStrings.toHexTextDump(buffer());
 		case MEDIUM -> HexStrings.toHexDump(buffer());
-		case LOW -> HexStrings.toHexString(buffer());
+		case SUMMARY -> HexStrings.toHexString(buffer());
 		case OFF -> "";
 		};
 	}
@@ -117,9 +119,9 @@ public interface ToHexdump {
 		ByteBuffer slice = buffer().slice(offset, length);
 
 		return switch (detail) {
-		case DEBUG, TRACE, HIGH -> HexStrings.toHexTextDump(slice);
+		case DEBUG, HEXDUMP, HIGH -> HexStrings.toHexTextDump(slice);
 		case MEDIUM -> HexStrings.toHexDump(slice);
-		case LOW -> HexStrings.toHexString(slice);
+		case SUMMARY -> HexStrings.toHexString(slice);
 		case OFF -> "";
 		};
 	}

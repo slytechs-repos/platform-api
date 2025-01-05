@@ -23,7 +23,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 
 import com.slytechs.jnet.platform.api.memory.foreign.ForeignUtils;
-import com.slytechs.jnet.platform.api.util.Detail;
+import com.slytechs.jnet.platform.api.util.format.Detail;
 
 /**
  * The Class ForeignStruct.

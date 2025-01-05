@@ -237,7 +237,7 @@ public class FormattedBitField implements BitField.Proxy {
 	}
 
 	/**
-	 * Formatter.
+	 * PrintableFormatter.
 	 *
 	 * @param formatter the formatter
 	 * @return the bit field
@@ -249,7 +249,7 @@ public class FormattedBitField implements BitField.Proxy {
 	}
 
 	/**
-	 * Formatter.
+	 * PrintableFormatter.
 	 *
 	 * @param formatter the formatter
 	 * @return the bit field
@@ -259,7 +259,7 @@ public class FormattedBitField implements BitField.Proxy {
 	}
 
 	/**
-	 * Formatter.
+	 * PrintableFormatter.
 	 *
 	 * @param formatter the formatter
 	 * @param adapter   the adapter

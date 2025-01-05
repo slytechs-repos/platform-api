@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.platform.api.util;
 
+import com.slytechs.jnet.platform.api.util.format.Detail;
+
 /**
  * Standard interface for building up toString fragments from complex objects.
  *
@@ -25,7 +27,7 @@ package com.slytechs.jnet.platform.api.util;
 public interface StringBuildable {
 	
 	/** The default detail. */
-	Detail DEFAULT_DETAIL = Detail.LOW;
+	Detail DEFAULT_DETAIL = Detail.SUMMARY;
 
 	/**
 	 * Builds up a string from multiple string components or parts.

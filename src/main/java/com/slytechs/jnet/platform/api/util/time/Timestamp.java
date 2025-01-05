@@ -23,8 +23,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import com.slytechs.jnet.platform.api.util.Detail;
 import com.slytechs.jnet.platform.api.util.StringBuildable;
+import com.slytechs.jnet.platform.api.util.format.Detail;
 
 /**
  * The Class Timestamp.
@@ -225,7 +225,7 @@ public class Timestamp extends Date implements TimestampPrecisionInfo, StringBui
 	 */
 	@Override
 	public String toString() {
-		return buildString(new StringBuilder(), Detail.LOW).toString();
+		return buildString(new StringBuilder(), Detail.SUMMARY).toString();
 	}
 
 	/**

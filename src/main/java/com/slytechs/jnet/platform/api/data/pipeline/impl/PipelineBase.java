@@ -50,9 +50,9 @@ import com.slytechs.jnet.platform.api.data.pipeline.processor.Head;
 import com.slytechs.jnet.platform.api.data.pipeline.processor.Tail;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.InputTransformer;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.OutputTransformer;
-import com.slytechs.jnet.platform.api.util.Detail;
 import com.slytechs.jnet.platform.api.util.DoublyLinkedPriorityQueue;
 import com.slytechs.jnet.platform.api.util.Registration;
+import com.slytechs.jnet.platform.api.util.format.Detail;
 
 /**
  * Base implementation of a data pipeline that manages processor chains and data
@@ -651,7 +651,7 @@ public abstract class PipelineBase<T>
 	public String toString(Detail detail) {
 		return switch (detail) {
 		case OFF -> "";
-		case LOW -> toString();
+		case SUMMARY -> toString();
 
 		default -> name() + ": "
 				+ activeProcessors.stream()

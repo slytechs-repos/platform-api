@@ -82,6 +82,8 @@ public interface Domain extends Named {
 	/** The global root domain, lazily initialized using StableValue. */
 	StableValue<Domain> ROOT = StableValue.ofSupplier(RootDomain::new);
 
+	DomainPath EMPTY_DOMAIN_PATH = DomainPath.of("empty");
+
 	/**
 	 * Returns the root domain instance, creating it if necessary. This serves as
 	 * the entry point to the domain hierarchy.

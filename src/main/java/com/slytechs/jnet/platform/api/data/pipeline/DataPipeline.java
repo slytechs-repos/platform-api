@@ -33,8 +33,8 @@ import com.slytechs.jnet.platform.api.data.pipeline.processor.Head;
 import com.slytechs.jnet.platform.api.data.pipeline.processor.Tail;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.InputTransformer;
 import com.slytechs.jnet.platform.api.data.pipeline.transform.OutputTransformer;
-import com.slytechs.jnet.platform.api.util.Detail;
 import com.slytechs.jnet.platform.api.util.Registration;
+import com.slytechs.jnet.platform.api.util.format.Detail;
 
 /**
  * Interface defining data pipeline operations and configuration. Supports

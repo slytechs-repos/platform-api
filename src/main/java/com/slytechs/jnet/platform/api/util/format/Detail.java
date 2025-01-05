@@ -15,7 +15,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.util;
+package com.slytechs.jnet.platform.api.util.format;
 
 /**
  * A constant which specifies the detail level to generate by various utility
@@ -55,8 +55,8 @@ public enum Detail {
 	/** Do not display. */
 	OFF,
 
-	/** The low detail. */
-	LOW,
+	/** The summary detail. */
+	SUMMARY,
 
 	/** The medium detail. */
 	MEDIUM,
@@ -67,8 +67,8 @@ public enum Detail {
 	/** The debug level detail. */
 	DEBUG,
 
-	/** The trace level detail. */
-	TRACE,;
+	/** The hexdump level detail. */
+	HEXDUMP,;
 
 	/** The Constant DEFAULT. */
 	public static final Detail DEFAULT = HIGH;
@@ -88,7 +88,7 @@ public enum Detail {
 	 * @return true, if is low
 	 */
 	public boolean isLow() {
-		return compareTo(LOW) == 0;
+		return compareTo(SUMMARY) == 0;
 	}
 
 	/**
@@ -124,7 +124,7 @@ public enum Detail {
 	 * @return true, if is debug
 	 */
 	public boolean isTrace() {
-		return compareTo(TRACE) == 0;
+		return compareTo(HEXDUMP) == 0;
 	}
 
 }

@@ -85,6 +85,9 @@ public final class DomainPath {
 	 * slash ('/') by convention.
 	 */
 	public static final char SEPARATOR = '/';
+	public static final String ROOT_DIR = "/";
+	public static final String CURRENT_DIR = ".";
+	public static final String PARENT_DIR = "..";
 
 	/**
 	 * Regex pattern for validating path element names. Elements must:
@@ -104,7 +107,7 @@ public final class DomainPath {
 	 * hierarchy. This path has no elements and is represented as a single forward
 	 * slash ("/").
 	 */
-	public static final DomainPath ROOT = new DomainPath(EMPTY_ELEMENTS);
+	public static final DomainPath ROOT = new DomainPath(true, EMPTY_ELEMENTS);
 
 	/**
 	 * Creates a new DomainPath from a string representation. The string is
@@ -124,11 +127,13 @@ public final class DomainPath {
 	 * @throws IllegalArgumentException if any path element is invalid
 	 */
 	public static DomainPath of(String path) {
-		if (path == null || path.isEmpty() || path.equals(String.valueOf(SEPARATOR)))
+		if (path == null || path.isEmpty() || path.equals(ROOT_DIR))
 			return ROOT;
 
+		boolean isAbsolute = path.charAt(0) == SEPARATOR;
+
 		// Remove leading and trailing separators
-		String normalized = path.charAt(0) == SEPARATOR ? path.substring(1) : path;
+		String normalized = isAbsolute ? path.substring(1) : path;
 		normalized = normalized.charAt(normalized.length() - 1) == SEPARATOR ? normalized.substring(0, normalized
 				.length() - 1) : normalized;
 
@@ -142,30 +147,7 @@ public final class DomainPath {
 								"and contain only letters, numbers, underscore, and hyphen.");
 		}
 
-		return new DomainPath(elements);
-	}
-
-	/**
-	 * Creates a new DomainPath from an array of elements. Each element is validated
-	 * individually against the path element rules.
-	 *
-	 * @param elements the path elements
-	 * @return a new DomainPath instance
-	 * @throws IllegalArgumentException if any element is null or invalid
-	 */
-	public static DomainPath of(String... elements) {
-		if (elements == null || elements.length == 0)
-			return ROOT;
-
-		// Validate each element
-		for (String element : elements) {
-			if (element == null || !VALID_NAME.matcher(element).matches())
-				throw new IllegalArgumentException(
-						"Invalid path element '" + element + "'. Path elements must start with a letter " +
-								"and contain only letters, numbers, underscore, and hyphen.");
-		}
-
-		return new DomainPath(elements.clone());
+		return new DomainPath(isAbsolute, elements);
 	}
 
 	/** The immutable array of path elements. */
@@ -176,14 +158,18 @@ public final class DomainPath {
 
 	/** Lazily initialized string representation. */
 	private String stringValue;
+	private final boolean isAbsolute;
 
 	/**
 	 * Private constructor to enforce the use of factory methods. This ensures all
 	 * paths are properly validated before creation.
+	 * 
+	 * @param isAbsolute
 	 *
-	 * @param elements the validated path elements
+	 * @param elements   the validated path elements
 	 */
-	private DomainPath(String[] elements) {
+	private DomainPath(boolean isAbsolute, String[] elements) {
+		this.isAbsolute = isAbsolute;
 		this.elements = elements;
 		this.hashCode = Arrays.hashCode(elements);
 	}
@@ -226,6 +212,14 @@ public final class DomainPath {
 		return elements.length == 0;
 	}
 
+	public boolean isAbsolute() {
+		return isAbsolute;
+	}
+
+	public boolean isRelative() {
+		return !isAbsolute;
+	}
+
 	/**
 	 * Creates a new path by appending additional elements to this path. The
 	 * original path remains unchanged.
@@ -242,7 +236,7 @@ public final class DomainPath {
 		System.arraycopy(elements, 0, newElements, 0, elements.length);
 		System.arraycopy(additionalElements, 0, newElements, elements.length, additionalElements.length);
 
-		return new DomainPath(newElements);
+		return new DomainPath(isAbsolute, newElements);
 	}
 
 	/**
@@ -269,7 +263,7 @@ public final class DomainPath {
 		if (isRoot())
 			return this;
 
-		return new DomainPath(Arrays.copyOf(elements, elements.length - 1));
+		return new DomainPath(isAbsolute, Arrays.copyOf(elements, elements.length - 1));
 	}
 
 	@Override
@@ -298,4 +292,5 @@ public final class DomainPath {
 		}
 		return stringValue;
 	}
+
 }

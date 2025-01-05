@@ -62,7 +62,7 @@ public class MethodHandleValue implements Value {
 	 */
 	@Override
 	public String name() {
-		throw new UnsupportedOperationException("not implemented yet");
+		return name;
 	}
 
 	/**

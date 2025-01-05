@@ -18,8 +18,7 @@
 package com.slytechs.jnet.platform.api.util.format;
 
 import java.io.IOException;
-
-import com.slytechs.jnet.platform.api.util.Detail;
+import java.io.Writer;
 
 /**
  * A utility interface for objects that can be formatted and printed to an
@@ -39,8 +38,8 @@ import com.slytechs.jnet.platform.api.util.Detail;
  * <pre>
  * Printable printableObject = ...;
  * String fullDetails = printableObject.printToString(Detail.HIGH);
- * String conciseDetails = printableObject.printToString(Detail.LOW);
- * printableObject.print(System.out, Detail.MEDIUM);
+ * String conciseDetails = printableObject.printToString(Detail.SUMMARY);
+ * printableObject.printTo(System.out, Detail.MEDIUM);
  * </pre>
  * </p>
  *
@@ -74,7 +73,7 @@ public interface Printable {
 	default String printToString(Detail detail) {
 		StringBuilder b = new StringBuilder();
 		try {
-			print(b, detail);
+			printTo(b, detail);
 			return b.toString();
 		} catch (IOException e) {
 			throw new IllegalStateException("An error occurred while printing to a string", e);
@@ -88,8 +87,8 @@ public interface Printable {
 	 * @param out the appendable to which the formatted output will be written.
 	 * @throws IOException if an I/O error occurs during writing.
 	 */
-	default void print(Appendable out) throws IOException {
-		print(out, DEFAULT_DETAIL);
+	default void printTo(Appendable out) throws IOException {
+		printTo(out, DEFAULT_DETAIL);
 	}
 
 	/**
@@ -100,5 +99,67 @@ public interface Printable {
 	 * @param detail the level of detail to use when formatting the output.
 	 * @throws IOException if an I/O error occurs during writing.
 	 */
-	void print(Appendable out, Detail detail) throws IOException;
+	void printTo(Appendable out, Detail detail) throws IOException;
+
+	/**
+	 * Prints the formatted representation of this object to the specified
+	 * {@link Appendable} using a custom {@link DetailFormatter} and a specified
+	 * {@link Detail} level.
+	 *
+	 * <p>
+	 * This method provides a flexible way to output a formatted representation of
+	 * the object by delegating the actual formatting logic to the provided
+	 * {@link DetailFormatter}. The level of detail in the output is controlled by
+	 * the {@link Detail} parameter, making this suitable for different verbosity
+	 * requirements.
+	 * </p>
+	 *
+	 * <h2>Usage Example:</h2>
+	 * 
+	 * <pre>{@code
+	 * StringBuilder builder = new StringBuilder();
+	 * MyObject myObject = new MyObject();
+	 * DetailFormatter formatter = new CustomFormatter();
+	 *
+	 * myObject.printToFormatted(builder, formatter, Detail.DETAILED);
+	 * System.out.println(builder.toString());
+	 * }</pre>
+	 *
+	 * <h2>Parameters:</h2>
+	 * <ul>
+	 * <li>{@code out} - The {@link Appendable} to which the formatted output is
+	 * written. This can be a {@link StringBuilder}, {@link Writer}, or any other
+	 * compatible {@link Appendable}.</li>
+	 * <li>{@code formatter} - The {@link DetailFormatter} responsible for
+	 * generating the formatted output. This defines the structure and style of the
+	 * output.</li>
+	 * <li>{@code detail} - The {@link Detail} level that controls the verbosity of
+	 * the output. Examples include basic, detailed, and verbose levels.</li>
+	 * </ul>
+	 *
+	 * <h2>Throws:</h2>
+	 * <ul>
+	 * <li>{@link IOException} if an I/O error occurs while writing to the
+	 * {@link Appendable}.</li>
+	 * <li>{@link NullPointerException} if {@code formatter} or {@code detail} is
+	 * {@code null}.</li>
+	 * </ul>
+	 *
+	 * @param out       the {@link Appendable} to which the formatted output is
+	 *                  written
+	 * @param formatter the {@link DetailFormatter} responsible for generating the
+	 *                  formatted output
+	 * @param detail    the {@link Detail} level controlling the verbosity of the
+	 *                  output
+	 * @throws IOException          if an I/O error occurs while writing to the
+	 *                              {@link Appendable}
+	 * @throws NullPointerException if {@code formatter} or {@code detail} is
+	 *                              {@code null}
+	 * @see DetailFormatter
+	 * @see Detail
+	 */
+	default void printToFormatted(Appendable out, DetailFormatter formatter, Detail detail) throws IOException {
+		formatter.formatTo(out, this, detail);
+	}
+
 }

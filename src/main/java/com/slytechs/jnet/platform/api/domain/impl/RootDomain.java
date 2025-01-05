@@ -11,19 +11,29 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 import com.slytechs.jnet.platform.api.domain.Domain;
+import com.slytechs.jnet.platform.api.domain.DomainBase;
 import com.slytechs.jnet.platform.api.domain.DomainFolder;
 import com.slytechs.jnet.platform.api.domain.DomainPath;
+import com.slytechs.jnet.platform.api.domain.value.ValueDomainBase;
 import com.slytechs.jnet.platform.api.util.Registration;
 
-public final class RootDomain implements Domain, DomainLockAccessor {
+public final class RootDomain extends DomainBase implements Domain, DomainLockAccessor {
+
+	public static final String ROOT_DIR_NAME = ""; // Path separators are excluded '/' as names
 
 	private final ReadWriteLock domainLock = new ReentrantReadWriteLock();
 	private final Map<String, Domain> domains;
 	private final Map<String, DomainFolder> folders;
 
 	public RootDomain() {
+		super("", null);
+
 		this.domains = new LinkedHashMap<>();
 		this.folders = new LinkedHashMap<>();
+
+		ValueDomainBase emptyDomain = new ValueDomainBase("empty", this);
+
+		addDomain(emptyDomain);
 	}
 
 	@Override
@@ -216,4 +226,5 @@ public final class RootDomain implements Domain, DomainLockAccessor {
 			domainLock.readLock().unlock();
 		}
 	}
+
 }

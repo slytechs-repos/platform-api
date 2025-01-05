@@ -15,20 +15,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.slytechs.jnet.platform.api.util;
+package com.slytechs.jnet.platform.api.domain;
 
 /**
- * The Interface DetailedString.
+ * 
  *
- * @author Mark Bednarczyk
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
  */
-public interface DetailedString {
-
+public interface DomainAccessor {
+	
 	/**
-	 * To string.
+	 * Resolve a domain attribute (field/stat/metadata) by name or path. e.g.
+	 * "ethernet.dst" or "packet.frameNo" or "stats.errorCount"
 	 *
-	 * @param detail the detail
-	 * @return the string
+	 * @param attributeName The name or path to the desired attribute.
+	 * @param context       An optional context object (e.g., the current Packet).
+	 * @return The resolved value (could be int, String, byte[], etc.) or null if
+	 *         not found.
 	 */
-	String toString(Detail detail);
+	Object resolve(String attributeName, Object context);
+
 }

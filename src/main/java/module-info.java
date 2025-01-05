@@ -30,6 +30,7 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.util.time;
 	exports com.slytechs.jnet.platform.api.util.hash;
 	exports com.slytechs.jnet.platform.api.util.array;
+	exports com.slytechs.jnet.platform.api.util.format;
 	exports com.slytechs.jnet.platform.api.data;
 	exports com.slytechs.jnet.platform.api.data.common.processor;
 	exports com.slytechs.jnet.platform.api.data.event;
@@ -44,41 +45,45 @@ module com.slytechs.jnet.platform.api {
 	exports com.slytechs.jnet.platform.api.vm;
 
 	/* Private API */
-	exports com.slytechs.jnet.platform.api.memory.foreign to
-			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
-			com.slytechs.jnet.jnetdpdk.api, // jnetdpdk-api
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.memory.foreign ;
+//	to
+//			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
+//			com.slytechs.jnet.jnetdpdk.api, // jnetdpdk-api
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.memory.foreign.struct to
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.memory.foreign.struct ;
+//	to
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.memory.layout to
-			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
-			com.slytechs.jnet.protocol.tcpip, // protocol-tcpip
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.memory.layout ;
+//	to
+//			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
+//			com.slytechs.jnet.protocol.tcpip, // protocol-tcpip
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.util.concurrent to
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.util.concurrent ;
+//	to
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.util.format to
-			com.slytechs.jnet.protocol.tcpip, // protocol-tcpip
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.util.function ;
+//	to
+//			com.slytechs.jnet.jnetpcap.api, // jnetpcap-api
+//			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
+//			com.slytechs.jnet.jnetdpdk.api, // jnetdpdk-api
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.util.function to
-			com.slytechs.jnet.jnetpcap.api, // jnetpcap-api
-			com.slytechs.jnet.jnetntapi.api, // jnetntapi-api
-			com.slytechs.jnet.jnetdpdk.api, // jnetdpdk-api
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.util.collection ;
+//	to
+//			com.slytechs.jnet.protocol.tcpip, // protocol-tcpip
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.util.collection to
-			com.slytechs.jnet.protocol.tcpip, // protocol-tcpip
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.util.json ;
+//	to
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
-	exports com.slytechs.jnet.platform.api.util.json to
-			com.slytechs.jnet.protocol.api; // protocol-api
-
-	exports com.slytechs.jnet.platform.api.common.impl to // For Benchmark class
-			com.slytechs.jnet.protocol.api; // protocol-api
+	exports com.slytechs.jnet.platform.api.common.impl ;
+//	to // For Benchmark class
+//			com.slytechs.jnet.protocol.api; // protocol-api
 
 	requires java.logging;
 	requires org.yaml.snakeyaml;

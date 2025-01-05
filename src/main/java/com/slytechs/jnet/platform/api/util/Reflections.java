@@ -17,7 +17,14 @@
  */
 package com.slytechs.jnet.platform.api.util;
 
+import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 /**
  * The Class Reflections.
@@ -26,11 +33,39 @@ import java.util.Optional;
  */
 public final class Reflections {
 
+	public static class HandleGetter<T> {
+		private final Method method;
+		private MethodHandle handle;
+
+		public HandleGetter(Method method) throws IllegalAccessException {
+			this.method = method;
+			this.handle = MethodHandles.lookup()
+					.unreflect(method);
+		}
+
+		public HandleGetter(Object target, Method method) throws IllegalAccessException {
+			method.setAccessible(true);
+
+			this.method = method;
+			this.handle = MethodHandles.lookup()
+					.unreflect(method)
+					.bindTo(target);
+		}
+
+		public T get() {
+			try {
+				return (T) handle.invoke();
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+	}
+
 	/**
 	 * Instantiates a new reflections.
 	 */
-	private Reflections() {
-	}
+	private Reflections() {}
 
 	/**
 	 * Load class.
@@ -104,5 +139,52 @@ public final class Reflections {
 					.formatted(module.getName(), className));
 
 		return clazz;
+	}
+
+	public static <T extends Annotation> List<Method> listMethods(Class<?> sourceClass, Class<T> annotationClass,
+			Predicate<T> annotationFilter) {
+		return listMethods(sourceClass, m -> true
+				&& m.isAnnotationPresent(annotationClass)
+				&& annotationFilter.test(m.getAnnotation(annotationClass)));
+	}
+
+	public static <T extends Annotation> List<Method> listMethods(Class<?> sourceClass, Class<T> annotationClass) {
+		return listMethods(sourceClass, m -> m.isAnnotationPresent(annotationClass));
+	}
+
+	/**
+	 * List methods.
+	 *
+	 * @param sourceClass the source class
+	 * @param filter      the filter
+	 * @return the list
+	 */
+	public static List<Method> listMethods(Class<?> sourceClass, Predicate<Method> filter) {
+		return listMethods(sourceClass, filter, new ArrayList<>());
+	}
+
+	/**
+	 * List methods.
+	 *
+	 * @param sourceClass the source class
+	 * @param filter      the filter
+	 * @param list        the list
+	 * @return the list
+	 */
+	public static List<Method> listMethods(Class<?> sourceClass, Predicate<Method> filter, List<Method> list) {
+		if (sourceClass == Object.class)
+			return list;
+
+		for (var method : sourceClass.getDeclaredMethods()) {
+			if (filter.test(method))
+				list.add(method);
+		}
+
+		return listMethods(sourceClass.getSuperclass(), filter, list);
+	}
+
+	public static <T> HandleGetter<T> getter(Object target, Method method)
+			throws IllegalAccessException {
+		return new HandleGetter<>(target, method);
 	}
 }
