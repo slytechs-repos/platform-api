@@ -18,6 +18,7 @@
 package com.slytechs.jnet.platform.api.util;
 
 import com.slytechs.jnet.platform.api.util.UnitUtils.ConvertableUnit;
+import com.slytechs.jnet.platform.api.util.function.Pair;
 
 /**
  * Enumeration of units for counting large numbers. This enum provides a set of
@@ -47,10 +48,10 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 
 	/** The base. */
 	private final long base;
-	
+
 	/** The basef. */
 	private final double basef;
-	
+
 	/** The symbols. */
 	private final String[] symbols;
 
@@ -67,24 +68,106 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 	}
 
 	/**
-	 * Formats a count value according to the specified format string.
+	 * Formats a count value into a string representation using the specified format
+	 * string. The format string implicitly accepts two arguments:
+	 * <ul>
+	 * <li>{@code arg1}: The scaled value, representing the count adjusted to the
+	 * nearest unit.</li>
+	 * <li>{@code arg2}: The scaling unit abbreviation (e.g., "k" for kilo, "m" for
+	 * mega).</li>
+	 * </ul>
+	 * Example:
+	 * 
+	 * <pre>
+	 * String result = formatScaled("%1$d %2$s", 1500);
+	 * // result = "1 k"
+	 * </pre>
 	 *
-	 * @param fmt     The format string
-	 * @param inCount The count value to format
-	 * @return The formatted string
+	 * @param fmt   The format string, such as {@code "%1$d %2$s"}, where
+	 *              {@code %1$d} is replaced with the scaled value and {@code %2$s}
+	 *              is replaced with the unit abbreviation.
+	 * @param count The count value to be formatted.
+	 * @return The formatted string representing the scaled value and its unit.
 	 */
-	public static String formatCount(String fmt, long inCount) {
-		return UnitUtils.format(fmt, inCount, CountUnit.class, COUNT);
+	public static String formatScaled(String fmt, long count) {
+		return UnitUtils.format(fmt, count, CountUnit.class, COUNT);
 	}
 
 	/**
-	 * Finds the nearest CountUnit for the given count value.
+	 * Scales a count value to the nearest appropriate unit. This method finds the
+	 * closest {@link CountUnit} to represent the given count value and converts the
+	 * value to that unit.
+	 * 
+	 * Example:
+	 * 
+	 * <pre>
+	 * Pair<Long, CountUnit> result = scaleUnit(1500);
+	 * // result = Pair.of(1, CountUnit.KILO)
+	 * </pre>
 	 *
-	 * @param inCount The count value
-	 * @return The nearest CountUnit
+	 * @param count The count value to scale.
+	 * @return A {@link Pair} containing:
+	 *         <ul>
+	 *         <li>The scaled value in the nearest unit.</li>
+	 *         <li>The corresponding {@link CountUnit}.</li>
+	 *         </ul>
 	 */
-	public static CountUnit nearest(long inCount) {
-		return UnitUtils.nearest(inCount, CountUnit.class, COUNT);
+	public static Pair<Long, CountUnit> scaleUnit(long count) {
+		var scalingUnit = nearest(count);
+		var scaledValue = scalingUnit.convert(count, CountUnit.COUNT);
+
+		return Pair.of(scaledValue, scalingUnit);
+	}
+
+	/**
+	 * Scales a count value to the nearest appropriate unit, starting from a
+	 * specified base unit. This method converts the value from the given base
+	 * {@link CountUnit} to the nearest suitable unit for better readability.
+	 * 
+	 * Example:
+	 * 
+	 * <pre>
+	 * Pair<Long, CountUnit> result = scaleUnit(1500, CountUnit.MEGA);
+	 * // result = Pair.of(0, CountUnit.KILO)
+	 * </pre>
+	 *
+	 * @param count The count value to scale.
+	 * @param unit  The base unit from which the scaling starts.
+	 * @return A {@link Pair} containing:
+	 *         <ul>
+	 *         <li>The scaled value in the nearest unit.</li>
+	 *         <li>The corresponding {@link CountUnit}.</li>
+	 *         </ul>
+	 */
+	public static Pair<Long, CountUnit> scaleUnit(long count, CountUnit unit) {
+		var scalingUnit = nearest(unit.toCount(count));
+		var scaledValue = scalingUnit.convert(count, unit);
+
+		return Pair.of(scaledValue, scalingUnit);
+	}
+
+	/**
+	 * Determines the nearest {@link CountUnit} for a given count value.
+	 * <p>
+	 * This method identifies the most appropriate unit to represent the given count
+	 * value by selecting the {@link CountUnit} that is closest to the magnitude of
+	 * the input value. This is useful for scaling large numbers into human-readable
+	 * formats using predefined units (e.g., KILO, MEGA, GIGA).
+	 * </p>
+	 * 
+	 * Example:
+	 * 
+	 * <pre>
+	 * CountUnit unit = nearest(1500);
+	 * // unit = CountUnit.KILO
+	 * </pre>
+	 * 
+	 * @param count The count value for which the nearest unit is to be determined.
+	 * @return The {@link CountUnit} that best matches the magnitude of the given
+	 *         count value.
+	 */
+	public static CountUnit nearest(long count) {
+		return UnitUtils.nearest(count, CountUnit.class, COUNT);
 	}
 
 	/**
