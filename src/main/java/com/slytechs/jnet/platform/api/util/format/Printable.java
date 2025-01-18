@@ -162,4 +162,65 @@ public interface Printable {
 		formatter.formatTo(out, this, detail);
 	}
 
+	/**
+	 * Prints the object to a string using the specified detail level.
+	 *
+	 * @param detail the level of detail to use when formatting the output.
+	 * @return a string representation of the object formatted with the specified
+	 *         detail level.
+	 */
+	default void printToStdout(Detail detail) {
+		try {
+			printTo(System.out, detail);
+		} catch (IOException e) {
+			throw new IllegalStateException("An error occurred while printing to a string", e);
+		}
+	}
+
+	/**
+	 * Prints the object to a string using the specified detail level.
+	 *
+	 * @param detail the level of detail to use when formatting the output.
+	 * @return a string representation of the object formatted with the specified
+	 *         detail level.
+	 */
+	default void printToStderr(Detail detail) {
+		try {
+			printTo(System.err, detail);
+		} catch (IOException e) {
+			throw new IllegalStateException("An error occurred while printing to a string", e);
+		}
+	}
+
+	/**
+	 * Prints the object to a string using the specified detail level.
+	 *
+	 * @param detail the level of detail to use when formatting the output.
+	 * @return a string representation of the object formatted with the specified
+	 *         detail level.
+	 */
+	default void printlnToStdout(Detail detail) {
+		try {
+			printTo(System.out, detail);
+			System.out.println();
+		} catch (IOException e) {
+			throw new IllegalStateException("An error occurred while printing to a string", e);
+		}
+	}
+
+	/**
+	 * Prints the object to a string using the specified detail level.
+	 *
+	 * @param detail the level of detail to use when formatting the output.
+	 * @return a string representation of the object formatted with the specified
+	 *         detail level.
+	 */
+	default void printlnToStderr(Detail detail) {
+		try {
+			printTo(System.err, detail);
+			System.err.println();
+		} catch (IOException e) {
+			throw new IllegalStateException("An error occurred while printing to a string", e);
+		}
+	}
 }

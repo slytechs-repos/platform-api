@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.platform.api.util.format;
 
+import java.io.IOException;
+
 /**
  * A constant which specifies the detail level to generate by various utility
  * methods.
@@ -125,6 +127,34 @@ public enum Detail {
 	 */
 	public boolean isTrace() {
 		return compareTo(HEXDUMP) == 0;
+	}
+
+	public void printToString(Printable src) {
+		src.printToString(this);
+	}
+
+	public void printTo(Appendable out, Printable src) throws IOException {
+		src.printTo(out, this);
+	}
+
+	public void printToFormatted(Appendable out, DetailFormatter formatter, Printable src) throws IOException {
+		src.printToFormatted(out, formatter, this);
+	}
+
+	public void printToStdout(Printable src) {
+		src.printToStdout(this);
+	}
+
+	public void printToStderr(Printable src) {
+		src.printToStderr(this);
+	}
+
+	public void printlnToStdout(Printable src) {
+		src.printlnToStdout(this);
+	}
+
+	public void printlnToStderr(Printable src) {
+		src.printlnToStderr(this);
 	}
 
 }

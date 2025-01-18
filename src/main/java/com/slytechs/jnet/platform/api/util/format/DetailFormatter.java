@@ -88,7 +88,9 @@ public interface DetailFormatter {
 	 *
 	 * @return the default {@link Detail} level.
 	 */
-	Detail getDefaultDetail();
+	default Detail getDefaultDetail() {
+		return Detail.DEFAULT;
+	}
 
 	/**
 	 * Formats the specified target object into a string representation using the
