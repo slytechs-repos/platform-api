@@ -65,6 +65,14 @@ public interface Pair<T1, T2> {
 			public T2 value2() {
 				return value2;
 			}
+
+			@Override
+			public String toString() {
+				return "Pair ["
+						+ String.valueOf(value1)
+						+ ", " + String.valueOf(value2)
+						+ "]";
+			}
 		};
 	}
 
