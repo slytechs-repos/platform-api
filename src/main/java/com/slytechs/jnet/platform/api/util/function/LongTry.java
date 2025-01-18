@@ -25,6 +25,7 @@ import java.util.function.LongPredicate;
 import java.util.function.LongSupplier;
 import java.util.function.LongUnaryOperator;
 import java.util.function.Supplier;
+import java.util.function.ToLongFunction;
 import java.util.stream.LongStream;
 
 /**
@@ -373,5 +374,88 @@ public interface LongTry {
 	@FunctionalInterface
 	interface LongThrowingSupplier {
 		long getAsLong() throws Exception;
+	}
+
+	/**
+	 * Lifts a throwing long-to-long function into a safe function.
+	 *
+	 * @param f the function that may throw
+	 * @return a function that returns a LongTry
+	 */
+	static ToLongFunction<Long> lift(ThrowingToLongFunction<Long> f) {
+		return value -> {
+			try {
+				return f.applyAsLong(value);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing long consumer into a safe consumer.
+	 *
+	 * @param c the consumer that may throw
+	 * @return a consumer that handles exceptions
+	 */
+	static LongConsumer liftConsumer(ThrowingLongConsumer c) {
+		return value -> {
+			try {
+				c.accept(value);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing long consumer into a safe consumer with error handling.
+	 *
+	 * @param c            the consumer that may throw
+	 * @param errorHandler handles any exceptions
+	 * @return a consumer that safely handles exceptions
+	 */
+	static LongConsumer liftConsumer(ThrowingLongConsumer c, Consumer<Exception> errorHandler) {
+		return value -> {
+			try {
+				c.accept(value);
+			} catch (Exception e) {
+				errorHandler.accept(e);
+			}
+		};
+	}
+
+	/**
+	 * Maps this long using a throwing function.
+	 *
+	 * @param f the function that may throw
+	 * @return a new LongTry with the mapped value
+	 */
+	default LongTry mapThrowing(ThrowingToLongFunction<Long> f) {
+		if (isFailure()) {
+			return LongTry.failure(failure());
+		}
+		try {
+			return LongTry.success(f.applyAsLong(value()));
+		} catch (Exception e) {
+			return LongTry.failure(e);
+		}
+	}
+
+	/**
+	 * Executes a throwing consumer if this is a success.
+	 *
+	 * @param c the consumer that may throw
+	 * @return this LongTry for chaining
+	 */
+	default LongTry ifSuccessThrowing(ThrowingLongConsumer c) {
+		if (isSuccess()) {
+			try {
+				c.accept(value());
+			} catch (Exception e) {
+				return LongTry.failure(e);
+			}
+		}
+		return this;
 	}
 }

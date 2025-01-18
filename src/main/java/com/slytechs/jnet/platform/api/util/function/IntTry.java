@@ -25,6 +25,7 @@ import java.util.function.IntPredicate;
 import java.util.function.IntSupplier;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
 
 /**
@@ -409,5 +410,88 @@ public interface IntTry {
 	@FunctionalInterface
 	interface IntThrowingSupplier {
 		int getAsInt() throws Exception;
+	}
+
+	/**
+	 * Lifts a throwing int-to-int function into a safe function.
+	 *
+	 * @param f the function that may throw
+	 * @return a function that returns an IntTry
+	 */
+	static ToIntFunction<Integer> lift(ThrowingToIntFunction<Integer> f) {
+		return value -> {
+			try {
+				return f.applyAsInt(value);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing int consumer into a safe consumer.
+	 *
+	 * @param c the consumer that may throw
+	 * @return a consumer that handles exceptions
+	 */
+	static IntConsumer liftConsumer(ThrowingIntConsumer c) {
+		return value -> {
+			try {
+				c.accept(value);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing int consumer into a safe consumer with error handling.
+	 *
+	 * @param c            the consumer that may throw
+	 * @param errorHandler handles any exceptions
+	 * @return a consumer that safely handles exceptions
+	 */
+	static IntConsumer liftConsumer(ThrowingIntConsumer c, Consumer<Exception> errorHandler) {
+		return value -> {
+			try {
+				c.accept(value);
+			} catch (Exception e) {
+				errorHandler.accept(e);
+			}
+		};
+	}
+
+	/**
+	 * Maps this int using a throwing function.
+	 *
+	 * @param f the function that may throw
+	 * @return a new IntTry with the mapped value
+	 */
+	default IntTry mapThrowing(ThrowingToIntFunction<Integer> f) {
+		if (isFailure()) {
+			return IntTry.failure(failure());
+		}
+		try {
+			return IntTry.success(f.applyAsInt(value()));
+		} catch (Exception e) {
+			return IntTry.failure(e);
+		}
+	}
+
+	/**
+	 * Executes a throwing consumer if this is a success.
+	 *
+	 * @param c the consumer that may throw
+	 * @return this IntTry for chaining
+	 */
+	default IntTry ifSuccessThrowing(ThrowingIntConsumer c) {
+		if (isSuccess()) {
+			try {
+				c.accept(value());
+			} catch (Exception e) {
+				return IntTry.failure(e);
+			}
+		}
+		return this;
 	}
 }

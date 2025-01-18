@@ -425,4 +425,119 @@ public interface Try<T> {
 
 		return LongTry.success(l);
 	}
+
+	/**
+	 * Lifts a throwing function into a function that returns a Try.
+	 *
+	 * @param <T> the input type
+	 * @param <R> the result type
+	 * @param f   the function that may throw
+	 * @return a function that returns a Try
+	 */
+	static <T, R> Function<T, Try<R>> lift(ThrowingFunction<T, R> f) {
+		return t -> Try.of(() -> f.apply(t));
+	}
+
+	/**
+	 * Lifts a throwing consumer into a safe consumer that handles exceptions.
+	 *
+	 * @param <T> the input type
+	 * @param c   the consumer that may throw
+	 * @return a consumer that handles exceptions
+	 */
+	static <T> Consumer<T> liftConsumer(ThrowingConsumer<T> c) {
+		return t -> {
+			try {
+				c.accept(t);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing consumer into a safe consumer with custom error handling.
+	 *
+	 * @param <T>          the input type
+	 * @param c            the consumer that may throw
+	 * @param errorHandler handles any exceptions
+	 * @return a consumer that safely handles exceptions
+	 */
+	static <T> Consumer<T> liftConsumer(ThrowingConsumer<T> c, Consumer<Exception> errorHandler) {
+		return t -> {
+			try {
+				c.accept(t);
+			} catch (Exception e) {
+				errorHandler.accept(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing runnable into a safe runnable that handles exceptions.
+	 *
+	 * @param r the runnable that may throw
+	 * @return a runnable that handles exceptions
+	 */
+	static Runnable liftRunnable(ThrowingRunnable r) {
+		return () -> {
+			try {
+				r.run();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	/**
+	 * Lifts a throwing runnable into a safe runnable with custom error handling.
+	 *
+	 * @param r            the runnable that may throw
+	 * @param errorHandler handles any exceptions
+	 * @return a runnable that safely handles exceptions
+	 */
+	static Runnable liftRunnable(ThrowingRunnable r, Consumer<Exception> errorHandler) {
+		return () -> {
+			try {
+				r.run();
+			} catch (Exception e) {
+				errorHandler.accept(e);
+			}
+		};
+	}
+
+	/**
+	 * Maps this try using a throwing function.
+	 *
+	 * @param <R> the result type
+	 * @param f   the function that may throw
+	 * @return a new Try with the mapped value
+	 */
+	default <R> Try<R> mapThrowing(ThrowingFunction<? super T, ? extends R> f) {
+		if (isFailure()) {
+			return Try.failure(failure());
+		}
+		try {
+			return Try.success(f.apply(success()));
+		} catch (Exception e) {
+			return Try.failure(e);
+		}
+	}
+
+	/**
+	 * Executes a throwing consumer if this is a success.
+	 *
+	 * @param c the consumer that may throw
+	 * @return this Try for chaining
+	 */
+	default Try<T> ifSuccessThrowing(ThrowingConsumer<? super T> c) {
+		if (isSuccess()) {
+			try {
+				c.accept(success());
+			} catch (Exception e) {
+				return Try.failure(e);
+			}
+		}
+		return this;
+	}
 }
