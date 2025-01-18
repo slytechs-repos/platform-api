@@ -17,12 +17,9 @@
  */
 package com.slytechs.jnet.platform.api.incubator;
 
-import java.io.Closeable;
 import java.util.function.Supplier;
 
-import com.slytechs.jnet.platform.api.util.function.CheckedUtils;
-import com.slytechs.jnet.platform.api.util.function.ThrowableSupplier;
-import com.slytechs.jnet.platform.api.util.function.UncheckedSupplier;
+import com.slytechs.jnet.platform.api.util.function.Try;
 
 /**
  * An implementation of a stable value container that represents immutable data
@@ -38,23 +35,50 @@ import com.slytechs.jnet.platform.api.util.function.UncheckedSupplier;
  * <li>Enables JVM constant-folding optimizations similar to final fields
  * <li>Supports lazy initialization patterns
  * <li>Safe for sharing across multiple threads after initialization
+ * <li>Integration with Try for safe exception handling
  * </ul>
  * 
  * <p>
  * Example usage:
  * 
  * <pre>{@code
- * // Create empty stable value
- * StableValue<ExpensiveObject> stable1 = StableValue.of();
+ * // Basic usage with non-throwing operations
+ * StableValue<String> stable1 = StableValue.of(); // Empty
+ * StableValue<String> stable2 = StableValue.of("initialized"); // Pre-initialized
+ * StableValue<String> stable3 = StableValue.ofSupplier( // Lazy with supplier
+ * 		() -> "computed");
  * 
- * // Create pre-initialized stable value
- * StableValue<String> stable2 = StableValue.of("initialized");
+ * // Using with operations that may throw
+ * StableValue<FileReader> reader = StableValue.ofThrowing(
+ * 		() -> new FileReader("config.txt")); // May throw IOException
  * 
- * // Create lazy-initialized stable value with supplier
- * StableValue<ExpensiveObject> stable3 = StableValue.ofSupplier(() -> new ExpensiveObject());
+ * // Safe access with exception handling
+ * Try<FileReader> result = reader.getThrowing();
+ * result.ifSuccess(r -> {
+ * 	// Use the reader
+ * 	processConfig(r);
+ * }).ifFailure(ex -> {
+ * 	// Handle specific exceptions
+ * 	if (ex instanceof FileNotFoundException) {
+ * 		createDefaultConfig();
+ * 	} else {
+ * 		logError("Config error", ex);
+ * 	}
+ * });
  * 
- * // Later, possibly in a different thread:
- * ExpensiveObject obj = stable1.computeIfUnset(() -> new ExpensiveObject());
+ * // Combining StableValue with Try transformations
+ * StableValue<Config> config = StableValue.ofThrowing(() -> {
+ * 	Try<String> content = Try.of(() -> readFile("config.txt"))
+ * 			.map(str -> str.trim()) // Transform content
+ * 			.filter(str -> !str.isEmpty()); // Validate
+ * 
+ * 	return content.map(Config::parse) // Parse config
+ * 			.orElseGet(Config::getDefaults); // Use defaults if needed
+ * });
+ * 
+ * // Resource cleanup with Try
+ * Try<Void> cleanup = reader.close(); // Safe resource cleanup
+ * cleanup.ifFailure(ex -> logError("Cleanup failed", ex));
  * }</pre>
  *
  * <p>
@@ -64,11 +88,14 @@ import com.slytechs.jnet.platform.api.util.function.UncheckedSupplier;
  * <li>Implementing lazy initialization patterns without performance penalties
  * <li>Managing immutable values that require complex or costly initialization
  * <li>Ensuring thread-safe single initialization of shared resources
+ * <li>Safely handling resources that require cleanup
  * </ul>
  *
- * @param <T> the type of value being stored
- * @author Mark Bednarczyk
+ * @param {@literal <T>} the type of value being stored
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
  * @see java.lang.reflect.Field#isFinal()
+ * @see Try
  */
 public final class StableValue<T> {
 
@@ -102,107 +129,60 @@ public final class StableValue<T> {
 	 * @return a new StableValue instance with lazy initialization
 	 */
 	public static <T> StableValue<T> ofSupplier(Supplier<T> factory) {
-		return new StableValue<>(UncheckedSupplier.of(factory));
+		return new StableValue<>(() -> Try.success(factory.get()));
 	}
 
 	/**
-	 * Creates a new StableValue container with a supplier that may throw checked
+	 * Creates a new StableValue container with a supplier that may throw
 	 * exceptions. The supplier will be used to initialize the value on first
 	 * access.
 	 * 
 	 * <p>
-	 * Any exceptions thrown by the supplier during initialization will be
-	 * propagated to the caller when the value is accessed through
-	 * {@link #getOrThrow()}, {@link #getOrThrow(Class)}, or
-	 * {@link #computeIfUnset(ThrowableSupplier)}. This allows for proper exception
-	 * handling at the point of value access rather than creation.
+	 * Any exceptions thrown by the supplier during initialization will be wrapped
+	 * in a Try instance, allowing for proper exception handling at the point of
+	 * value access rather than creation.
 	 * 
 	 * <p>
 	 * Example usage:
 	 * 
 	 * <pre>{@code
 	 * // Create with a supplier that may throw IOException
-	 * StableValue<FileReader> value = StableValue.ofThrowableSupplier(
+	 * StableValue<FileReader> value = StableValue.ofThrowing(
 	 * 		() -> new FileReader("config.txt"));
 	 * 
-	 * try {
-	 * 	// Exception may be thrown here during initialization
-	 * 	FileReader reader = value.getOrThrow();
+	 * // Get value with exception handling
+	 * Try<FileReader> result = value.getThrowing();
+	 * if (result.isSuccess()) {
+	 * 	FileReader reader = result.success();
 	 * 	// Use reader...
-	 * } catch (IOException e) {
-	 * 	// Handle file access exception
+	 * } else {
+	 * 	// Handle exception
+	 * 	handleError(result.failure());
 	 * }
 	 * }</pre>
 	 *
 	 * @param <T>     the type of value to be stored
-	 * @param factory the supplier that will provide the value when needed
+	 * @param factory the supplier that may throw exceptions
 	 * @return a new StableValue instance with exception-aware lazy initialization
-	 * @see #getOrThrow()
-	 * @see #getOrThrow(Class)
-	 * @see #computeIfUnset(ThrowableSupplier)
 	 */
-	public static <T> StableValue<T> ofThrowableSupplier(ThrowableSupplier<T> factory) {
-		return new StableValue<>(factory);
+	public static <T> StableValue<T> ofThrowing(Try.ThrowingSupplier<T> factory) {
+		return new StableValue<>(() -> Try.of(factory));
 	}
 
 	private volatile T value = null;
-	private final UncheckedSupplier<T> valueSupplier;
-	private final ThrowableSupplier<T> valueThrowableSupplier;
+	private final Supplier<Try<T>> valueSupplier;
 
-	/**
-	 * Creates an empty StableValue container with no initial value or supplier.
-	 * This constructor is used by the {@link #of()} factory method.
-	 * 
-	 * @see #of()
-	 */
 	private StableValue() {
 		this.valueSupplier = null;
-		this.valueThrowableSupplier = null;
 	}
 
-	/**
-	 * Creates a StableValue container pre-initialized with the given value. This
-	 * constructor is used by the {@link #of(T)} factory method.
-	 *
-	 * @param value the initial value to store, may be null
-	 * @see #of(T)
-	 */
 	private StableValue(T value) {
 		this.value = value;
 		this.valueSupplier = null;
-		this.valueThrowableSupplier = null;
 	}
 
-	/**
-	 * Creates a StableValue container with a supplier that may throw checked
-	 * exceptions. The supplier is converted to both checked and unchecked variants
-	 * for flexible access. This constructor is used by the
-	 * {@link #ofThrowableSupplier(ThrowableSupplier)} factory method.
-	 *
-	 * @param <E>     the type of throwable that the supplier may throw
-	 * @param factory the supplier that will provide the value and may throw checked
-	 *                exceptions
-	 * @see #ofThrowableSupplier(ThrowableSupplier)
-	 * @see #getOrThrow()
-	 * @see #get()
-	 */
-	private <E extends Throwable> StableValue(ThrowableSupplier<T> factory) {
-		this.valueSupplier = factory.asUnchecked();
-		this.valueThrowableSupplier = factory;
-	}
-
-	/**
-	 * Creates a StableValue container with an unchecked supplier. The supplier is
-	 * converted to both checked and unchecked variants for consistent interface.
-	 * This constructor is used by the {@link #ofSupplier(Supplier)} factory method.
-	 *
-	 * @param valueFactory the unchecked supplier that will provide the value
-	 * @see #ofSupplier(Supplier)
-	 * @see #get()
-	 */
-	private StableValue(UncheckedSupplier<T> valueFactory) {
-		this.valueSupplier = valueFactory;
-		this.valueThrowableSupplier = valueFactory.asThrowable();
+	private StableValue(Supplier<Try<T>> factory) {
+		this.valueSupplier = factory;
 	}
 
 	/**
@@ -232,28 +212,26 @@ public final class StableValue<T> {
 
 	/**
 	 * Atomically initializes this stable value using a supplier that may throw
-	 * checked exceptions.
+	 * exceptions. The result is wrapped in a Try instance for safe handling of
+	 * failures.
 	 *
 	 * @param supplier the supplier to compute the value if not already set
-	 * @return the initialized value (either existing or newly computed)
-	 * @throws Exception if the supplier throws an exception during value
-	 *                   computation
+	 * @return a Try containing either the initialized value or any exception that
+	 *         occurred
 	 */
-	public T computeIfUnset(ThrowableSupplier<T> supplier) throws Exception {
+	public Try<T> computeIfUnsetThrowing(Try.ThrowingSupplier<T> supplier) {
 		if (value == null) {
 			synchronized (this) {
 				if (value == null) {
-					try {
-						value = supplier.getOrThrow();
-					} catch (RuntimeException e) {
-						throw e;
-					} catch (Throwable e) {
-						throw (Exception) e;
+					Try<T> result = Try.of(supplier);
+					if (result.isSuccess()) {
+						value = result.success();
 					}
+					return result;
 				}
 			}
 		}
-		return value;
+		return Try.success(value);
 	}
 
 	/**
@@ -268,66 +246,48 @@ public final class StableValue<T> {
 	 *
 	 * @return the stored value
 	 * @throws IllegalStateException if no value is set and no supplier was provided
+	 * @throws RuntimeException      if the supplier throws an exception during
+	 *                               initialization
 	 */
 	public T get() {
 		if (value == null) {
 			if (valueSupplier == null)
 				throw new IllegalStateException("no value");
-			return computeIfUnset(valueSupplier);
-		}
 
-		return value;
-	}
-
-	/**
-	 * Retrieves the stored value, potentially throwing checked exceptions during
-	 * initialization.
-	 *
-	 * @return the stored value
-	 * @throws Exception             if initialization fails with a checked
-	 *                               exception
-	 * @throws IllegalStateException if no value is set and no supplier was provided
-	 */
-	public T getOrThrow() throws Exception {
-		if (value == null) {
-			if (valueThrowableSupplier == null)
-				throw new IllegalStateException("no value");
-			return computeIfUnset(valueThrowableSupplier);
-		}
-
-		return value;
-	}
-
-	/**
-	 * Retrieves the stored value, throwing only the specified exception type.
-	 *
-	 * @param <E>            the type of exception to throw
-	 * @param exceptionClass the class object of the exception type
-	 * @return the stored value
-	 * @throws E                     if initialization fails with the specified
-	 *                               exception type
-	 * @throws IllegalStateException if no value is set and no supplier was provided
-	 * @throws RuntimeException      if initialization fails with an unexpected
-	 *                               exception type
-	 */
-	public <E extends Exception> T getOrThrow(Class<E> exceptionClass) throws E {
-		if (value == null) {
-			if (valueThrowableSupplier == null)
-				throw new IllegalStateException("no value");
-
-			try {
-				return computeIfUnset(valueThrowableSupplier);
-			} catch (Exception e) {
-				throw CheckedUtils.castAsCheckedOrThrowRuntime(e, exceptionClass);
+			Try<T> result = valueSupplier.get();
+			if (result.isFailure()) {
+				throw new RuntimeException(result.failure());
 			}
+			return computeIfUnset(() -> result.success());
 		}
 
 		return value;
 	}
 
 	/**
-	 * Clears the stored value, safely releasing any associated resources. This
-	 * method does not invoke close() on the value if it implements AutoCloseable.
+	 * Retrieves the stored value wrapped in a Try instance, allowing for safe
+	 * handling of any initialization exceptions.
+	 *
+	 * @return a Try containing either the value or any exception that occurred
+	 */
+	public Try<T> getThrowing() {
+		if (value == null) {
+			if (valueSupplier == null)
+				return Try.failure(new IllegalStateException("no value"));
+
+			Try<T> result = valueSupplier.get();
+			if (result.isSuccess()) {
+				value = result.success();
+			}
+			return result;
+		}
+
+		return Try.success(value);
+	}
+
+	/**
+	 * Clears the stored value. This method does not invoke close() on the value if
+	 * it implements AutoCloseable.
 	 */
 	public void clear() {
 		if (value != null) {
@@ -339,66 +299,28 @@ public final class StableValue<T> {
 
 	/**
 	 * Closes and clears the stored value if it implements AutoCloseable or
-	 * Closeable. If the value doesn't implement either interface, this method has
-	 * no effect.
+	 * Closeable. The result is wrapped in a Try instance for safe handling of any
+	 * exceptions that occur during closure.
 	 *
-	 * @throws Exception if closing the resource throws an exception
+	 * @return a Try containing either success (null) or any exception that occurred
 	 */
-	public void close() throws Exception {
+	public Try<Void> close() {
 		if (value instanceof AutoCloseable closeable) {
 			synchronized (this) {
 				if (value != null) {
-					closeable.close();
-
-					value = null;
-				}
-			}
-		} else if (value instanceof Closeable closeable) {
-			synchronized (this) {
-				if (value != null) {
-					closeable.close();
-
-					value = null;
-				}
-			}
-
-		}
-
-	}
-
-	/**
-	 * Closes and clears the stored value, throwing any exceptions that occur during
-	 * closure.
-	 *
-	 * @param <E> the type of throwable that may be thrown
-	 * @throws E if closing the resource throws an exception
-	 */
-	@SuppressWarnings("unchecked")
-	public <E extends Throwable> void closeOrThrow() throws E {
-		if (value instanceof AutoCloseable closeable) {
-			synchronized (this) {
-				if (value != null) {
-					try {
+					Try<Void> result = Try.of(() -> {
 						closeable.close();
-					} catch (Exception e) {
-						throw (E) e;
+						return null;
+					});
+
+					if (result.isSuccess()) {
+						value = null;
 					}
 
-					value = null;
-				}
-			}
-		} else if (value instanceof Closeable closeable) {
-			synchronized (this) {
-				if (value != null) {
-					try {
-						closeable.close();
-					} catch (Exception e) {
-						throw (E) e;
-					}
-
-					value = null;
+					return result;
 				}
 			}
 		}
+		return Try.success(null);
 	}
 }
