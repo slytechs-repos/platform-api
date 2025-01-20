@@ -59,7 +59,7 @@ public interface Pair<T1, T2> extends Tuple2<T1, T2> {
 	/**
 	 * A record implementation of the {@code Pair} interface that stores two values.
 	 */
-	record PairRecord<T1, T2>(@Nullable T1 value1, @Nullable T2 value2) implements Pair<T1, T2> {
+	record PairRecord<T1, T2>(int size, @Nullable T1 value1, @Nullable T2 value2) implements Pair<T1, T2> {
 
 		/**
 		 * Returns an array containing both values of this pair.
@@ -87,19 +87,6 @@ public interface Pair<T1, T2> extends Tuple2<T1, T2> {
 	}
 
 	/**
-	 * Creates a new {@code Pair} with the specified values.
-	 *
-	 * @param <T1>   the type of the first value
-	 * @param <T2>   the type of the second value
-	 * @param value1 the first value, may be null
-	 * @param value2 the second value, may be null
-	 * @return a new {@code Pair} containing the specified values
-	 */
-	static <T1, T2> Pair<T1, T2> of(@Nullable T1 value1, @Nullable T2 value2) {
-		return new PairRecord<>(value1, value2);
-	}
-
-	/**
 	 * Creates a new {@code Pair} from an array of values.
 	 *
 	 * @param values an array containing exactly two values to create the pair
@@ -111,7 +98,32 @@ public interface Pair<T1, T2> extends Tuple2<T1, T2> {
 		if (values.length != 2)
 			throw new IllegalStateException("invalid number of arguments for a Pair");
 
-		return new PairRecord<>(values[0], values[1]);
+		return new PairRecord<>(2, values[0], values[1]);
+	}
+
+	/**
+	 * Creates a new {@code Pair} with the specified values.
+	 *
+	 * @param <T1>   the type of the first value
+	 * @param <T2>   the type of the second value
+	 * @param value1 the first value, may be null
+	 * @param value2 the second value, may be null
+	 * @return a new {@code Pair} containing the specified values
+	 */
+	static <T1, T2> Pair<T1, T2> of(@Nullable T1 value1, @Nullable T2 value2) {
+		return new PairRecord<>(2, value1, value2);
+	}
+
+	/**
+	 * Casts this pair to a pair with different generic type parameters.
+	 *
+	 * @param <C1> the new type for the first value
+	 * @param <C2> the new type for the second value
+	 * @return this pair cast to the new types
+	 */
+	@SuppressWarnings("unchecked")
+	default <C1, C2> Pair<C1, C2> cast() {
+		return (Pair<C1, C2>) this;
 	}
 
 	/**
@@ -131,16 +143,4 @@ public interface Pair<T1, T2> extends Tuple2<T1, T2> {
 	@Override
 	@Nullable
 	T2 value2();
-
-	/**
-	 * Casts this pair to a pair with different generic type parameters.
-	 *
-	 * @param <C1> the new type for the first value
-	 * @param <C2> the new type for the second value
-	 * @return this pair cast to the new types
-	 */
-	@SuppressWarnings("unchecked")
-	default <C1, C2> Pair<C1, C2> cast() {
-		return (Pair<C1, C2>) this;
-	}
 }
