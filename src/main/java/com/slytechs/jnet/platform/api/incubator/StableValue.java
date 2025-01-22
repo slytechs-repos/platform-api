@@ -19,6 +19,7 @@ package com.slytechs.jnet.platform.api.incubator;
 
 import java.util.function.Supplier;
 
+import com.slytechs.jnet.platform.api.util.function.ThrowingSupplier;
 import com.slytechs.jnet.platform.api.util.function.Try;
 
 /**
@@ -165,7 +166,7 @@ public final class StableValue<T> {
 	 * @param factory the supplier that may throw exceptions
 	 * @return a new StableValue instance with exception-aware lazy initialization
 	 */
-	public static <T> StableValue<T> ofThrowing(Try.ThrowingSupplier<T> factory) {
+	public static <T> StableValue<T> ofThrowing(ThrowingSupplier<T> factory) {
 		return new StableValue<>(() -> Try.of(factory));
 	}
 
@@ -219,7 +220,7 @@ public final class StableValue<T> {
 	 * @return a Try containing either the initialized value or any exception that
 	 *         occurred
 	 */
-	public Try<T> computeIfUnsetThrowing(Try.ThrowingSupplier<T> supplier) {
+	public Try<T> computeIfUnsetThrowing(ThrowingSupplier<T> supplier) {
 		if (value == null) {
 			synchronized (this) {
 				if (value == null) {

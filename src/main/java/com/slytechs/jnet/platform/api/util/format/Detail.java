@@ -138,7 +138,7 @@ public enum Detail {
 	}
 
 	public void printToFormatted(Appendable out, DetailFormatter formatter, Printable src) throws IOException {
-		src.printToFormatted(out, formatter, this);
+		src.printFormattedTo(out, formatter, this);
 	}
 
 	public void printToStdout(Printable src) {

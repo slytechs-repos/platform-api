@@ -99,7 +99,7 @@ public interface Stringable extends Printable {
 		StringBuilder out = new StringBuilder();
 
 		try {
-			printToFormatted(out, formatter, detail);
+			printFormattedTo(out, formatter, detail);
 
 			return out.toString();
 		} catch (IOException e) {

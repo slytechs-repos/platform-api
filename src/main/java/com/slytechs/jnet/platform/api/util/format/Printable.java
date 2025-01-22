@@ -158,7 +158,7 @@ public interface Printable {
 	 * @see DetailFormatter
 	 * @see Detail
 	 */
-	default void printToFormatted(Appendable out, DetailFormatter formatter, Detail detail) throws IOException {
+	default void printFormattedTo(Appendable out, DetailFormatter formatter, Detail detail) throws IOException {
 		formatter.formatTo(out, this, detail);
 	}
 
@@ -173,7 +173,7 @@ public interface Printable {
 		try {
 			printTo(System.out, detail);
 		} catch (IOException e) {
-			throw new IllegalStateException("An error occurred while printing to a string", e);
+			throw new RuntimeException("An error occurred while printing to a stdout", e);
 		}
 	}
 
@@ -188,7 +188,7 @@ public interface Printable {
 		try {
 			printTo(System.err, detail);
 		} catch (IOException e) {
-			throw new IllegalStateException("An error occurred while printing to a string", e);
+			throw new RuntimeException("An error occurred while printing to a stderr", e);
 		}
 	}
 
@@ -204,7 +204,7 @@ public interface Printable {
 			printTo(System.out, detail);
 			System.out.println();
 		} catch (IOException e) {
-			throw new IllegalStateException("An error occurred while printing to a string", e);
+			throw new RuntimeException("An error occurred while printing to a stderr", e);
 		}
 	}
 
@@ -220,7 +220,7 @@ public interface Printable {
 			printTo(System.err, detail);
 			System.err.println();
 		} catch (IOException e) {
-			throw new IllegalStateException("An error occurred while printing to a string", e);
+			throw new RuntimeException("An error occurred while printing to a stdout", e);
 		}
 	}
 }
