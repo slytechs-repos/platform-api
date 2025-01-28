@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.platform.api.util.function;
 
+import java.util.function.Function;
+
 /**
  * A function that can throw checked exceptions.
  *
@@ -27,13 +29,27 @@ package com.slytechs.jnet.platform.api.util.function;
  */
 @FunctionalInterface
 public interface ThrowingFunction<T, R> {
-    
-    /**
-     * Applies this function to the given argument.
-     *
-     * @param t the function argument
-     * @return the function result
-     * @throws Exception if unable to compute the function
-     */
-    R apply(T t) throws Exception;
+
+	static <T, R> Function<T, R> lift(ThrowingFunction<T, R> function) {
+		return t -> {
+			try {
+				return function.apply(t);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		};
+	}
+
+	static <T, R> ThrowingFunction<T, R> of(ThrowingFunction<T, R> function) {
+		return function;
+	}
+
+	/**
+	 * Applies this function to the given argument.
+	 *
+	 * @param t the function argument
+	 * @return the function result
+	 * @throws Exception if unable to compute the function
+	 */
+	R apply(T t) throws Exception;
 }

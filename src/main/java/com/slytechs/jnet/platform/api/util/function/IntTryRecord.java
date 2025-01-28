@@ -18,44 +18,32 @@
 package com.slytechs.jnet.platform.api.util.function;
 
 /**
- * Record implementation of Try that stores a success value.
+ * Record implementation of IntTry that stores either an int value or failure
+ * exception.
  */
-record TrySuccessRecord<T>(@Nullable T success) implements Try<T> {
+public record IntTryRecord(int value, @Nullable Exception failure) implements IntTry {
+
+	/**
+	 * Constructs an IntTry instance, ensuring either value is valid or failure is
+	 * present.
+	 *
+	 * @throws IllegalArgumentException if failure is null when isSuccess is false
+	 */
+	public IntTryRecord {
+		if (!isSuccess() && failure == null) {
+			throw new IllegalArgumentException("Failure case requires non-null exception");
+		}
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return failure == null;
+	}
 
 	@Override
 	public String toString() {
-		return "Success[" + String.valueOf(success) + "]";
-	}
-
-	/**
-	 * @see com.slytechs.jnet.platform.api.util.function.Try#isFailure()
-	 */
-	@Override
-	public boolean isFailure() {
-		return false;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.platform.api.util.function.Try#isSuccess()
-	 */
-	@Override
-	public boolean isSuccess() {
-		return true;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.platform.api.util.function.Try#failure()
-	 */
-	@Override
-	public @Nullable Exception failure() {
-		return null;
-	}
-
-	/**
-	 * @see com.slytechs.jnet.platform.api.util.function.Try#get()
-	 */
-	@Override
-	public T get() throws Exception {
-		return success;
+		return isSuccess()
+				? "IntSuccess[" + value + "]"
+				: "IntFailure[" + failure + "]";
 	}
 }

@@ -17,30 +17,13 @@
  */
 package com.slytechs.jnet.platform.api.util.function;
 
-import java.util.function.Supplier;
-
 /**
- * A supplier that may throw an unchecked exception.
- *
- * @param <T> the type of value supplied
+ * Custom exception for invalid packet field values
  */
-@FunctionalInterface
-public interface ThrowingSupplier<T> {
+public class IllegalValueException extends IllegalArgumentException {
+	private static final long serialVersionUID = 6947050383511059550L;
 
-	static <T> Supplier<T> lift(ThrowingSupplier<T> supplier) {
-		return () -> {
-			try {
-				return supplier.get();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		};
+	public IllegalValueException(String message) {
+		super(message);
 	}
-
-	static <T> ThrowingSupplier<T> of(ThrowingSupplier<T> supplier) {
-		return supplier;
-	}
-
-	T get() throws Exception;
-
 }

@@ -17,6 +17,8 @@
  */
 package com.slytechs.jnet.platform.api.util.function;
 
+import java.util.function.Consumer;
+
 /**
  * A runnable that can throw checked exceptions.
  *
@@ -25,6 +27,31 @@ package com.slytechs.jnet.platform.api.util.function;
  */
 @FunctionalInterface
 public interface ThrowingRunnable {
+
+	/**
+	 * Drops a throwing runnable into a safe runnable with custom error handling.
+	 *
+	 * @param r            the runnable that may throw
+	 * @param errorHandler handles any exceptions
+	 * @return a runnable that safely handles exceptions
+	 */
+	static Runnable drop(ThrowingRunnable r, Consumer<Exception> errorHandler) {
+		return () -> {
+			try {
+				r.run();
+			} catch (Exception e) {
+				errorHandler.accept(e);
+			}
+		};
+	}
+
+	static ThrowingRunnable of(ThrowingRunnable runnable) {
+		return runnable::run;
+	}
+
+	static ThrowingRunnable lift(Runnable runnable) {
+		return runnable::run;
+	}
 
 	/**
 	 * Performs this operation.

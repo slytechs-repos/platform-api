@@ -62,37 +62,6 @@ import java.util.stream.LongStream;
 public interface LongTry {
 
 	/**
-	 * Record implementation of LongTry that stores either an long value or failure
-	 * exception.
-	 */
-	record LongTryRecord(long value, @Nullable Exception failure) implements LongTry {
-
-		/**
-		 * Constructs an LongTry instance, ensuring either value is valid or failure is
-		 * present.
-		 *
-		 * @throws IllegalArgumentException if failure is null when isSuccess is false
-		 */
-		public LongTryRecord {
-			if (!isSuccess() && failure == null) {
-				throw new IllegalArgumentException("Failure case requires non-null exception");
-			}
-		}
-
-		@Override
-		public boolean isSuccess() {
-			return failure == null;
-		}
-
-		@Override
-		public String toString() {
-			return isSuccess()
-					? "LongSuccess[" + value + "]"
-					: "LongFailure[" + failure + "]";
-		}
-	}
-
-	/**
 	 * Creates a new successful LongTry with the given value.
 	 *
 	 * @param value the success value
@@ -120,7 +89,7 @@ public interface LongTry {
 	 * @return an LongTry containing either the operation's result or any thrown
 	 *         exception
 	 */
-	static LongTry of(LongThrowingSupplier supplier) {
+	static LongTry liftSupplier(ThrowingLongSupplier supplier) {
 		try {
 			return success(supplier.getAsLong());
 		} catch (Exception e) {
@@ -288,7 +257,7 @@ public interface LongTry {
 	 */
 	default LongTry validateRange(long min, long max) {
 		return filter(v -> v >= min && v <= max)
-				.mapFailure(e -> new IllegalPacketValueException(
+				.mapFailure(e -> new IllegalValueException(
 						String.format("Value %d outside valid range [%d, %d]", value(), min, max)));
 	}
 
@@ -343,17 +312,6 @@ public interface LongTry {
 	}
 
 	/**
-	 * Custom exception for invalid packet field values
-	 */
-	public static class IllegalPacketValueException extends IllegalArgumentException {
-		private static final long serialVersionUID = 6947050383511059550L;
-
-		public IllegalPacketValueException(String message) {
-			super(message);
-		}
-	}
-
-	/**
 	 * Returns the primitive long value. Only call when isSuccess() is true.
 	 *
 	 * @return the long value
@@ -367,14 +325,6 @@ public interface LongTry {
 	 */
 	@Nullable
 	Exception failure();
-
-	/**
-	 * A supplier of long values that may throw an exception.
-	 */
-	@FunctionalInterface
-	interface LongThrowingSupplier {
-		long getAsLong() throws Exception;
-	}
 
 	/**
 	 * Lifts a throwing long-to-long function into a safe function.

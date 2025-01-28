@@ -62,37 +62,6 @@ import java.util.stream.IntStream;
 public interface IntTry {
 
 	/**
-	 * Record implementation of IntTry that stores either an int value or failure
-	 * exception.
-	 */
-	record IntTryRecord(int value, @Nullable Exception failure) implements IntTry {
-
-		/**
-		 * Constructs an IntTry instance, ensuring either value is valid or failure is
-		 * present.
-		 *
-		 * @throws IllegalArgumentException if failure is null when isSuccess is false
-		 */
-		public IntTryRecord {
-			if (!isSuccess() && failure == null) {
-				throw new IllegalArgumentException("Failure case requires non-null exception");
-			}
-		}
-
-		@Override
-		public boolean isSuccess() {
-			return failure == null;
-		}
-
-		@Override
-		public String toString() {
-			return isSuccess()
-					? "IntSuccess[" + value + "]"
-					: "IntFailure[" + failure + "]";
-		}
-	}
-
-	/**
 	 * Creates a new successful IntTry with the given value.
 	 *
 	 * @param value the success value
@@ -120,7 +89,7 @@ public interface IntTry {
 	 * @return an IntTry containing either the operation's result or any thrown
 	 *         exception
 	 */
-	static IntTry of(IntThrowingSupplier supplier) {
+	static IntTry liftSupplier(ThrowingIntSupplier supplier) {
 		try {
 			return success(supplier.getAsInt());
 		} catch (Exception e) {
@@ -303,7 +272,7 @@ public interface IntTry {
 	 */
 	default IntTry validateRange(int min, int max) {
 		return filter(v -> v >= min && v <= max)
-				.mapFailure(e -> new IllegalPacketValueException(
+				.mapFailure(e -> new IllegalValueException(
 						String.format("Value %d outside valid range [%d, %d]", value(), min, max)));
 	}
 
@@ -374,24 +343,13 @@ public interface IntTry {
 	}
 
 	/**
-	 * Custom exception for invalid packet field values
-	 */
-	public static class IllegalPacketValueException extends IllegalArgumentException {
-		private static final long serialVersionUID = 1L;
-
-		public IllegalPacketValueException(String message) {
-			super(message);
-		}
-	}
-
-	/**
 	 * Validates this value represents a valid port number (0-65535).
 	 * 
 	 * @return this IntTry if the value is a valid port, or a failure if invalid
 	 */
 	default IntTry validatePortNumber() {
 		return validateRange(0, 65535)
-				.mapFailure(e -> new IllegalPacketValueException("Invalid port number: " + value()));
+				.mapFailure(e -> new IllegalValueException("Invalid port number: " + value()));
 	}
 
 	/**
@@ -401,15 +359,7 @@ public interface IntTry {
 	 */
 	default IntTry validateIpv4Octet() {
 		return validateRange(0, 255)
-				.mapFailure(e -> new IllegalPacketValueException("Invalid IPv4 octet: " + value()));
-	}
-
-	/**
-	 * A supplier of int values that may throw an exception.
-	 */
-	@FunctionalInterface
-	interface IntThrowingSupplier {
-		int getAsInt() throws Exception;
+				.mapFailure(e -> new IllegalValueException("Invalid IPv4 octet: " + value()));
 	}
 
 	/**

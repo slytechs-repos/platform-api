@@ -50,4 +50,12 @@ record TryFailureRecord<T>(Exception failure) implements Try<T> {
 	public @Nullable T success() {
 		return null;
 	}
+
+	/**
+	 * @see com.slytechs.jnet.platform.api.util.function.Try#get()
+	 */
+	@Override
+	public T get() throws Exception {
+		throw failure;
+	}
 }

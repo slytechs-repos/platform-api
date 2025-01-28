@@ -18,13 +18,11 @@
 package com.slytechs.jnet.platform.api.util.function;
 
 /**
- * A supplier that may throw a checked exception.
+ * 
  *
- * @param <T> the type of value supplied
- * @param <E> the type of exception that may be thrown
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
  */
-@FunctionalInterface
-public
-interface CheckedSupplier<T, E extends Exception> {
-	T get() throws E;
+public interface ThrowingUnaryOperator<T> extends ThrowingFunction<T, T> {
+
 }

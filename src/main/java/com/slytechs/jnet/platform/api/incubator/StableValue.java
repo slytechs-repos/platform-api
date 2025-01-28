@@ -167,7 +167,7 @@ public final class StableValue<T> {
 	 * @return a new StableValue instance with exception-aware lazy initialization
 	 */
 	public static <T> StableValue<T> ofThrowing(ThrowingSupplier<T> factory) {
-		return new StableValue<>(() -> Try.of(factory));
+		return new StableValue<T>(Try.wrapSupplier(factory));
 	}
 
 	private volatile T value = null;
@@ -224,7 +224,7 @@ public final class StableValue<T> {
 		if (value == null) {
 			synchronized (this) {
 				if (value == null) {
-					Try<T> result = Try.of(supplier);
+					Try<T> result = Try.ofSupplier(supplier);
 					if (result.isSuccess()) {
 						value = result.success();
 					}
@@ -309,9 +309,8 @@ public final class StableValue<T> {
 		if (value instanceof AutoCloseable closeable) {
 			synchronized (this) {
 				if (value != null) {
-					Try<Void> result = Try.of(() -> {
+					Try<Void> result = Try.ofRunnable(() -> {
 						closeable.close();
-						return null;
 					});
 
 					if (result.isSuccess()) {

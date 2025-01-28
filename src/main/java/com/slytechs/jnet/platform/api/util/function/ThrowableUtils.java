@@ -21,7 +21,7 @@ package com.slytechs.jnet.platform.api.util.function;
  * @author Mark Bednarczyk
  *
  */
-public final class CheckedUtils {
+final class ThrowableUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <E extends Throwable> E castAsCheckedOrThrowRuntime(Throwable e, Class<E> checkedClass) {
@@ -63,7 +63,7 @@ public final class CheckedUtils {
 		return castAsCheckedOrThrowRuntime(e.getCause(), checkedClass);
 	}
 
-	private CheckedUtils() {
+	private ThrowableUtils() {
 	}
 
 }
