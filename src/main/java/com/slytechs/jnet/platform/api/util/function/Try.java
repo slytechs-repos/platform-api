@@ -812,6 +812,42 @@ public interface Try<T> {
 		throw exceptionSupplier.get();
 	}
 
+	@SuppressWarnings("unchecked")
+	default <X extends Throwable> Try<T> ifFailureThrow(Class<X> exceptionClass) throws X {
+		if (isSuccess()) {
+			return this;
+		}
+
+		if (failure().getClass().isAssignableFrom(exceptionClass)) {
+			throw (X) failure();
+
+		} else if (failure() instanceof UncheckedException unchecked
+				&& unchecked.getClass().isAssignableFrom(exceptionClass)) {
+
+			throw (X) unchecked.getCause();
+		}
+
+		return this;
+	}
+
+	@SuppressWarnings("unchecked")
+	default <X extends Throwable> T orElseThrow(Class<X> exceptionClass) throws X {
+		if (isSuccess()) {
+			return success();
+		}
+
+		if (failure().getClass().isAssignableFrom(exceptionClass)) {
+			throw (X) failure();
+
+		} else if (failure() instanceof UncheckedException unchecked
+				&& unchecked.getClass().isAssignableFrom(exceptionClass)) {
+
+			throw (X) unchecked.getCause();
+		}
+
+		throw (X) failure();
+	}
+
 	/**
 	 * Recovers from a failure using the given recovery function.
 	 *
